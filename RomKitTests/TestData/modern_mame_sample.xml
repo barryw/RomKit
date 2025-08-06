@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!DOCTYPE mame [
+<!ELEMENT mame (machine+)>
+]>
+<mame build="0.261" debug="no" mameconfig="10">
+    <machine name="005" sourcefile="sega/segag80r.cpp" sampleof="005">
+        <description>005</description>
+        <year>1981</year>
+        <manufacturer>Sega</manufacturer>
+        <rom name="1346b.cpu-u25" size="2048" crc="8e68533e" sha1="a257c556d31691068ed5c991f1fb2b51da4826db" region="maincpu" offset="0"/>
+        <rom name="5092.prom-u1" size="2048" crc="29e10a81" sha1="c4b4e6c75bcf276e53f39a456d8d633c83dcf485" region="maincpu" offset="800"/>
+        <device_ref name="z80"/>
+        <device_ref name="gfxdecode"/>
+        <device_ref name="palette"/>
+        <device_ref name="screen"/>
+        <device_ref name="speaker"/>
+        <device_ref name="i8255"/>
+        <device_ref name="samples"/>
+        <device_ref name="sega005_sound"/>
+        <sample name="lexplode"/>
+        <sample name="sexplode"/>
+        <sample name="dropbomb"/>
+        <sample name="shoot"/>
+        <chip type="cpu" tag="maincpu" name="Zilog Z80" clock="3867120"/>
+        <chip type="audio" tag="speaker" name="Speaker"/>
+        <chip type="audio" tag="samples" name="Samples"/>
+        <chip type="audio" tag="005" name="Sega 005 Custom Sound"/>
+        <display tag="screen" type="raster" rotate="270" width="256" height="224" refresh="60.000000" pixclock="5156160" htotal="328" hbend="0" hbstart="256" vtotal="262" vbend="0" vbstart="224" />
+        <sound channels="1"/>
+        <input players="2" coins="2" service="yes">
+            <control type="joy" player="1" buttons="1" ways="4"/>
+            <control type="joy" player="2" buttons="1" ways="4"/>
+        </input>
+        <dipswitch name="Coin A" tag="D1D0" mask="15">
+            <diplocation name="SW2" number="8"/>
+            <diplocation name="SW2" number="7"/>
+            <dipvalue name="4 Coins/1 Credit" value="0"/>
+            <dipvalue name="1 Coin/1 Credit" value="3" default="yes"/>
+            <dipvalue name="1 Coin/2 Credits" value="4"/>
+        </dipswitch>
+        <dipswitch name="Lives" tag="D3D2" mask="3">
+            <diplocation name="SW1" number="8"/>
+            <diplocation name="SW1" number="7"/>
+            <dipvalue name="3" value="0" default="yes"/>
+            <dipvalue name="4" value="2"/>
+        </dipswitch>
+        <driver status="imperfect" emulation="good" savestate="unsupported"/>
+        <feature type="sound" status="imperfect"/>
+    </machine>
+</mame>

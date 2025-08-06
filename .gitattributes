@@ -1,0 +1,6 @@
+# Treat compressed DAT files as binary
+*.dat.gz binary
+*.gz binary
+
+# LFS tracking for large test files (optional, if using Git LFS)
+# RomKitTests/TestData/Full/*.dat.gz filter=lfs diff=lfs merge=lfs -text

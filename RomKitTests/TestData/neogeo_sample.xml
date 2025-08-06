@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<!DOCTYPE mame [
+<!ELEMENT mame (machine+)>
+]>
+<mame build="0.261">
+	<!-- Neo Geo BIOS -->
+	<machine name="neogeo" isbios="yes" sourcefile="neogeo.cpp">
+		<description>Neo-Geo</description>
+		<rom name="sp-s2.sp1" size="131072" crc="9036d879" sha1="4f5ed7e5c0c9a7b3b8a431d8c2dc80f7a086e37d" region="mainbios" offset="0"/>
+		<rom name="sp-s.sp1" size="131072" crc="c7f2fa45" sha1="733e6c4c8b7a50a68a926b69e8a6abc99fb7e05f" region="mainbios" offset="80000"/>
+		<rom name="sp-u2.sp1" size="131072" crc="e72943de" sha1="cd68f95645605f621c64b8659d5f90e8e911a7c0" region="mainbios" offset="100000"/>
+		<rom name="sp-e.sp1" size="131072" crc="2723a5b5" sha1="4fe4c36eb1504e41379d5174c4a172639e195b69" region="mainbios" offset="180000"/>
+		<rom name="asia-s3.rom" size="131072" crc="91b64be3" sha1="9d1c713da9d2aea9d68f630d79f88ba8f3c2fbb2" region="mainbios" offset="200000"/>
+		<rom name="vs-bios.rom" size="131072" crc="f0e8f27d" sha1="bd876ec5c761e2ba9348b85e93e6152e6023844b" region="mainbios" offset="280000"/>
+		<rom name="sp-j2.sp1" size="131072" crc="acede59c" sha1="2e450057c82e74fa7c2ad5ac92225bd50a2908a8" region="mainbios" offset="300000"/>
+		<rom name="sp1.jipan.1024" size="131072" crc="9fb0abe4" sha1="bb0de9e37587e895a087de0ad853810e93fa1a6f" region="mainbios" offset="380000"/>
+		<rom name="sp-45.sp1" size="524288" crc="03cc9f6a" sha1="1fbfb71265cc96e35e989a959b582e125aa84322" region="mainbios" offset="400000"/>
+		<rom name="sp-j3.sp1" size="524288" crc="486cb450" sha1="0b26e93a57c369e97c7de5f049dc4e8c1280e0a4" region="mainbios" offset="480000"/>
+		<rom name="japan-j3.bin" size="131072" crc="dff6d41f" sha1="8b35b0e24027c0d2f621c4f7e5abaf5d4c5062e0" region="mainbios" offset="500000"/>
+		<rom name="sp-1v1_3db8c.bin" size="131072" crc="162f0ebe" sha1="93d923f666c7aa15a42e33fb1c1515e87ebef446" region="mainbios" offset="580000"/>
+		<rom name="uni-bios_4_0.rom" size="524288" crc="a7aab458" sha1="3c10e3c64f0e609cc82bb679b4f0c12b0c82b6fd" region="mainbios" offset="600000"/>
+		<rom name="uni-bios_3_3.rom" size="131072" crc="24858466" sha1="e09478e70db7fa41ba5417b71f5dd86f8c1df2c0" region="mainbios" offset="680000"/>
+		<rom name="uni-bios_3_2.rom" size="131072" crc="a4e8b9b3" sha1="5bef426c59665e1f66b69b3fe35e3758318c12c4" region="mainbios" offset="700000"/>
+		<rom name="uni-bios_3_1.rom" size="131072" crc="0c58093f" sha1="0df3444d9e6972e0848e8e67d95e8e5c9e3b5f95" region="mainbios" offset="780000"/>
+		<rom name="uni-bios_3_0.rom" size="131072" crc="a97c89a9" sha1="b67078655b21cd8d9ce0f895e690e3cf1c89ce07" region="mainbios" offset="800000"/>
+		<rom name="uni-bios_2_3.rom" size="131072" crc="27664eb5" sha1="21617f79d5dd1af8061900f9a59bfbe7e1b387ef" region="mainbios" offset="880000"/>
+		<rom name="uni-bios_2_3o.rom" size="131072" crc="601720ae" sha1="18f2bb8c6c1b7f6e7a5d10106c36797f2b8e9f13" region="mainbios" offset="900000"/>
+		<rom name="uni-bios_2_2.rom" size="131072" crc="2d50996a" sha1="4676bb59fbe2cc82349f1e96dbecfc690c956c49" region="mainbios" offset="980000"/>
+		<rom name="uni-bios_2_1.rom" size="131072" crc="8dabf76b" sha1="4f6e6e0b7ad9b575919f0eb03e5172a0bef9fc94" region="mainbios" offset="a00000"/>
+		<rom name="uni-bios_2_0.rom" size="131072" crc="0c12c2ad" sha1="37d0bb1cec0c570dbf8ae39dbc6f638cf9086c4a" region="mainbios" offset="a80000"/>
+		<rom name="uni-bios_1_3.rom" size="131072" crc="b24b44a0" sha1="4f1e343dd8b7d36f8834a21e990fb9d88eb2de23" region="mainbios" offset="b00000"/>
+		<rom name="uni-bios_1_2.rom" size="131072" crc="4fa698e9" sha1="323027c5f1f5a616528fb49f9e98f48e07e5ad66" region="mainbios" offset="b80000"/>
+		<rom name="uni-bios_1_2o.rom" size="131072" crc="e19d3ce9" sha1="64b89afc3f7e088e782fd46993ac68d1dc3b8ba5" region="mainbios" offset="c00000"/>
+		<rom name="uni-bios_1_1.rom" size="131072" crc="5dda0d84" sha1="95fb93d5d69e9db8d95c0e0e909819d7f61ab79e" region="mainbios" offset="c80000"/>
+		<rom name="uni-bios_1_0.rom" size="131072" crc="0ce453a0" sha1="2e38c2e02406c838e5ac1e039b2ed889f1e0edde" region="mainbios" offset="d00000"/>
+		<rom name="neodebug.rom" size="524288" crc="698ebb7d" sha1="e32f8e1959ebcc6f82a5d95f1c2f6b6e5c3b404f" region="mainbios" offset="d80000"/>
+		<rom name="000-lo.lo" size="131072" crc="5a86cff2" sha1="aa0268e05f21fce98ce74b0b36e91e3bb13a87f9" region="zoomy" offset="0"/>
+		<rom name="sfix.sfix" size="131072" crc="c2ea0cfd" sha1="a46dc0265a57ac7b037bbf5f59dcd5ee32e82e82" region="sfix" offset="0"/>
+		<rom name="sm1.sm1" size="131072" crc="94416d67" sha1="2a7c8059bb5215173e1813bb5476a95dbd092ee5" region="audiocpu" offset="0"/>
+	</machine>
+	
+	<!-- Metal Slug - requires Neo Geo BIOS -->
+	<machine name="mslug" bios="neogeo" sourcefile="neogeo.cpp">
+		<description>Metal Slug - Super Vehicle-001</description>
+		<year>1996</year>
+		<manufacturer>Nazca</manufacturer>
+		<rom name="201-p1.p1" size="2097152" crc="08d8daa5" sha1="ea7584f739ae7e54a1463e933ec3f2fb8b432b5f" region="maincpu" offset="0"/>
+		<rom name="201-s1.s1" size="131072" crc="2f55958d" sha1="d2dc83742aed93264c65a0da45e06cc13171b5ef" region="sfix" offset="0"/>
+		<rom name="201-c1.c1" size="8388608" crc="72813676" sha1="35bc30c7d7fb8b9052e41173e87c0e61c679f09f" region="sprites" offset="0"/>
+		<rom name="201-c2.c2" size="8388608" crc="96f62574" sha1="d088e896f67e4dd8e6477e1d4a0b98725c979810" region="sprites" offset="1"/>
+		<rom name="201-c3.c3" size="8388608" crc="5121456a" sha1="c25e0e3e3b0a3bb0969a89d5ac8838d967c97c64" region="sprites" offset="2000000"/>
+		<rom name="201-c4.c4" size="8388608" crc="f4ad59a3" sha1="2fb915ee4e5c09cc92f4c672b070c7fde3093a66" region="sprites" offset="2000001"/>
+		<rom name="201-m1.m1" size="131072" crc="c28b3253" sha1="08c6cf5c26ad74e699158e6bb4cf1ac22e616e95" region="audiocrypt" offset="0"/>
+		<rom name="201-v1.v1" size="4194304" crc="23d22ed1" sha1="d15cc5baa03b96f907e10ad47f3c6edc31653bc1" region="ymsnd" offset="0"/>
+		<rom name="201-v2.v2" size="4194304" crc="472cf9db" sha1="e95fc5e50f387ac7ae56c35e5a3bb264f21080e9" region="ymsnd" offset="400000"/>
+	</machine>
+	
+	<!-- King of Fighters '98 - requires Neo Geo BIOS -->
+	<machine name="kof98" bios="neogeo" sourcefile="neogeo.cpp">
+		<description>The King of Fighters '98 - The Slugfest / King of Fighters '98 - dream match never ends</description>
+		<year>1998</year>
+		<manufacturer>SNK</manufacturer>
+		<rom name="242-p1.p1" size="2097152" crc="8893df89" sha1="4ed0e299e87bb8d2c96df0cf593db6e1f072797e" region="maincpu" offset="100000"/>
+		<rom name="242-p2.sp2" size="4194304" crc="980aba4c" sha1="a065e404ff5467eb8217ee9e66094078b99c5188" region="maincpu" offset="200000"/>
+		<rom name="242-s1.s1" size="131072" crc="7f7b4805" sha1="e7c87dc67b983f7e01bbb0797dcf8242ac1e5559" region="sfix" offset="0"/>
+		<rom name="242-c1.c1" size="8388608" crc="e564ecd6" sha1="78f5ba3c387d4733073ddcf64686a5fc0cb63c59" region="sprites" offset="0"/>
+		<rom name="242-c2.c2" size="8388608" crc="bd959b60" sha1="f60c5508bcddc257e29e8b8e4c3e82a8bc879007" region="sprites" offset="1"/>
+		<rom name="242-c3.c3" size="8388608" crc="22127b4f" sha1="7bb4e364b3e69ecd666bc26c668c10a2f4bc8d45" region="sprites" offset="2000000"/>
+		<rom name="242-c4.c4" size="8388608" crc="0b4fa044" sha1="42db9073db49833cfdc11f4e8e5f067f6f6c8bc2" region="sprites" offset="2000001"/>
+		<rom name="242-c5.c5" size="8388608" crc="9d10bed3" sha1="2e59360e20f809f45e91e33fb6a8e1db957e0a18" region="sprites" offset="4000000"/>
+		<rom name="242-c6.c6" size="8388608" crc="da07b6a2" sha1="7a29c99e08fe7e96bb8e1c7a4ae00e095c3c43fb" region="sprites" offset="4000001"/>
+		<rom name="242-c7.c7" size="8388608" crc="f6d7a38a" sha1="a7c6e8a93bc0e92e8b8dc1c6c67d88e05e2f83f5" region="sprites" offset="6000000"/>
+		<rom name="242-c8.c8" size="8388608" crc="c823e045" sha1="d1c84c628e6ea43c7e64c2a59e0e6f1a4e7c4d0a" region="sprites" offset="6000001"/>
+		<rom name="242-m1.m1" size="262144" crc="4ef7016b" sha1="d7563b59eb6e5a09b1e1ab3bc9e63b1f11ba7c82" region="audiocrypt" offset="0"/>
+		<rom name="242-v1.v1" size="8388608" crc="b9ea8051" sha1="3fb09e91e0643e5e3f999b4c989f039e8b4e4cf0" region="ymsnd" offset="0"/>
+		<rom name="242-v2.v2" size="8388608" crc="cc11106e" sha1="d84bfb27f070e1a51fd6c0e9f6e11baa10a01ba5" region="ymsnd" offset="800000"/>
+		<rom name="242-v3.v3" size="8388608" crc="044ea4e1" sha1="d4f1e92c47e3fb7e42e93725ec97f7a8dc4e3c4f" region="ymsnd" offset="1000000"/>
+		<rom name="242-v4.v4" size="8388608" crc="7985ea30" sha1="eb2eebdcac8a9c3af95a7bd45b1db31a3e32e52a" region="ymsnd" offset="1800000"/>
+	</machine>
+</mame>

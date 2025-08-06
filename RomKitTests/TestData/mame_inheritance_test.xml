@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<!DOCTYPE mame [
+<!ELEMENT mame (machine+)>
+]>
+<mame build="0.261" debug="no" mameconfig="10">
+    <!-- BIOS Set: Neo-Geo -->
+    <machine name="neogeo" isbios="yes" sourcefile="neogeo.cpp">
+        <description>Neo-Geo</description>
+        <rom name="sp-s2.sp1" size="131072" crc="9036d879" sha1="4f5ed7e5c0c9a7b3b8a431d8c2dc80f7a086e37d" region="mainbios" offset="0"/>
+        <rom name="sp-s.sp1" size="131072" crc="c7f2fa45" sha1="733e6c4c8b7a50a68a926b69e8a6abc99fb7e05f" region="mainbios" offset="80000"/>
+        <rom name="000-lo.lo" size="131072" crc="5a86cff2" sha1="aa0268e05f21fce98ce74b0b36e91e3bb13a87f9" region="zoomy" offset="0"/>
+        <rom name="sfix.sfix" size="131072" crc="c2ea0cfd" sha1="a46dc0265a57ac7b037bbf5f59dcd5ee32e82e82" region="sfix" offset="0"/>
+        <rom name="sm1.sm1" size="131072" crc="94416d67" sha1="2a7c8059bb5215173e1813bb5476a95dbd092ee5" region="audiocpu" offset="0"/>
+    </machine>
+    
+    <!-- Device Set: Namco Custom I/O -->
+    <machine name="namco51" isdevice="yes" sourcefile="namco51.cpp">
+        <description>Namco 51xx I/O</description>
+        <rom name="51xx.bin" size="1024" crc="c2f57ef8" sha1="50e3c78ae0cc8a68ba5a3ee902e4e63fa8a4e9d3" region="mcu" offset="0"/>
+    </machine>
+    
+    <!-- Device Set: Namco Custom Sound -->
+    <machine name="namco54" isdevice="yes" sourcefile="namco54.cpp">
+        <description>Namco 54xx Sound</description>
+        <rom name="54xx.bin" size="1024" crc="a1ef61df" sha1="18e6f35c0e9e8a13ba5a3ee902e4e63fa8a4e9d3" region="mcu" offset="0"/>
+    </machine>
+    
+    <!-- Parent Game with BIOS requirement -->
+    <machine name="mslug" bios="neogeo" sourcefile="neogeo.cpp">
+        <description>Metal Slug - Super Vehicle-001</description>
+        <year>1996</year>
+        <manufacturer>Nazca</manufacturer>
+        <rom name="201-p1.p1" size="2097152" crc="08d8daa5" sha1="ea7584f739ae7e54a1463e933ec3f2fb8b432b5f" region="maincpu" offset="0"/>
+        <rom name="201-s1.s1" size="131072" crc="2f55958d" sha1="d2dc83742aed93264c65a0da45e06cc13171b5ef" region="sfix" offset="0"/>
+        <rom name="201-c1.c1" size="8388608" crc="72813676" sha1="35bc30c7d7fb8b9052e41173e87c0e61c679f09f" region="sprites" offset="0"/>
+        <rom name="201-c2.c2" size="8388608" crc="96f62574" sha1="d088e896f67e4dd8e6477e1d4a0b98725c979810" region="sprites" offset="1"/>
+        <device_ref name="z80"/>
+        <device_ref name="ym2610"/>
+    </machine>
+    
+    <!-- Clone of Metal Slug -->
+    <machine name="mslugx" cloneof="mslug" romof="mslug" bios="neogeo" sourcefile="neogeo.cpp">
+        <description>Metal Slug X - Super Vehicle-001 (NGM-2500)</description>
+        <year>1999</year>
+        <manufacturer>SNK</manufacturer>
+        <!-- Clone has some unique ROMs -->
+        <rom name="250-p1.p1" size="2097152" crc="81f1f60b" sha1="3c5a8b6e12e55e7c9d7a2451da0a4e5e1e0f6e9e" region="maincpu" offset="0"/>
+        <!-- Clone shares ROMs with parent via merge attribute -->
+        <rom name="201-s1.s1" merge="201-s1.s1" size="131072" crc="2f55958d" sha1="d2dc83742aed93264c65a0da45e06cc13171b5ef" region="sfix" offset="0"/>
+        <rom name="201-c1.c1" merge="201-c1.c1" size="8388608" crc="72813676" sha1="35bc30c7d7fb8b9052e41173e87c0e61c679f09f" region="sprites" offset="0"/>
+        <rom name="201-c2.c2" merge="201-c2.c2" size="8388608" crc="96f62574" sha1="d088e896f67e4dd8e6477e1d4a0b98725c979810" region="sprites" offset="1"/>
+        <device_ref name="z80"/>
+        <device_ref name="ym2610"/>
+    </machine>
+    
+    <!-- Parent Game with Device requirements -->
+    <machine name="galaga" sourcefile="galaga.cpp">
+        <description>Galaga (Namco rev. B)</description>
+        <year>1981</year>
+        <manufacturer>Namco</manufacturer>
+        <rom name="gg1_1b.3p" size="4096" crc="ab036c9f" sha1="5c26c66d4c196097d44c12b52e136d17ee0787d0" region="maincpu" offset="0"/>
+        <rom name="gg1_2b.3m" size="4096" crc="d9232240" sha1="a8b01ace0a99f530f91b0b9c064d13c8f0250a7e" region="maincpu" offset="1000"/>
+        <rom name="gg1_3.2m" size="4096" crc="753ce503" sha1="bc2299088e61bbebb09e2bc1a4cb8895f5e2cb7d" region="maincpu" offset="2000"/>
+        <rom name="gg1_4b.2l" size="4096" crc="499fcc76" sha1="924e3e5f6a8eda9e32a5dcb6a556c45fd8cac76f" region="maincpu" offset="3000"/>
+        <device_ref name="namco51"/>
+        <device_ref name="namco54"/>
+    </machine>
+    
+    <!-- Clone of Galaga -->
+    <machine name="galagao" cloneof="galaga" romof="galaga" sourcefile="galaga.cpp">
+        <description>Galaga (Namco)</description>
+        <year>1981</year>
+        <manufacturer>Namco</manufacturer>
+        <!-- Different first ROM -->
+        <rom name="gg1-1.3p" size="4096" crc="a3a0f6cf" sha1="8d6f4f7c2069c59e2211851a0e2c387e89c0ce21" region="maincpu" offset="0"/>
+        <!-- Shared ROMs with parent -->
+        <rom name="gg1_2b.3m" merge="gg1_2b.3m" size="4096" crc="d9232240" sha1="a8b01ace0a99f530f91b0b9c064d13c8f0250a7e" region="maincpu" offset="1000"/>
+        <rom name="gg1_3.2m" merge="gg1_3.2m" size="4096" crc="753ce503" sha1="bc2299088e61bbebb09e2bc1a4cb8895f5e2cb7d" region="maincpu" offset="2000"/>
+        <rom name="gg1_4b.2l" merge="gg1_4b.2l" size="4096" crc="499fcc76" sha1="924e3e5f6a8eda9e32a5dcb6a556c45fd8cac76f" region="maincpu" offset="3000"/>
+        <device_ref name="namco51"/>
+        <device_ref name="namco54"/>
+    </machine>
+    
+    <!-- Parent Game -->
+    <machine name="puckman" sourcefile="pacman.cpp">
+        <description>Puck Man (Japan set 1)</description>
+        <year>1980</year>
+        <manufacturer>Namco</manufacturer>
+        <rom name="pm1_prg1.6e" size="2048" crc="f36e88ab" sha1="813cecf44bf5464b1aed64b36f5047e4c79ba176" region="maincpu" offset="0"/>
+        <rom name="pm1_prg2.6k" size="2048" crc="618bd9b3" sha1="b9ca52b63a49ddece768378d331deebbe34fe177" region="maincpu" offset="800"/>
+        <rom name="pm1_prg3.6f" size="2048" crc="7d177853" sha1="9b5ddaaa8b564654f97af193dbcc29f81f230a25" region="maincpu" offset="1000"/>
+        <rom name="pm1_prg4.6m" size="2048" crc="d3e8914c" sha1="c2f00e1773c6864435f29c8fdaec3fd5f0cdfe49" region="maincpu" offset="1800"/>
+        <rom name="pm1_chg1.5e" size="4096" crc="2066a0b7" sha1="6d4ccc27d6be185589e08aa9f18702b679e49a34" region="gfx1" offset="0"/>
+        <rom name="pm1_chg2.5h" size="4096" crc="3591b89d" sha1="79bb456be6c39c1ccd7d077ff5c5ea75f91bae13" region="gfx1" offset="1000"/>
+    </machine>
+    
+    <!-- Clone with RomOf and CloneOf -->
+    <machine name="pacman" cloneof="puckman" romof="puckman" sourcefile="pacman.cpp">
+        <description>Pac-Man (Midway)</description>
+        <year>1980</year>
+        <manufacturer>Namco (Midway license)</manufacturer>
+        <!-- Unique ROMs for this clone -->
+        <rom name="pacman.6e" size="4096" crc="c1e6ab10" sha1="e87e06d60b9c49ca6a51d865491a23f1972e86f1" region="maincpu" offset="0"/>
+        <rom name="pacman.6f" size="4096" crc="1a6fb2d4" sha1="674d3a7a611901fead768774e579b68d315203f3" region="maincpu" offset="1000"/>
+        <rom name="pacman.6h" size="4096" crc="bcdd1beb" sha1="8e4768cbaf43f394a59fbcbf45484586c62e1f5b" region="maincpu" offset="2000"/>
+        <rom name="pacman.6j" size="4096" crc="817d94e3" sha1="d4a94cbfb8fa87e09bb8e8e09a3cdd1cdec006dc" region="maincpu" offset="3000"/>
+        <!-- Merged ROMs from parent -->
+        <rom name="pm1_chg1.5e" merge="pm1_chg1.5e" size="4096" crc="2066a0b7" sha1="6d4ccc27d6be185589e08aa9f18702b679e49a34" region="gfx1" offset="0"/>
+        <rom name="pm1_chg2.5h" merge="pm1_chg2.5h" size="4096" crc="3591b89d" sha1="79bb456be6c39c1ccd7d077ff5c5ea75f91bae13" region="gfx1" offset="1000"/>
+    </machine>
+    
+    <!-- Bootleg without parent (standalone) -->
+    <machine name="pacmanbl" sourcefile="pacman.cpp">
+        <description>Pac-Man (bootleg)</description>
+        <year>1980</year>
+        <manufacturer>bootleg</manufacturer>
+        <rom name="1.bin" size="4096" crc="c1e6ab10" sha1="e87e06d60b9c49ca6a51d865491a23f1972e86f1" region="maincpu" offset="0"/>
+        <rom name="2.bin" size="4096" crc="1a6fb2d4" sha1="674d3a7a611901fead768774e579b68d315203f3" region="maincpu" offset="1000"/>
+        <rom name="3.bin" size="4096" crc="bcdd1beb" sha1="8e4768cbaf43f394a59fbcbf45484586c62e1f5b" region="maincpu" offset="2000"/>
+        <rom name="4.bin" size="4096" crc="817d94e3" sha1="d4a94cbfb8fa87e09bb8e8e09a3cdd1cdec006dc" region="maincpu" offset="3000"/>
+        <rom name="5.bin" size="4096" crc="2066a0b7" sha1="6d4ccc27d6be185589e08aa9f18702b679e49a34" region="gfx1" offset="0"/>
+        <rom name="6.bin" size="4096" crc="3591b89d" sha1="79bb456be6c39c1ccd7d077ff5c5ea75f91bae13" region="gfx1" offset="1000"/>
+    </machine>
+</mame>

@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<!DOCTYPE mame [
+<!ELEMENT mame (machine+)>
+]>
+<mame build="0.261 (mame0261)" debug="no" mameconfig="10">
+	<machine name="puckman" sourcefile="pacman.cpp">
+		<description>Puck Man (Japan set 1)</description>
+		<year>1980</year>
+		<manufacturer>Namco</manufacturer>
+		<rom name="pm1_prg1.6e" size="2048" crc="f36e88ab" sha1="813cecf44bf5464b1aed64b36f5047e4c79ba176" region="maincpu" offset="0"/>
+		<rom name="pm1_prg2.6k" size="2048" crc="618bd9b3" sha1="b9ca52b63a49ddece768378d331deebbe34fe177" region="maincpu" offset="800"/>
+		<rom name="pm1_prg3.6f" size="2048" crc="7d177853" sha1="9b5ddaaa8b564654f97af193dbcc29f81f230a25" region="maincpu" offset="1000"/>
+		<rom name="pm1_prg4.6m" size="2048" crc="d3e8914c" sha1="c2f00e1773c6864435f29c8fdaec3fd5f0cdfe49" region="maincpu" offset="1800"/>
+		<rom name="pm1_prg5.6h" size="2048" crc="6bf4f625" sha1="afe72fdfec66c145b53ed865f2734489f6b5b3a2" region="maincpu" offset="2000"/>
+		<rom name="pm1_prg6.6n" size="2048" crc="a948ce83" sha1="08759833f7e0690ff2df15ee1f50bc8cd674078e" region="maincpu" offset="2800"/>
+		<rom name="pm1_prg7.6j" size="2048" crc="b6289b26" sha1="d249fa945d4e9e624c368e7de9e64ff7c792d3fe" region="maincpu" offset="3000"/>
+		<rom name="pm1_prg8.6p" size="2048" crc="17a88c13" sha1="eb462de78d1e90cf3f2b4a9417b68aea5dfb9a16" region="maincpu" offset="3800"/>
+		<rom name="pm1_chg1.5e" size="4096" crc="2066a0b7" sha1="6d4ccc27d6be185589e08aa9f18702b679e49a34" region="gfx1" offset="0"/>
+		<rom name="pm1_chg2.5h" size="4096" crc="3591b89d" sha1="79bb456be6c39c1ccd7d077ff5c5ea75f91bae13" region="gfx1" offset="1000"/>
+		<rom name="pm1-1.7f" size="256" crc="2fc650bd" sha1="8d0268e8df58e681e1ce00b5d6ed8319f99f5104" region="proms" offset="0"/>
+		<rom name="pm1-4.4a" size="256" crc="3eb3a8e4" sha1="19097b5f60e1b3009b893b2fb89a57eaa5a625f4" region="proms" offset="100"/>
+		<rom name="pm1-3.1m" size="32" crc="a9cc86bf" sha1="bbcec0570aeceb582ff8238a4bc8546a23430101" region="namco" offset="0"/>
+		<rom name="pm1-2.3m" size="256" crc="77245b66" sha1="0c4d0bee858b97ca9b1dac089fc1b35fb070cf2f" region="namco" offset="100"/>
+	</machine>
+	
+	<machine name="pacman" cloneof="puckman" romof="puckman" sourcefile="pacman.cpp">
+		<description>Pac-Man (Midway)</description>
+		<year>1980</year>
+		<manufacturer>Namco (Midway license)</manufacturer>
+		<rom name="pacman.6e" size="4096" crc="c1e6ab10" sha1="e87e06d60b9c49ca6a51d865491a23f1972e86f1" region="maincpu" offset="0"/>
+		<rom name="pacman.6f" size="4096" crc="1a6fb2d4" sha1="674d3a7a611901fead768774e579b68d315203f3" region="maincpu" offset="1000"/>
+		<rom name="pacman.6h" size="4096" crc="bcdd1beb" sha1="8e4768cbaf43f394a59fbcbf45484586c62e1f5b" region="maincpu" offset="2000"/>
+		<rom name="pacman.6j" size="4096" crc="817d94e3" sha1="d4a94cbfb8fa87e09bb8e8e09a3cdd1cdec006dc" region="maincpu" offset="3000"/>
+		<rom name="pm1_chg1.5e" merge="pm1_chg1.5e" size="4096" crc="2066a0b7" sha1="6d4ccc27d6be185589e08aa9f18702b679e49a34" region="gfx1" offset="0"/>
+		<rom name="pm1_chg2.5h" merge="pm1_chg2.5h" size="4096" crc="3591b89d" sha1="79bb456be6c39c1ccd7d077ff5c5ea75f91bae13" region="gfx1" offset="1000"/>
+		<rom name="pm1-1.7f" merge="pm1-1.7f" size="256" crc="2fc650bd" sha1="8d0268e8df58e681e1ce00b5d6ed8319f99f5104" region="proms" offset="0"/>
+		<rom name="82s126.4a" size="256" crc="3eb3a8e4" sha1="19097b5f60e1b3009b893b2fb89a57eaa5a625f4" region="proms" offset="100"/>
+		<rom name="pm1-3.1m" merge="pm1-3.1m" size="32" crc="a9cc86bf" sha1="bbcec0570aeceb582ff8238a4bc8546a23430101" region="namco" offset="0"/>
+		<rom name="82s126.1m" size="256" crc="77245b66" sha1="0c4d0bee858b97ca9b1dac089fc1b35fb070cf2f" region="namco" offset="100"/>
+	</machine>
+	
+	<machine name="mspacman" sourcefile="pacman.cpp">
+		<description>Ms. Pac-Man</description>
+		<year>1982</year>
+		<manufacturer>Midway / General Computer Corporation</manufacturer>
+		<rom name="pacman.6e" size="4096" crc="c1e6ab10" sha1="e87e06d60b9c49ca6a51d865491a23f1972e86f1" region="maincpu" offset="0"/>
+		<rom name="pacman.6f" size="4096" crc="1a6fb2d4" sha1="674d3a7a611901fead768774e579b68d315203f3" region="maincpu" offset="1000"/>
+		<rom name="pacman.6h" size="4096" crc="bcdd1beb" sha1="8e4768cbaf43f394a59fbcbf45484586c62e1f5b" region="maincpu" offset="2000"/>
+		<rom name="pacman.6j" size="4096" crc="817d94e3" sha1="d4a94cbfb8fa87e09bb8e8e09a3cdd1cdec006dc" region="maincpu" offset="3000"/>
+		<rom name="5e" size="4096" crc="5c281d01" sha1="7e9c4a425266d8e17096de23ba547c44af9ba5c2" region="gfx1" offset="0"/>
+		<rom name="5f" size="4096" crc="615af909" sha1="fd6a9f9b7e6bb88e6c37d3b45c272b1e489ea8f1" region="gfx1" offset="1000"/>
+		<rom name="82s123.7f" size="32" crc="2fc650bd" sha1="8d0268e8df58e681e1ce00b5d6ed8319f99f5104" region="proms" offset="0"/>
+		<rom name="82s126.4a" size="256" crc="3eb3a8e4" sha1="19097b5f60e1b3009b893b2fb89a57eaa5a625f4" region="proms" offset="20"/>
+		<rom name="82s126.1m" size="256" crc="a9cc86bf" sha1="bbcec0570aeceb582ff8238a4bc8546a23430101" region="namco" offset="0"/>
+		<rom name="82s126.3m" size="256" crc="77245b66" sha1="0c4d0bee858b97ca9b1dac089fc1b35fb070cf2f" region="namco" offset="100"/>
+		<rom name="u5" size="2048" crc="f97c555d" sha1="bc2539c9df87fdf2a95f3d5d988d8dc919c4f17d" region="user1" offset="0"/>
+		<rom name="u6" size="4096" crc="65a3ee71" sha1="cbbdac2c0fcd02dc5d4d57e4266c9819b083ce6e" region="user1" offset="800"/>
+		<rom name="u7" size="4096" crc="de0bcea7" sha1="fa8a34d7e63ba8c4aca4643d96a91b99cf067e55" region="user1" offset="1800"/>
+	</machine>
+	
+	<machine name="galaga" sourcefile="galaga.cpp">
+		<description>Galaga (Namco rev. B)</description>
+		<year>1981</year>
+		<manufacturer>Namco</manufacturer>
+		<rom name="gg1_1b.3p" size="4096" crc="ab036c9f" sha1="0397cf1d886e2ef85fb82cc812edd101fcbd5f08" region="maincpu" offset="0"/>
+		<rom name="gg1_2b.3m" size="4096" crc="d9232240" sha1="42e1cac93343e92ba14a0fb0095c7c1cd96e4f04" region="maincpu" offset="1000"/>
+		<rom name="gg1_3.2m" size="4096" crc="753ce503" sha1="bf5538f89a3e95c2e9dc1fad34be887ed146b0c8" region="maincpu" offset="2000"/>
+		<rom name="gg1_4b.2l" size="4096" crc="499fcc76" sha1="b321e0f00e96fab443e986e6bb89e391c9fb12ff" region="maincpu" offset="3000"/>
+		<rom name="gg1_5b.3f" size="4096" crc="bb5caae3" sha1="e957a0a0065fb0dc92fc638b28f43e8ccb03f2c9" region="sub" offset="0"/>
+		<rom name="gg1_7b.2c" size="4096" crc="d016686b" sha1="5404a0602e00ec97fdc4e0a7cac14fe8fbf1fef4" region="sub2" offset="0"/>
+		<rom name="gg1_9.4l" size="4096" crc="58b2f47c" sha1="f44e97cf89e90d89beb39026a1bd5ea4fe893593" region="gfx1" offset="0"/>
+		<rom name="gg1_10.4f" size="4096" crc="ad447c80" sha1="5e26481dc87cf9e6e127221f0ec4be49f8d00779" region="gfx1" offset="1000"/>
+		<rom name="gg1_11.4d" size="4096" crc="dd6f1afc" sha1="22330207c942aa3ee7074e93ea9f743b38fdf80e" region="gfx2" offset="0"/>
+		<rom name="prom-5.5n" size="32" crc="54603c6b" sha1="148a99eed0589e234ae94dc5e990db1fcfeadcc8" region="proms" offset="0"/>
+		<rom name="prom-4.2n" size="256" crc="59b6edab" sha1="11c80bb43528ef5e6cdeb60e86f19893e721e3ed" region="proms" offset="20"/>
+		<rom name="prom-3.1c" size="256" crc="4a04bb6b" sha1="6003c2dd17efa7e5e654a46d2549d97c2f2dc2f0" region="proms" offset="120"/>
+		<rom name="prom-1.1d" size="256" crc="7a2815b4" sha1="1c728a88e4a4a6d19cbb8b8b050c3be263a5b98b" region="proms" offset="220"/>
+		<rom name="prom-2.5c" size="256" crc="77245b66" sha1="0c4d0bee858b97ca9b1dac089fc1b35fb070cf2f" region="proms" offset="320"/>
+	</machine>
+	
+	<machine name="dkong" sourcefile="dkong.cpp">
+		<description>Donkey Kong (US set 1)</description>
+		<year>1981</year>
+		<manufacturer>Nintendo of America</manufacturer>
+		<rom name="c_5et_g.bin" size="4096" crc="ba70b88b" sha1="9dc924fa08034fb93aaec38e8f12db0dc10e9dc3" region="maincpu" offset="0"/>
+		<rom name="c_5ct_g.bin" size="4096" crc="5ec461ec" sha1="1e327aa23b65e17e1b092db1e0e1a19f9a552eb5" region="maincpu" offset="1000"/>
+		<rom name="c_5bt_g.bin" size="4096" crc="1c97d324" sha1="fd6c1ead60c0f2c0b62e5b9a5c9adbf4af1b3e2f" region="maincpu" offset="2000"/>
+		<rom name="c_5at_g.bin" size="4096" crc="b9005ac0" sha1="f674c469fb4f9cd95e2f23f43f6dd039fb0d4754" region="maincpu" offset="3000"/>
+		<rom name="s_3i_b.bin" size="2048" crc="45a4ed06" sha1="b5a2e93ac90ba07f2601b6fb85bc5f67f91b9c89" region="soundcpu" offset="0"/>
+		<rom name="s_3j_b.bin" size="2048" crc="4743fe92" sha1="3c9a21697c3760770b088fe08a092e3c8c0c1a48" region="soundcpu" offset="800"/>
+		<rom name="v_5h_b.bin" size="2048" crc="12c8c95d" sha1="5aefb825cb35557f689d1e329fb94a5e302ac344" region="gfx1" offset="0"/>
+		<rom name="v_3pt.bin" size="2048" crc="15e9c5e9" sha1="464ad7f5f319b7a4883bb7f0e6a60e2e4ba5f3fb" region="gfx1" offset="800"/>
+		<rom name="l_4m_b.bin" size="2048" crc="59f8054d" sha1="4352f0e18356a5725709185eb1ae3a38dfce1f09" region="gfx2" offset="0"/>
+		<rom name="l_4n_b.bin" size="2048" crc="672e4714" sha1="e788e6e9e832c5ba86fb0049011fb78dc24924f5" region="gfx2" offset="800"/>
+		<rom name="l_4r_b.bin" size="2048" crc="feaa59ee" sha1="b9066c324d8bf5a5f10e8df949dff5fc4bcab73f" region="gfx2" offset="1000"/>
+		<rom name="l_4s_b.bin" size="2048" crc="20f2ef7e" sha1="cb4b3bbaa8a8b2eb079a3e424147adf496f6de88" region="gfx2" offset="1800"/>
+		<rom name="c-2k.bpr" size="256" crc="e273ede5" sha1="9c056a3ecb1c605ba6c3ea62e7619e313fb27cd4" region="proms" offset="0"/>
+		<rom name="c-2j.bpr" size="256" crc="d6412358" sha1="8530e3cf67e8cb2a1c006875e299b291b526f4fe" region="proms" offset="100"/>
+		<rom name="v-5e.bpr" size="256" crc="b869b8f5" sha1="5c4d4c44bc1dc9e87f2a9343aca5e8e067163856" region="proms" offset="200"/>
+	</machine>
+</mame>
