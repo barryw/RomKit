@@ -107,6 +107,16 @@ public class MAMEROMValidator: ROMValidator {
             md5: md5Digest.map { String(format: "%02x", $0) }.joined()
         )
     }
+    
+    public func computeChecksumsAsync(for data: Data) async -> ROMChecksums {
+        let multiHash = await ParallelHashUtilities.computeAllHashes(data: data)
+        return ROMChecksums(
+            crc32: multiHash.crc32,
+            sha1: multiHash.sha1,
+            sha256: multiHash.sha256,
+            md5: multiHash.md5
+        )
+    }
 }
 
 // MARK: - MAME ROM Scanner
@@ -158,58 +168,56 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
     public func scan(files: [URL]) async throws -> ScanResults {
         var foundGames: [MAMEScannedGame] = []
         var unknownFiles: [URL] = []
-        var errors: [ScanError] = []
+        let errors: [ScanError] = []
         
         let startTime = Date()
-        var processedCount = 0
         let totalCount = files.count
+        let processorCount = ProcessInfo.processInfo.activeProcessorCount
+        let maxConcurrency = min(processorCount * 2, 8)
         
-        // Use a semaphore to control concurrent operations
-        let semaphore = DispatchSemaphore(value: 4) // Limit concurrent scans
-        
-        await withTaskGroup(of: (MAMEScannedGame?, URL).self) { group in
+        _ = try await withThrowingTaskGroup(of: (MAMEScannedGame?, URL, Int).self) { group in
+            let semaphore = AsyncSemaphore(limit: maxConcurrency)
+            
             for (index, file) in files.enumerated() {
-                // Check for cancellation
                 if callbackManager?.shouldCancel() == true {
                     callbackManager?.sendEvent(.error(RomKitCallbackError.cancelled))
                     break
                 }
                 
                 group.addTask {
-                    _ = semaphore.wait()
-                    defer { semaphore.signal() }
+                    await semaphore.wait()
                     
-                    // Send scanning file event
                     self.callbackManager?.sendEvent(.scanningFile(url: file, index: index + 1, total: totalCount))
                     
-                    let result = await self.scanFile(file)
-                    return (result, file)
+                    let result = await self.scanFileOptimized(file)
+                    await semaphore.signal()
+                    return (result, file, index)
                 }
             }
             
-            for await (result, file) in group {
-                processedCount += 1
+            var results: [(MAMEScannedGame?, URL, Int)] = []
+            for try await result in group {
+                results.append(result)
                 
-                // Update progress
+                let processedCount = results.count
                 callbackManager?.sendProgress(
                     current: processedCount,
                     total: totalCount,
                     message: "Scanning files...",
-                    currentItem: file.lastPathComponent
+                    currentItem: result.1.lastPathComponent
                 )
                 
-                if let scannedGame = result {
+                if let scannedGame = result.0 {
                     foundGames.append(scannedGame)
-                    
-                    // Send game found event
                     callbackManager?.sendEvent(.gameFound(
                         name: scannedGame.game.name,
                         status: scannedGame.status
                     ))
                 } else {
-                    unknownFiles.append(file)
+                    unknownFiles.append(result.1)
                 }
             }
+            return results
         }
         
         let duration = Date().timeIntervalSince(startTime)
@@ -248,6 +256,118 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
         }
         
         return files
+    }
+    
+    private func scanFileOptimized(_ url: URL) async -> MAMEScannedGame? {
+        let gameName = url.deletingPathExtension().lastPathComponent
+        
+        guard let game = datFile.games.first(where: { ($0 as? MAMEGame)?.name == gameName }) as? MAMEGame else {
+            callbackManager?.sendEvent(.warning("Unknown file: \(url.lastPathComponent)"))
+            return nil
+        }
+        
+        var foundItems: [ScannedItem] = []
+        
+        if let handler = archiveHandlers.first(where: { $0.canHandle(url: url) }) {
+            do {
+                callbackManager?.sendEvent(.archiveOpening(url: url))
+                
+                let entries = try handler.listContents(of: url)
+                
+                let itemResults = await withTaskGroup(of: ScannedItem?.self) { group in
+                    for entry in entries {
+                        if let rom = game.items.first(where: { $0.name == entry.path }) {
+                            group.addTask {
+                                do {
+                                    self.callbackManager?.sendEvent(.archiveExtracting(
+                                        fileName: entry.path,
+                                        size: UInt64(entry.uncompressedSize ?? 0)
+                                    ))
+                                    
+                                    let data = try handler.extract(entry: entry, from: url)
+                                    
+                                    self.callbackManager?.sendEvent(.validationStarted(itemName: rom.name))
+                                    
+                                    let validationResult = await self.validateItemAsync(rom, data: data)
+                                    
+                                    self.callbackManager?.sendEvent(.validationCompleted(
+                                        itemName: rom.name,
+                                        isValid: validationResult.isValid,
+                                        errors: validationResult.errors
+                                    ))
+                                    
+                                    return ScannedItem(
+                                        item: rom,
+                                        location: url.appendingPathComponent(entry.path),
+                                        validationResult: validationResult
+                                    )
+                                } catch {
+                                    self.callbackManager?.sendEvent(.error(RomKitCallbackError.unknown(error)))
+                                    return nil
+                                }
+                            }
+                        }
+                    }
+                    
+                    var results: [ScannedItem] = []
+                    for await item in group {
+                        if let item = item {
+                            results.append(item)
+                        }
+                    }
+                    return results
+                }
+                
+                foundItems = itemResults
+            } catch {
+                callbackManager?.sendEvent(.error(RomKitCallbackError.archiveCorrupted(url: url)))
+            }
+        }
+        
+        let missingItems = game.items.filter { rom in
+            !foundItems.contains { $0.item.name == rom.name }
+        }
+        
+        return MAMEScannedGame(
+            game: game,
+            foundItems: foundItems,
+            missingItems: missingItems
+        )
+    }
+    
+    private func validateItemAsync(_ item: any ROMItem, data: Data) async -> ValidationResult {
+        let actualChecksums = await (validator as? MAMEROMValidator)?.computeChecksumsAsync(for: data) ?? validator.computeChecksums(for: data)
+        let expectedChecksums = item.checksums
+        
+        var errors: [String] = []
+        var isValid = true
+        
+        if UInt64(data.count) != item.size {
+            errors.append("Size mismatch: expected \(item.size), got \(data.count)")
+            isValid = false
+        }
+        
+        if let expectedCRC = expectedChecksums.crc32,
+           let actualCRC = actualChecksums.crc32,
+           expectedCRC.lowercased() != actualCRC.lowercased() {
+            errors.append("CRC32 mismatch")
+            isValid = false
+        }
+        
+        if let expectedSHA1 = expectedChecksums.sha1,
+           let actualSHA1 = actualChecksums.sha1,
+           expectedSHA1.lowercased() != actualSHA1.lowercased() {
+            errors.append("SHA1 mismatch")
+            isValid = false
+        }
+        
+        return ValidationResult(
+            isValid: isValid,
+            actualChecksums: actualChecksums,
+            expectedChecksums: expectedChecksums,
+            sizeMismatch: UInt64(data.count) != item.size,
+            errors: errors
+        )
     }
     
     private func scanFile(_ url: URL) async -> MAMEScannedGame? {
@@ -315,6 +435,37 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
             foundItems: foundItems,
             missingItems: missingItems
         )
+    }
+}
+
+// MARK: - AsyncSemaphore Helper
+
+private actor AsyncSemaphore {
+    private var count: Int
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+    
+    init(limit: Int) {
+        self.count = limit
+    }
+    
+    func wait() async {
+        if count > 0 {
+            count -= 1
+            return
+        }
+        
+        await withCheckedContinuation { continuation in
+            waiters.append(continuation)
+        }
+    }
+    
+    func signal() {
+        if let waiter = waiters.first {
+            waiters.removeFirst()
+            waiter.resume()
+        } else {
+            count += 1
+        }
     }
 }
 

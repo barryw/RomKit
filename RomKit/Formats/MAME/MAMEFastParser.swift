@@ -95,27 +95,20 @@ public class MAMEFastParser {
     
     /// Parse XML in parallel chunks (faster for large files)
     public func parseXMLParallel(data: Data) async throws -> MAMEDATFile {
-        // Split XML into chunks at machine boundaries
-        // Parse each chunk in parallel
-        // Merge results
+        let processorCount = ProcessInfo.processInfo.activeProcessorCount
+        let chunks = try splitXMLAtMachineBoundaries(data: data, targetChunks: processorCount)
         
-        let chunkSize = data.count / ProcessInfo.processInfo.activeProcessorCount
-        var chunks: [Data] = []
-        
-        // Find machine boundaries for clean splits
-        // ... implementation ...
-        
-        // Parse chunks in parallel
-        let games = await withTaskGroup(of: [MAMEGame].self) { group in
+        let games = try await withThrowingTaskGroup(of: [MAMEGame].self) { group in
             for chunk in chunks {
                 group.addTask {
-                    // Parse chunk
-                    return []  // TODO: Implement chunk parsing
+                    try self.parseXMLChunk(data: chunk)
                 }
             }
             
             var allGames: [MAMEGame] = []
-            for await chunkGames in group {
+            allGames.reserveCapacity(50000)
+            
+            for try await chunkGames in group {
                 allGames.append(contentsOf: chunkGames)
             }
             return allGames
@@ -132,6 +125,65 @@ public class MAMEFastParser {
             games: games,
             metadata: metadata
         )
+    }
+    
+    private func splitXMLAtMachineBoundaries(data: Data, targetChunks: Int) throws -> [Data] {
+        guard targetChunks > 0 else { return [data] }
+        
+        let xmlString = String(data: data, encoding: .utf8) ?? ""
+        var chunks: [Data] = []
+        
+        let endMachinePattern = "</machine>"
+        let endGamePattern = "</game>"
+        
+        var headerEnd = 0
+        if let datainfoRange = xmlString.range(of: "</datafile>") {
+            headerEnd = xmlString.distance(from: xmlString.startIndex, to: datainfoRange.lowerBound)
+        } else if let mameconfigRange = xmlString.range(of: "</mame>") {
+            headerEnd = xmlString.distance(from: xmlString.startIndex, to: mameconfigRange.lowerBound)
+        }
+        
+        let header = String(xmlString.prefix(headerEnd))
+        let footer = xmlString.hasSuffix("</datafile>") ? "</datafile>" : "</mame>"
+        
+        let approximateChunkSize = xmlString.count / targetChunks
+        var currentPos = headerEnd
+        let endPos = xmlString.count - footer.count
+        
+        while currentPos < endPos {
+            var chunkEnd = min(currentPos + approximateChunkSize, endPos)
+            
+            if chunkEnd < endPos {
+                let searchStart = xmlString.index(xmlString.startIndex, offsetBy: chunkEnd)
+                let searchEnd = xmlString.index(xmlString.startIndex, offsetBy: min(chunkEnd + 10000, endPos))
+                let searchRange = searchStart..<searchEnd
+                
+                if let machineEnd = xmlString.range(of: endMachinePattern, range: searchRange) {
+                    chunkEnd = xmlString.distance(from: xmlString.startIndex, to: machineEnd.upperBound)
+                } else if let gameEnd = xmlString.range(of: endGamePattern, range: searchRange) {
+                    chunkEnd = xmlString.distance(from: xmlString.startIndex, to: gameEnd.upperBound)
+                }
+            }
+            
+            let chunkStartIndex = xmlString.index(xmlString.startIndex, offsetBy: currentPos)
+            let chunkEndIndex = xmlString.index(xmlString.startIndex, offsetBy: chunkEnd)
+            let chunkContent = String(xmlString[chunkStartIndex..<chunkEndIndex])
+            
+            let fullChunk = header + chunkContent + footer
+            if let chunkData = fullChunk.data(using: .utf8) {
+                chunks.append(chunkData)
+            }
+            
+            currentPos = chunkEnd
+        }
+        
+        return chunks.isEmpty ? [data] : chunks
+    }
+    
+    private func parseXMLChunk(data: Data) throws -> [MAMEGame] {
+        let parser = OptimizedXMLParser()
+        let datFile = try parser.parse(data: data)
+        return datFile.games.compactMap { $0 as? MAMEGame }
     }
     
     // MARK: - Binary Format Support
