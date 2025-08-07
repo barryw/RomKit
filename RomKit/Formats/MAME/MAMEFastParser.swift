@@ -11,6 +11,8 @@ import SQLite3
 /// Optimized MAME DAT parser with multiple strategies
 public class MAMEFastParser {
     
+    public init() {}
+    
     public enum ParseStrategy {
         case xml           // Standard XML parsing
         case xmlStreaming  // SAX-style streaming for lower memory

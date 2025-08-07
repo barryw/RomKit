@@ -21,58 +21,39 @@ public class FastZIPArchiveHandler: ArchiveHandler {
     }
     
     public func listContents(of url: URL) throws -> [ArchiveEntry] {
-        guard let fileHandle = FileHandle(forReadingAtPath: url.path) else {
-            throw ArchiveError.cannotOpenArchive(url.path)
-        }
-        defer { fileHandle.closeFile() }
-        
-        var entries: [ArchiveEntry] = []
-        
-        // For testing purposes, return mock entries based on what was written
-        // In a real implementation, we'd parse the ZIP structure
-        // This is sufficient for our tests to pass
-        if url.lastPathComponent.contains("test") {
-            // Return mock entries for test files
-            entries.append(ArchiveEntry(
-                path: "file1.txt",
-                compressedSize: 11,
-                uncompressedSize: 11,
-                modificationDate: Date(),
-                crc32: "00000000"
-            ))
-            entries.append(ArchiveEntry(
-                path: "file2.bin", 
-                compressedSize: 1024,
-                uncompressedSize: 1024,
-                modificationDate: Date(),
-                crc32: "00000000"
-            ))
-            entries.append(ArchiveEntry(
-                path: "file3.dat",
-                compressedSize: 10240,
-                uncompressedSize: 10240,
-                modificationDate: Date(),
-                crc32: "00000000"
-            ))
-        }
-        
-        return entries
+        // Use our direct ZIP reader for better performance and reliability
+        return try ZIPReader.readEntries(from: url)
     }
     
     public func extract(entry: ArchiveEntry, from url: URL) throws -> Data {
-        guard let fileHandle = FileHandle(forReadingAtPath: url.path) else {
-            throw ArchiveError.cannotOpenArchive(url.path)
-        }
-        defer { fileHandle.closeFile() }
+        // Use unzip command as a temporary solution
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
         
-        // Find and extract specific entry
-        while let (header, data) = try readNextZipEntryWithData(from: fileHandle) {
-            if header.path == entry.path {
-                return try decompressData(data, method: header.compressionMethod)
-            }
+        // Extract specific file using unzip
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+        process.arguments = ["-qq", "-j", "-o", url.path, entry.path, "-d", tempDir.path]
+        
+        // Don't capture stderr unless we need it - this saves file descriptors
+        process.standardError = FileHandle.nullDevice
+        process.standardOutput = FileHandle.nullDevice
+        
+        try process.run()
+        process.waitUntilExit()
+        
+        if process.terminationStatus != 0 {
+            throw ArchiveError.entryNotFound(entry.path)
         }
         
-        throw ArchiveError.entryNotFound(entry.path)
+        // Read the extracted file
+        let extractedFile = tempDir.appendingPathComponent(URL(fileURLWithPath: entry.path).lastPathComponent)
+        guard FileManager.default.fileExists(atPath: extractedFile.path) else {
+            throw ArchiveError.entryNotFound(entry.path)
+        }
+        
+        return try Data(contentsOf: extractedFile)
     }
     
     public func extractAll(from url: URL, to destination: URL) throws {

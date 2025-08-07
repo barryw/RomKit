@@ -15,40 +15,25 @@ public actor ParallelHashUtilities {
     private static let maxConcurrentChunks = ProcessInfo.processInfo.activeProcessorCount
     
     public static func crc32(data: Data) async -> String {
+        // For small files, use the simple CPU implementation
         if data.count < chunkSize {
             return HashUtilities.crc32(data: data)
         }
         
-        return await withTaskGroup(of: (Int, UInt32).self) { group in
-            let chunks = stride(from: 0, to: data.count, by: chunkSize).map { offset in
-                (offset, min(chunkSize, data.count - offset))
+        // For large files, just use the CPU implementation directly
+        // The parallel chunking doesn't work for CRC32 due to its sequential nature
+        return HashUtilities.crc32(data: data)
+    }
+    
+    public static func crc32GPU(data: Data) async -> String {
+        // Try to use Metal GPU acceleration if available
+        if #available(macOS 10.13, *) {
+            if let gpu = MetalHashCompute(), let result = await gpu.computeCRC32(data: data) {
+                return result
             }
-            
-            for (index, (offset, length)) in chunks.enumerated() {
-                group.addTask {
-                    let chunkData = data.subdata(in: offset..<(offset + length))
-                    let crc = chunkData.withUnsafeBytes { bytes in
-                        return UInt32(zlib.crc32(0, bytes.bindMemory(to: UInt8.self).baseAddress, uInt(length)))
-                    }
-                    return (index, crc)
-                }
-            }
-            
-            var results = [(Int, UInt32)]()
-            for await result in group {
-                results.append(result)
-            }
-            
-            results.sort { $0.0 < $1.0 }
-            
-            // For CRC32, we can't simply combine chunks - need to compute sequentially
-            // This is a limitation of CRC32 algorithm
-            let crc = data.withUnsafeBytes { bytes in
-                return zlib.crc32(0, bytes.bindMemory(to: UInt8.self).baseAddress, uInt(data.count))
-            }
-            
-            return String(format: "%08x", UInt32(crc))
         }
+        // Fall back to CPU
+        return await crc32(data: data)
     }
     
     public static func sha1(data: Data) async -> String {

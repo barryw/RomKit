@@ -11,13 +11,26 @@ let package = Package(
         .library(
             name: "RomKit",
             targets: ["RomKit"]),
+        .executable(
+            name: "romkit",
+            targets: ["RomKitCLI"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0")
+    ],
     targets: [
         .target(
             name: "RomKit",
             dependencies: [],
             path: "RomKit"
+        ),
+        .executableTarget(
+            name: "RomKitCLI",
+            dependencies: [
+                "RomKit",
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ],
+            path: "RomKitCLI"
         ),
         .testTarget(
             name: "RomKitTests",

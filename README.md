@@ -1,9 +1,10 @@
 # RomKit
 
-A high-performance Swift library for managing ROM collections, with comprehensive support for MAME and other ROM formats.
+A high-performance Swift library and CLI for managing ROM collections, with comprehensive support for MAME and other ROM formats.
 
 ## Features
 
+### Library
 - **Industry-Standard Logiqx DAT Support** (Recommended)
 - MAME XML format support (legacy)
 - NoIntro and Redump format support
@@ -12,6 +13,16 @@ A high-performance Swift library for managing ROM collections, with comprehensiv
 - Comprehensive MAME inheritance handling (BIOS, devices, parent/clone)
 - Native zlib compression support
 - Optimized parsing with caching
+
+### CLI Tool
+- 🔍 **Analyze** - Verify ROM collections against DAT files
+- 🔨 **Rebuild** - Reconstruct ROM sets from multiple sources
+- 🗄️ **Index Management** - SQLite-based ROM indexing for fast multi-source lookups
+- 🔎 **Smart Search** - Find ROMs by name or CRC32 with fuzzy matching
+- 📊 **JSON Pipeline** - Unix-style composability for automation
+- ⚡ **GPU Acceleration** - Metal acceleration for hash computation
+- 📈 **Progress Tracking** - Real-time progress and ETA
+- 🔁 **Deduplication** - Track and manage duplicate ROMs across sources
 
 ## DAT File Formats
 
@@ -82,6 +93,34 @@ print("Complete games: \(report.completeGames.count)")
 print("Incomplete games: \(report.incompleteGames.count)")
 ```
 
+### ROM Index Management
+
+```swift
+import RomKit
+
+// Initialize index manager
+let indexManager = try await ROMIndexManager()
+
+// Add sources to index
+try await indexManager.addSource(URL(fileURLWithPath: "/path/to/roms"))
+try await indexManager.addSource(URL(fileURLWithPath: "/mnt/nas/roms"))
+
+// Search for ROMs
+if let rom = await indexManager.findROM(crc32: "8e68533e") {
+    print("Found: \(rom.name) in \(rom.locations.count) location(s)")
+}
+
+// Search by name with fuzzy matching
+let results = await indexManager.findByName(pattern: "%pacman%")
+for result in results {
+    print("\(result.name): \(result.crc32 ?? "unknown")")
+}
+
+// Find duplicates
+let duplicates = await indexManager.findDuplicates(minCopies: 3)
+print("Found \(duplicates.count) ROMs with 3+ copies")
+```
+
 ### Generic Format Support
 
 ```swift
@@ -135,12 +174,58 @@ The bundled DAT achieves 7.6:1 compression ratio, making it practical to include
 
 ## Installation
 
-### Swift Package Manager
+### CLI Tool
+
+```bash
+# Clone and build
+git clone https://github.com/yourusername/RomKit.git
+cd RomKit
+swift build -c release --product romkit
+
+# Install system-wide (optional)
+sudo cp .build/release/romkit /usr/local/bin/
+
+# Or use directly
+./.build/release/romkit --help
+```
+
+### Swift Package Manager (Library)
 
 ```swift
 dependencies: [
     .package(url: "https://github.com/yourusername/RomKit.git", from: "1.0.0")
 ]
+```
+
+## CLI Usage
+
+See [CLI Documentation](Documentation/CLI.md) for complete command reference.
+
+### Quick Examples
+
+```bash
+# Analyze ROM collection
+romkit analyze ~/mame/roms ~/mame/mame0256.xml --show-progress --gpu
+
+# Index ROM directories for fast searching
+romkit index add ~/mame/roms --show-progress
+romkit index add /mnt/nas/roms
+romkit index stats  # View index statistics
+
+# Search indexed ROMs
+romkit index find "street fighter" --fuzzy
+romkit index find 8e68533e  # Search by CRC32
+
+# Rebuild complete sets from multiple sources
+romkit rebuild ~/mame/mame0256.xml ~/mame/output \
+  --source ~/downloads \
+  --source /mnt/nas/roms \
+  --show-progress
+
+# JSON pipeline for targeted rebuild
+romkit analyze ~/mame/roms ~/mame/mame0256.xml --json | \
+  jq '.incomplete + .broken' | \
+  romkit rebuild ~/mame/mame0256.xml ~/mame/fixed --from-analysis -
 ```
 
 ## Contributing

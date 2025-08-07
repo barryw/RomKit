@@ -266,35 +266,3 @@ public class MetalHashCompute {
     """
 }
 
-// Extension to integrate with existing hash utilities
-@available(macOS 10.13, iOS 11.0, *)
-public extension ParallelHashUtilities {
-    
-    static let gpuCompute = MetalHashCompute()
-    
-    static func crc32GPU(data: Data) async -> String {
-        if let gpu = gpuCompute, let result = await gpu.computeCRC32(data: data) {
-            return result
-        }
-        return await crc32(data: data)
-    }
-    
-    static func sha256GPU(data: Data) async -> String {
-        if let gpu = gpuCompute, let result = await gpu.computeSHA256(data: data) {
-            return result
-        }
-        return await sha256(data: data)
-    }
-    
-    static func computeAllHashesGPU(data: Data) async -> MultiHash {
-        if let gpu = gpuCompute, let result = await gpu.computeAllHashes(data: data) {
-            return MultiHash(
-                crc32: result.crc32,
-                sha1: result.sha1,
-                sha256: result.sha256,
-                md5: result.md5
-            )
-        }
-        return await computeAllHashes(data: data)
-    }
-}
