@@ -37,7 +37,10 @@ for (size, label) in testSizes {
     let cpuTimeStr = String(format: "%.2f", cpuTime)
     let gpuTimeStr = String(format: "%.2f", gpuTime)
     let speedupStr = String(format: "%.2fx", speedup)
-    print("\(label.padding(toLength: 10, withPad: " ", startingAt: 0)) | \(cpuTimeStr.padding(toLength: 15, withPad: " ", startingAt: 0)) | \(gpuTimeStr.padding(toLength: 15, withPad: " ", startingAt: 0)) | \(winner) (\(speedupStr))")
+    let labelPadded = label.padding(toLength: 10, withPad: " ", startingAt: 0)
+    let cpuPadded = cpuTimeStr.padding(toLength: 15, withPad: " ", startingAt: 0)
+    let gpuPadded = gpuTimeStr.padding(toLength: 15, withPad: " ", startingAt: 0)
+    print("\(labelPadded) | \(cpuPadded) | \(gpuPadded) | \(winner) (\(speedupStr))")
 }
 
 print(String(repeating: "-", count: 60))

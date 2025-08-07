@@ -73,13 +73,13 @@ public struct ZIPReader {
         // Search for EOCD signature (limiting search to last 65KB + 22 bytes)
         let searchStart = max(0, data.count - 65557)
         
-        for i in stride(from: data.count - 22, through: searchStart, by: -1) {
+        for offset in stride(from: data.count - 22, through: searchStart, by: -1) {
             let signature = data.withUnsafeBytes { bytes in
-                bytes.loadLittleEndian(fromByteOffset: i, as: UInt32.self)
+                bytes.loadLittleEndian(fromByteOffset: offset, as: UInt32.self)
             }
             
             if signature == endOfCentralDirectorySignature {
-                return i
+                return offset
             }
         }
         

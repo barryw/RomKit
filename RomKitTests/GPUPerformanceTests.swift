@@ -145,8 +145,8 @@ struct GPUPerformanceTests {
         
         // Create many entries for performance testing
         var entries: [(name: String, data: Data)] = []
-        for i in 0..<100 {
-            entries.append(("file\(i).dat", Data(repeating: UInt8(i % 256), count: 10240)))
+        for index in 0..<100 {
+            entries.append(("file\(index).dat", Data(repeating: UInt8(index % 256), count: 10240)))
         }
         
         // Measure async creation time
@@ -173,9 +173,9 @@ struct GPUPerformanceTests {
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         
         // Create test files
-        for i in 0..<10 {
-            let filePath = tempDir.appendingPathComponent("file\(i).zip")
-            try Data(repeating: UInt8(i), count: 1024).write(to: filePath)
+        for index in 0..<10 {
+            let filePath = tempDir.appendingPathComponent("file\(index).zip")
+            try Data(repeating: UInt8(index), count: 1024).write(to: filePath)
         }
         
         // Scan directory
@@ -282,13 +282,13 @@ struct GPUPerformanceTests {
                 <description>Test Description</description>
                 <version>1.0</version>
             </header>
-            \((0..<100).map { i in
+            \((0..<100).map { index in
                 """
-                <machine name="game\(i)">
-                    <description>Game \(i)</description>
+                <machine name="game\(index)">
+                    <description>Game \(index)</description>
                     <year>2024</year>
                     <manufacturer>Test</manufacturer>
-                    <rom name="rom\(i).bin" size="1024" crc="deadbeef"/>
+                    <rom name="rom\(index).bin" size="1024" crc="deadbeef"/>
                 </machine>
                 """
             }.joined(separator: "\n"))

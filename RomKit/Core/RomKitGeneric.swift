@@ -29,15 +29,15 @@ public class RomKitGeneric {
         let handler: any ROMFormatHandler
         
         if let formatId = format {
-            guard let h = registry.handler(for: formatId) else {
+            guard let hdlr = registry.handler(for: formatId) else {
                 throw RomKitGenericError.unsupportedFormat(formatId)
             }
-            handler = h
+            handler = hdlr
         } else {
-            guard let h = try registry.detectFormat(from: url) else {
+            guard let hdlr = try registry.detectFormat(from: url) else {
                 throw RomKitGenericError.formatDetectionFailed
             }
-            handler = h
+            handler = hdlr
         }
         
         let parser = handler.createParser()
@@ -53,15 +53,15 @@ public class RomKitGeneric {
         let handler: any ROMFormatHandler
         
         if let formatId = format {
-            guard let h = registry.handler(for: formatId) else {
+            guard let hdlr = registry.handler(for: formatId) else {
                 throw RomKitGenericError.unsupportedFormat(formatId)
             }
-            handler = h
+            handler = hdlr
         } else {
-            guard let h = registry.detectFormat(from: data) else {
+            guard let hdlr = registry.detectFormat(from: data) else {
                 throw RomKitGenericError.formatDetectionFailed
             }
-            handler = h
+            handler = hdlr
         }
         
         let parser = handler.createParser()
