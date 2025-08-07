@@ -22,7 +22,10 @@ let package = Package(
         .target(
             name: "RomKit",
             dependencies: [],
-            path: "RomKit"
+            path: "RomKit",
+            resources: [
+                .process("Utilities/HashCompute.metal")
+            ]
         ),
         .executableTarget(
             name: "RomKitCLI",

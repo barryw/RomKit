@@ -421,7 +421,7 @@ struct Rebuild: AsyncParsableCommand {
             
             return try handler.extract(entry: entry, from: archivePath)
             
-        case .remote(let url, let credentials):
+        case .remote(_, _):
             // TODO: Implement network fetching
             throw ArchiveError.unsupportedFormat("Remote sources not yet implemented")
         }

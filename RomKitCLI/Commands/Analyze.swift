@@ -148,7 +148,7 @@ struct Analyze: AsyncParsableCommand {
         
         return DATFile(
             name: mameDatFile.metadata.name,
-            description: mameDatFile.metadata.description ?? "",
+            description: mameDatFile.metadata.description,
             version: mameDatFile.formatVersion,
             author: nil,
             games: games

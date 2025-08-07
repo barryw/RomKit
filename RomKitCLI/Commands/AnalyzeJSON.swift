@@ -214,11 +214,11 @@ extension Rebuild {
         
         for gameName in games {
             // Check if we have any ROMs for this game
-            if let incomplete = analysis.incomplete[gameName] {
+            if analysis.incomplete[gameName] != nil {
                 print("🔄 Rebuilding incomplete game: \(gameName)")
                 // Use incomplete.foundROMs to know what we already have
                 // Use incomplete.missingROMs to know what to look for
-            } else if let broken = analysis.broken[gameName] {
+            } else if analysis.broken[gameName] != nil {
                 print("🔧 Fixing broken game: \(gameName)")
                 // Need to replace broken ROMs
             } else if analysis.missing.contains(gameName) {

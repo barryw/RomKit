@@ -64,7 +64,7 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
                 
                 // Fall back to current behavior
                 let scanner = ConcurrentScanner()
-                let results = try await scanner.scanDirectory(
+                _ = try await scanner.scanDirectory(
                     at: romURL,
                     computeHashes: true
                 )
