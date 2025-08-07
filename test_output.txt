@@ -1,0 +1,1128 @@
+Test Suite 'All tests' started at 2025-08-07 13:08:19.453.
+Test Suite 'All tests' passed at 2025-08-07 13:08:19.454.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+􀟈  Test run started.
+􀄵  Testing Library Version: 124.4
+􀄵  Target Platform: arm64e-apple-macos14.0
+􀟈  Suite ParserPerformanceTests started.
+􀟈  Suite BIOSTests started.
+􀟈  Suite RealROMTests started.
+􀟈  Suite SyntheticROMTests started.
+􀟈  Suite "CPU vs GPU Performance Comparison" started.
+􀟈  Suite IntegrationTests started.
+􀟈  Suite "Simple Performance Comparison" started.
+􀟈  Suite CallbackTests started.
+􀟈  Suite ModernMAMETests started.
+􀟈  Suite ComprehensiveROMTests started.
+􀟈  Suite DATFormatComparisonTests started.
+􀟈  Suite ROMStorageTests started.
+􀟈  Suite LogiqxPrimaryFormatTests started.
+􀟈  Suite MAMEComplexityTests started.
+􀟈  Suite BundledDATTests started.
+􀟈  Suite "GPU and Performance Optimization Tests" started.
+􀟈  Suite "Index Performance Tests" started.
+􀟈  Suite "Incomplete ZIP Archive Tests" started.
+􀟈  Suite RomKitTests started.
+􀟈  Test testBinaryConversion() started.
+􀟈  Test testRealROMScanning() started.
+􀟈  Test testBIOSDetection() started.
+􀟈  Test testRealMAMEDATLoading() started.
+􀟈  Test testBIOSROMCategories() started.
+􀟈  Test testSpecificGameValidation() started.
+􀟈  Test testRealDATPerformance() started.
+􀟈  Test testSyntheticROMGeneration() started.
+􀟈  Test testStorageEfficiency() started.
+􀟈  Test testRequiredROMs() started.
+􀟈  Suite MAMEInheritanceTests started.
+􀟈  Test testMemoryUsage() started.
+􀟈  Test testBIOSAndDeviceAvailability() started.
+􀟈  Test testMergeScenarios() started.
+􀟈  Test testScanningWithBIOS() started.
+􀟈  Test testCompleteROMSet() started.
+􀟈  Test testXMLParsingPerformance() started.
+􀟈  Test "Memory efficiency comparison" started.
+􀟈  Test "Directory scanning: Sequential vs Concurrent" started.
+􀟈  Test testBIOSDependencies() started.
+􀟈  Test testParentCloneRelationships() started.
+􀟈  Test testDeterministicGeneration() started.
+􀟈  Test testRebuildFromLooseROMs() started.
+􀟈  Test testROMDetails() started.
+􀟈  Test testROMVerification() started.
+􀟈  Test "Archive operations: Sequential vs Parallel" started.
+􀟈  Test testRealMAMEDATParser() started.
+􀟈  Test "Real-world scenario: ROM collection processing" started.
+􀟈  Test testRomKitWithRealDAT() started.
+􀟈  Test "Measure real-world ROM processing performance" started.
+􀟈  Test testValidatorWithRealChecksums() started.
+􀟈  Test testNonMergedSetRebuild() started.
+􀟈  Test "Compare sequential vs parallel archive operations" started.
+􀟈  Test "Compare CPU vs GPU hash performance" started.
+􀟈  Test testGameMetadata() started.
+􀟈  Test testZeroByteROM() started.
+􀟈  Test "Hash computation performance: CPU vs GPU across file sizes" started.
+􀟈  Test testDeviceRefs() started.
+􀟈  Test testParentCloneRelationships() started.
+􀟈  Test testClosureCallbacks() started.
+􀟈  Test testZIPArchiveCreation() started.
+􀟈  Test testModernMAMEFormat() started.
+􀟈  Test testMissingROMDetection() started.
+􀟈  Test testDisplay() started.
+􀟈  Test testDuplicateROMs() started.
+􀟈  Test testEventTypes() started.
+􀟈  Test testProgressCalculation() started.
+􀟈  Test testMergedROMs() started.
+􀟈  Test testPerformanceWithRealDAT() started.
+􀟈  Test testSamples() started.
+􀟈  Test testFormatComparison() started.
+􀟈  Test testPerfectROMValidation() started.
+􀟈  Test testDipSwitches() started.
+􀟈  Test testDelegateCallbacks() started.
+􀟈  Test testMergedSetRebuild() started.
+􀟈  Test testCancellation() started.
+􀟈  Test testSound() started.
+􀟈  Test testFeatures() started.
+􀟈  Test testCorruptedROMDetection() started.
+􀟈  Test testChips() started.
+􀟈  Test testWithRealROMs() started.
+􀟈  Test testSplitSetRebuild() started.
+􀟈  Test testDriver() started.
+􀟈  Test testAutoFormatDetection() started.
+􀟈  Test testRebuildFromLooseROMs() started.
+􀟈  Test testAsyncStreamCallbacks() started.
+􀟈  Test testMergedSetCreation() started.
+􀟈  Test testSplitSetCreation() started.
+􀟈  Test testNonMergedSetCreation() started.
+􀟈  Test testInput() started.
+Real ROM scanning disabled. Set ROMKIT_TEST_ROM_PATH to enable.
+Skipping: Real ROM scanning not enabled
+Real ROM scanning disabled. Set ROMKIT_TEST_ROM_PATH to enable.
+Real ROM scanning disabled. Set ROMKIT_TEST_ROM_PATH to enable.
+Skipping: Real ROM scanning not enabled
+Loading bundled MAME DAT...
+Generated ROM:
+  Size: 1024 bytes
+Real ROM scanning disabled. Set ROMKIT_TEST_ROM_PATH to enable.
+Skipping: Real ROM scanning not enabled
+􀟈  Test testAutoDetectionPrefersLogiqx() started.
+􀟈  Test testRomKitDefaultsToAutoDetect() started.
+􀟈  Test testExplicitLogiqxLoading() started.
+􀟈  Test testComplexCloneChains() started.
+􀟈  Test testGenericInterfaceShowsFormat() started.
+􀟈  Test testGamesWithSamples() started.
+􀟈  Test testLogiqxIsPreferredFormat() started.
+􀟈  Test testNeoGeoBIOSDependencies() started.
+􀟈  Test testBIOSAsGame() started.
+􀟈  Test testPerformanceComparison() started.
+Real ROM scanning disabled. Set ROMKIT_TEST_ROM_PATH to enable.
+Skipping: Real ROM scanning not enabled
+􀟈  Test testCPS2DeviceDependencies() started.
+􀟈  Test testComprehensiveSet() started.
+􀟈  Test testBootlegsAndHacks() started.
+􀟈  Test testNamcoMultiDeviceGames() started.
+􀟈  Test testSyntheticGenerationPerformance() started.
+􀟈  Test testBundledDATWithRomKit() started.
+􀟈  Test testValidationWithDependencies() started.
+ROM Set Structure:
+  BIOS: ["testbios"]
+  Games: ["parentgame", "clonegame"]
+􀟈  Test testNoExternalDependencies() started.
+􀟈  Test testLoadBundledCompressedDAT() started.
+􀟈  Test "Parallel ZIP archive creation" started.
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Loading bundled DAT file...
+Converting to binary format...
+Memory Usage:
+  Before: 18 MB
+  After: 25 MB
+  Used: 6 MB
+  Games: 5
+  Per game: 1438515 bytes
+􀟈  Test testPerformanceWithBundledDAT() started.
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+ROM Categories for Metal Slug:
+  BIOS: 31 ROMs
+  Game: 9 ROMs
+Metal Slug requires 9 game ROMs and 31 BIOS ROMs
+􀟈  Test "Metal GPU hash computation availability" started.
+􀟈  Test testParseBundledDAT() started.
+􀟈  Test testCompressionStats() started.
+􀟈  Test "GPU CRC32 computation correctness" started.
+􀟈  Test testIndexPerformanceComparison() started.
+􀟈  Test "Concurrent directory scanning" started.
+􀟈  Test "GPU multi-hash computation" started.
+􀟈  Test testSQLiteScalability() started.
+􀟈  Test "Duplicate file detection" started.
+To run Metal Slug, you need 40 total ROM files
+􀟈  Test "Parallel XML parsing" started.
+􀟈  Test "Async file read/write operations" started.
+􀟈  Test "Parallel ZIP async creation performance" started.
+􀟈  Test "End-to-end performance optimization test" started.
+Parsing Performance:
+  Standard: 0.0010 seconds
+  Optimized: 0.0004 seconds
+  Speedup: 2.4x
+􀟈  Test "GPU hash performance comparison" started.
+􀟈  Test "Streaming file read" started.
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+
+🎮 Real-World ROM Processing Performance
+==================================================
+Creating test ROM files...
+Generated: rom_1234abcd_90507117-C296-4B2D-A211-6FDAF6D0AFE5.bin (was: testbios/bios_main.bin)
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+
+🏁 CPU vs GPU Hash Performance Comparison
+==================================================
+
+📦 Sequential vs Parallel Archive Performance
+==================================================
+Size       | CPU (ms)  | GPU (ms)  | Winner   
+--------------------------------------------------
+Format Comparison:
+  XML size: 9 KB
+  Binary size: 0 KB
+  Compression: 1.9%
+  Conversion time: 0.0011 seconds
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Generated: rom_5678ef01_AD1B00A0-BFB8-41F5-B8DA-348F9AA3D8FE.bin (was: testbios/bios_sub.bin)
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Zero-byte ROM handled: ✓
+Loading Performance:
+  XML: 0.0013 seconds
+  Binary: 0.0001 seconds
+  Speedup: 9.7x
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Generated: rom_aabbccdd_27FEA278-546F-4301-B3AA-67A6311431A7.bin (was: parentgame/prog1.rom)
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+
+Sequential Processing:
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Generated: rom_11223344_750CDCC7-4865-49CF-9A0D-8ABA27986057.bin (was: parentgame/prog2.rom)
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Generated: rom_deadbeef_93D08B11-6E67-4117-B256-19E8CE1024EC.bin (was: parentgame/shared.rom)
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+  Time: 0.003s
+  Processed: 10 files
+
+Parallel Processing:
+Generated: rom_ffffffff_9DC35FF3-C62B-4247-9814-21BEA01D5445.bin (was: clonegame/prog1.rom)
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Generated: rom_11223344_9A8D5B05-E4E1-4AA9-A0CC-DA0AD14E908C.bin (was: clonegame/prog2.rom)
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Generated: rom_deadbeef_CB500CC2-BCE2-4876-A643-12F8DE9C8217.bin (was: clonegame/shared.rom)
+
+=== Testing split rebuild ===
+Results:
+  Rebuilt: 0
+  Skipped: 3
+  Failed: 0
+
+=== Testing merged rebuild ===
+Warning: CRC32 forcing temporarily disabled, generating basic ROM instead
+Results:
+  Rebuilt: 0
+  Skipped: 3
+  Failed: 0
+
+=== Testing nonMerged rebuild ===
+Results:
+  Rebuilt: 0
+  Skipped: 3
+  Failed: 0
+
+Verifying game: testbios
+  bios_main.bin: ✓ (exists)
+
+=== Storage Efficiency Comparison ===
+Format      | Files | Total Size
+------------|-------|------------
+split       |     0 | 0 bytes
+merged      |     0 | 0 bytes
+nonMerged   |     0 | 0 bytes
+  bios_sub.bin: ✓ (exists)
+
+Verifying game: parentgame
+  prog1.rom: ✓ (exists)
+  prog2.rom: ✓ (exists)
+  shared.rom: ✓ (exists)
+
+Verifying game: clonegame
+  prog1.rom: ✓ (exists)
+  prog2.rom: ✓ (exists)
+  shared.rom: ✓ (exists)
+Duplicate ROM detection: CRC matches = ✓
+Parsed 5 games in 0.0004849433898925781 seconds
+Total ROMs: 66
+Format Comparison Test
+==================================================
+  Load time: 0.10 seconds (includes decompression)
+  Decompressed size: 78 MB
+Testing Logiqx parser (primary format)...
+
+Logiqx DAT Format (Bundled):
+  Compressed size: 10 MB
+  Decompressed size: 78 MB
+Logiqx parser: 48588 games in 6.87s
+
+Generating synthetic ROMs for: dkong
+  Description: Donkey Kong (US set 1)
+    c-2j.bpr: 256 bytes, CRC: d6412358 [✗]
+    c-2k.bpr: 256 bytes, CRC: e273ede5 [✗]
+    c_5at_g.bin: 4096 bytes, CRC: b9005ac0 [✗]
+    c_5bt_g.bin: 4096 bytes, CRC: 1c97d324 [✗]
+    c_5ct_g.bin: 4096 bytes, CRC: 5ec461ec [✗]
+Logiqx parser: 48588 games in 7.02s
+    c_5et_g.bin: 4096 bytes, CRC: ba70b88b [✗]
+    l_4m_b.bin: 2048 bytes, CRC: 59f8054d [✗]
+    l_4n_b.bin: 2048 bytes, CRC: 672e4714 [✗]
+    l_4r_b.bin: 2048 bytes, CRC: feaa59ee [✗]
+    l_4s_b.bin: 2048 bytes, CRC: 20f2ef7e [✗]
+    s_3i_b.bin: 2048 bytes, CRC: 45a4ed06 [✗]
+    s_3j_b.bin: 2048 bytes, CRC: 4743fe92 [✗]
+    v-5e.bpr: 256 bytes, CRC: b869b8f5 [✗]
+    v_3pt.bin: 2048 bytes, CRC: 15e9c5e9 [✗]
+    v_5h_b.bin: 2048 bytes, CRC: 12c8c95d [✗]
+Deleted: l_4r_b.bin
+Logiqx parser: 48588 games in 7.29s
+Loaded MAME DAT:
+  Games: 48588
+  Load time: 7.35 seconds
+Logiqx parser: 48588 games in 7.34s
+  Parse time: 7.37 seconds
+  Games: 48588
+  Rate: 6589 games/sec
+
+MAME XML Parser on Logiqx Data:
+Logiqx parser: 48588 games in 7.44s
+Logiqx parser: 48588 games in 7.44s
+Logiqx parser: 48588 games in 7.46s
+
+Generating synthetic ROMs for: puckman
+  Description: Puck Man (Japan, set 1)
+    pm1-1.7f: 32 bytes, CRC: 2fc650bd [✗]
+
+Generating synthetic ROMs for: puckman
+  Description: Puck Man (Japan, set 1)
+    pm1-2.3m: 256 bytes, CRC: 77245b66 [✗]
+    pm1-1.7f: 32 bytes, CRC: 2fc650bd [✗]
+    pm1-3.1m: 256 bytes, CRC: a9cc86bf [✗]
+    pm1-2.3m: 256 bytes, CRC: 77245b66 [✗]
+    pm1-4.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+    pm1-3.1m: 256 bytes, CRC: a9cc86bf [✗]
+    pm1-4.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+    pm1_chg1.5e: 2048 bytes, CRC: 2066a0b7 [✗]
+    pm1_chg1.5e: 2048 bytes, CRC: 2066a0b7 [✗]
+    pm1_chg2.5h: 2048 bytes, CRC: 3591b89d [✗]
+    pm1_chg2.5h: 2048 bytes, CRC: 3591b89d [✗]
+    pm1_chg3.5f: 2048 bytes, CRC: 9e39323a [✗]
+    pm1_chg3.5f: 2048 bytes, CRC: 9e39323a [✗]
+    pm1_chg4.5j: 2048 bytes, CRC: 1b1d9096 [✗]
+    pm1_chg4.5j: 2048 bytes, CRC: 1b1d9096 [✗]
+    pm1_prg1.6e: 2048 bytes, CRC: f36e88ab [✗]
+    pm1_prg1.6e: 2048 bytes, CRC: f36e88ab [✗]
+    pm1_prg2.6k: 2048 bytes, CRC: 618bd9b3 [✗]
+    pm1_prg2.6k: 2048 bytes, CRC: 618bd9b3 [✗]
+    pm1_prg3.6f: 2048 bytes, CRC: 7d177853 [✗]
+    pm1_prg4.6m: 2048 bytes, CRC: d3e8914c [✗]
+    pm1_prg3.6f: 2048 bytes, CRC: 7d177853 [✗]
+    pm1_prg5.6h: 2048 bytes, CRC: 6bf4f625 [✗]
+    pm1_prg4.6m: 2048 bytes, CRC: d3e8914c [✗]
+    pm1_prg6.6n: 2048 bytes, CRC: a948ce83 [✗]
+    pm1_prg5.6h: 2048 bytes, CRC: 6bf4f625 [✗]
+    pm1_prg7.6j: 2048 bytes, CRC: b6289b26 [✗]
+    pm1_prg6.6n: 2048 bytes, CRC: a948ce83 [✗]
+    pm1_prg7.6j: 2048 bytes, CRC: b6289b26 [✗]
+    pm1_prg8.6p: 2048 bytes, CRC: 17a88c13 [✗]
+    pm1_prg8.6p: 2048 bytes, CRC: 17a88c13 [✗]
+
+Generating synthetic ROMs for: pacman
+  Description: Pac-Man (Midway)
+    pacman.5e: 4096 bytes, CRC: 0c944964 [✗]
+    pacman.5f: 4096 bytes, CRC: 958fedf9 [✗]
+    pacman.6e: 4096 bytes, CRC: c1e6ab10 [✗]
+    pacman.6f: 4096 bytes, CRC: 1a6fb2d4 [✗]
+    pacman.6h: 4096 bytes, CRC: bcdd1beb [✗]
+    pacman.6j: 4096 bytes, CRC: 817d94e3 [✗]
+    82s123.7f: 32 bytes, CRC: 2fc650bd [✗]
+    82s126.3m: 256 bytes, CRC: 77245b66 [✗]
+    82s126.1m: 256 bytes, CRC: a9cc86bf [✗]
+    82s126.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+Logiqx parser: 48588 games in 7.68s
+Logiqx parser: 48588 games in 7.68s
+  BIOS sets: 78
+  Device sets: 6736
+  Games with 3+ dependencies: 0
+Testing optimized XML parser...
+Logiqx parser: 48588 games in 7.76s
+Would create ZIP: puckman.zip
+Would create ZIP: pacman.zip
+
+Generating synthetic ROMs for: puckman
+  Description: Puck Man (Japan, set 1)
+    pm1-1.7f: 32 bytes, CRC: 2fc650bd [✗]
+    pm1-2.3m: 256 bytes, CRC: 77245b66 [✗]
+    pm1-3.1m: 256 bytes, CRC: a9cc86bf [✗]
+    pm1-4.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+    pm1_chg1.5e: 2048 bytes, CRC: 2066a0b7 [✗]
+    pm1_chg2.5h: 2048 bytes, CRC: 3591b89d [✗]
+    pm1_chg3.5f: 2048 bytes, CRC: 9e39323a [✗]
+    pm1_chg4.5j: 2048 bytes, CRC: 1b1d9096 [✗]
+    pm1_prg1.6e: 2048 bytes, CRC: f36e88ab [✗]
+    pm1_prg2.6k: 2048 bytes, CRC: 618bd9b3 [✗]
+Received 0 progress callbacks
+Received 2 event callbacks
+    pm1_prg3.6f: 2048 bytes, CRC: 7d177853 [✗]
+    pm1_prg4.6m: 2048 bytes, CRC: d3e8914c [✗]
+    pm1_prg5.6h: 2048 bytes, CRC: 6bf4f625 [✗]
+    pm1_prg6.6n: 2048 bytes, CRC: a948ce83 [✗]
+    pm1_prg7.6j: 2048 bytes, CRC: b6289b26 [✗]
+    pm1_prg8.6p: 2048 bytes, CRC: 17a88c13 [✗]
+
+Generating synthetic ROMs for: pacman
+  Description: Pac-Man (Midway)
+    pacman.5e: 4096 bytes, CRC: 0c944964 [✗]
+    pacman.5f: 4096 bytes, CRC: 958fedf9 [✗]
+    pacman.6e: 4096 bytes, CRC: c1e6ab10 [✗]
+    pacman.6f: 4096 bytes, CRC: 1a6fb2d4 [✗]
+    pacman.6h: 4096 bytes, CRC: bcdd1beb [✗]
+    pacman.6j: 4096 bytes, CRC: 817d94e3 [✗]
+    82s123.7f: 32 bytes, CRC: 2fc650bd [✗]
+    82s126.3m: 256 bytes, CRC: 77245b66 [✗]
+    82s126.1m: 256 bytes, CRC: a9cc86bf [✗]
+    82s126.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+
+Performance Results:
+  Decompressed size: 78 MB
+  Logiqx parser:
+    Time: 7.71 seconds
+    Games: 48588
+    Rate: 6299 games/sec
+  Optimized XML parser:
+    Time: 4.28 seconds
+    Games: 48588
+    Rate: 11347 games/sec
+Skipping real ROM test - set USER_ROM_PATH to enable
+􀟈  Test testZIPWithCorruptROM() started.
+􀟈  Test testCompleteZIP() started.
+􀟈  Test testZIPWithMissingROMs() started.
+Logiqx parser: 48588 games in 7.18s
+Logiqx parser: 48588 games in 6.93s
+
+Generating synthetic ROMs for: puckman
+  Description: Puck Man (Japan, set 1)
+    pm1-1.7f: 32 bytes, CRC: 2fc650bd [✗]
+    pm1-2.3m: 256 bytes, CRC: 77245b66 [✗]
+    pm1-3.1m: 256 bytes, CRC: a9cc86bf [✗]
+    pm1-4.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+    pm1_chg1.5e: 2048 bytes, CRC: 2066a0b7 [✗]
+    pm1_chg2.5h: 2048 bytes, CRC: 3591b89d [✗]
+    pm1_chg3.5f: 2048 bytes, CRC: 9e39323a [✗]
+    pm1_chg4.5j: 2048 bytes, CRC: 1b1d9096 [✗]
+    pm1_prg1.6e: 2048 bytes, CRC: f36e88ab [✗]
+    pm1_prg2.6k: 2048 bytes, CRC: 618bd9b3 [✗]
+    pm1_prg3.6f: 2048 bytes, CRC: 7d177853 [✗]
+    pm1_prg4.6m: 2048 bytes, CRC: d3e8914c [✗]
+    pm1_prg5.6h: 2048 bytes, CRC: 6bf4f625 [✗]
+    pm1_prg6.6n: 2048 bytes, CRC: a948ce83 [✗]
+    pm1_prg7.6j: 2048 bytes, CRC: b6289b26 [✗]
+    pm1_prg8.6p: 2048 bytes, CRC: 17a88c13 [✗]
+Logiqx parser: 48588 games in 6.88s
+
+Generating synthetic ROMs for: puckman
+  Description: Puck Man (Japan, set 1)
+    pm1-1.7f: 32 bytes, CRC: 2fc650bd [✗]
+    pm1-2.3m: 256 bytes, CRC: 77245b66 [✗]
+    pm1-3.1m: 256 bytes, CRC: a9cc86bf [✗]
+    pm1-4.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+    pm1_chg1.5e: 2048 bytes, CRC: 2066a0b7 [✗]
+    pm1_chg2.5h: 2048 bytes, CRC: 3591b89d [✗]
+    pm1_chg3.5f: 2048 bytes, CRC: 9e39323a [✗]
+    pm1_chg4.5j: 2048 bytes, CRC: 1b1d9096 [✗]
+    pm1_prg1.6e: 2048 bytes, CRC: f36e88ab [✗]
+    pm1_prg2.6k: 2048 bytes, CRC: 618bd9b3 [✗]
+    pm1_prg3.6f: 2048 bytes, CRC: 7d177853 [✗]
+    pm1_prg4.6m: 2048 bytes, CRC: d3e8914c [✗]
+    pm1_prg5.6h: 2048 bytes, CRC: 6bf4f625 [✗]
+    pm1_prg6.6n: 2048 bytes, CRC: a948ce83 [✗]
+    pm1_prg7.6j: 2048 bytes, CRC: b6289b26 [✗]
+    pm1_prg8.6p: 2048 bytes, CRC: 17a88c13 [✗]
+Logiqx parser: 48588 games in 7.03s
+Logiqx parser: 48588 games in 6.91s
+Logiqx parser: 48588 games in 7.19s
+Missing ROMs detected: 0
+
+Generating synthetic ROMs for: pacman
+  Description: Pac-Man (Midway)
+    pacman.5e: 4096 bytes, CRC: 0c944964 [✗]
+    pacman.5f: 4096 bytes, CRC: 958fedf9 [✗]
+    pacman.6e: 4096 bytes, CRC: c1e6ab10 [✗]
+    pacman.6f: 4096 bytes, CRC: 1a6fb2d4 [✗]
+􀙟  Test testEmptyZIP() skipped: "Empty ZIPs cause unzip to return error"
+􀟈  Test testFileHashMatching() started.
+􀟈  Test testAuditStatistics() started.
+􀟈  Test testGameModel() started.
+􀟈  Test testMAMEDATParser() started.
+􀟈  Test testRomKitInitialization() started.
+􀟈  Test testHashUtilities() started.
+􀟈  Test testFormatRegistry() started.
+􀟈  Test testDATFileModel() started.
+    pacman.6h: 4096 bytes, CRC: bcdd1beb [✗]
+    pacman.6j: 4096 bytes, CRC: 817d94e3 [✗]
+    82s123.7f: 32 bytes, CRC: 2fc650bd [✗]
+    82s126.3m: 256 bytes, CRC: 77245b66 [✗]
+    82s126.1m: 256 bytes, CRC: a9cc86bf [✗]
+    82s126.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+MAME parser can parse Logiqx: true
+Logiqx parser can parse: true
+Format detection works correctly
+Logiqx parser: 48588 games in 7.06s
+Parent/Clone relationship: ✓
+Delegate received 0 progress updates
+Delegate received 2 events
+Logiqx parser: 48588 games in 7.24s
+Operation cancelled: true
+Rebuilt: 0, Failed: 0, Skipped: 1
+Merged Set Sizes:
+  Parent (includes clones): 14397 bytes
+  Clone: N/A (included in parent)
+
+Generating synthetic ROMs for: galaga
+  Description: Galaga (Namco rev. B)
+Split Set Sizes:
+  BIOS: 3112 bytes
+  Parent: 14397 bytes
+  Clone: 14396 bytes (smallest - only unique ROMs)
+    gg1_10.4f: 4096 bytes, CRC: dd6f1afc [✗]
+Non-Merged Set Sizes:
+  Parent (self-contained): 17501 bytes
+  Clone (self-contained): 21614 bytes (largest - has everything)
+􁁛  Test testRealROMScanning() passed after 15.587 seconds.
+􀟈  Test testComplexInheritanceChain() started.
+􀟈  Test testDeviceIdentification() started.
+􀟈  Test testMergedSetRequirements() started.
+􀟈  Test testBIOSROMRequirements() started.
+􀟈  Test testParentCloneRelationships() started.
+􀟈  Test testMissingBIOSDetection() started.
+􁁛  Test testSyntheticROMGeneration() passed after 15.588 seconds.
+􀟈  Test testDeviceROMRequirements() started.
+􀟈  Test testGalagaCloneFullInheritance() started.
+􀟈  Test testBIOSDependencies() started.
+􀟈  Test testSplitSetRequirements() started.
+􀟈  Test testStandaloneBootleg() started.
+􀟈  Test testDeviceDependencies() started.
+􀟈  Test testBIOSIdentification() started.
+􀟈  Test testNonMergedSetRequirements() started.
+􀟈  Test testCloneROMInheritance() started.
+􁁛  Test testSpecificGameValidation() passed after 15.588 seconds.
+􀟈  Test testMissingDeviceDetection() started.
+    gg1_11.4d: 4096 bytes, CRC: ad447c80 [✗]
+    gg1_1b.3p: 4096 bytes, CRC: ab036c9f [✗]
+    gg1_2b.3m: 4096 bytes, CRC: d9232240 [✗]
+    gg1_3.2m: 4096 bytes, CRC: 753ce503 [✗]
+    gg1_4b.2l: 4096 bytes, CRC: 499fcc76 [✗]
+    gg1_5b.3f: 4096 bytes, CRC: bb5caae3 [✗]
+    gg1_7b.2c: 4096 bytes, CRC: d016686b [✗]
+    gg1_9.4l: 4096 bytes, CRC: 58b2f47c [✗]
+    prom-1.1d: 256 bytes, CRC: 7a2815b4 [✗]
+    prom-2.5c: 256 bytes, CRC: 77245b66 [✗]
+    prom-3.1c: 256 bytes, CRC: 4a04bb6b [✗]
+    prom-4.2n: 256 bytes, CRC: 59b6edab [✗]
+    prom-5.5n: 32 bytes, CRC: 54603c6b [✗]
+  Parse time: 8.60 seconds
+  Games: 48588
+
+Conclusion:
+Logiqx DAT files provide:
+- 7.6:1 compression ratio (10MB compressed, 78MB decompressed)
+- Fast parsing (~4 seconds for 48k+ games)
+- Industry standard format
+- No external dependencies needed for testing
+􁁛  Test testBIOSAndDeviceAvailability() passed after 16.308 seconds.
+Logiqx parser: 48588 games in 6.93s
+
+Generating synthetic ROMs for: puckman
+  Description: Puck Man (Japan, set 1)
+    pm1-1.7f: 32 bytes, CRC: 2fc650bd [✗]
+    pm1-2.3m: 256 bytes, CRC: 77245b66 [✗]
+    pm1-3.1m: 256 bytes, CRC: a9cc86bf [✗]
+    pm1-4.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+    pm1_chg1.5e: 2048 bytes, CRC: 2066a0b7 [✗]
+    pm1_chg2.5h: 2048 bytes, CRC: 3591b89d [✗]
+    pm1_chg3.5f: 2048 bytes, CRC: 9e39323a [✗]
+    pm1_chg4.5j: 2048 bytes, CRC: 1b1d9096 [✗]
+    pm1_prg1.6e: 2048 bytes, CRC: f36e88ab [✗]
+    pm1_prg2.6k: 2048 bytes, CRC: 618bd9b3 [✗]
+    pm1_prg3.6f: 2048 bytes, CRC: 7d177853 [✗]
+    pm1_prg4.6m: 2048 bytes, CRC: d3e8914c [✗]
+    pm1_prg5.6h: 2048 bytes, CRC: 6bf4f625 [✗]
+    pm1_prg6.6n: 2048 bytes, CRC: a948ce83 [✗]
+    pm1_prg7.6j: 2048 bytes, CRC: b6289b26 [✗]
+    pm1_prg8.6p: 2048 bytes, CRC: 17a88c13 [✗]
+Logiqx parser: 48588 games in 7.28s
+Logiqx parser: 48588 games in 7.08s
+  pm1-1.7f: ✗ INVALID
+  pm1-2.3m: ✗ INVALID
+  pm1-3.1m: ✗ INVALID
+  pm1-4.4a: ✗ INVALID
+  pm1_chg1.5e: ✗ INVALID
+  pm1_chg2.5h: ✗ INVALID
+  pm1_chg3.5f: ✗ INVALID
+  pm1_chg4.5j: ✗ INVALID
+  pm1_prg1.6e: ✗ INVALID
+  pm1_prg2.6k: ✗ INVALID
+  pm1_prg3.6f: ✗ INVALID
+  pm1_prg4.6m: ✗ INVALID
+  pm1_prg5.6h: ✗ INVALID
+  pm1_prg6.6n: ✗ INVALID
+  pm1_prg7.6j: ✗ INVALID
+  pm1_prg8.6p: ✗ INVALID
+Validation infrastructure test completed - \(puckman.items.count) ROMs processed
+
+Generating synthetic ROMs for: pacman
+  Description: Pac-Man (Midway)
+    pacman.5e: 4096 bytes, CRC: 0c944964 [✗]
+    pacman.5f: 4096 bytes, CRC: 958fedf9 [✗]
+    pacman.6e: 4096 bytes, CRC: c1e6ab10 [✗]
+    pacman.6f: 4096 bytes, CRC: 1a6fb2d4 [✗]
+    pacman.6h: 4096 bytes, CRC: bcdd1beb [✗]
+    pacman.6j: 4096 bytes, CRC: 817d94e3 [✗]
+    82s123.7f: 32 bytes, CRC: 2fc650bd [✗]
+    82s126.3m: 256 bytes, CRC: 77245b66 [✗]
+    82s126.1m: 256 bytes, CRC: a9cc86bf [✗]
+    82s126.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+Logiqx parser: 48588 games in 7.08s
+Logiqx parser: 48588 games in 7.19s
+Rebuilding to split sets...
+Logiqx parser: 48588 games in 7.30s
+Logiqx parser: 48588 games in 6.99s
+Logiqx parser: 48588 games in 7.11s
+
+=== nonMerged Rebuild Results ===
+  Rebuilt: 0
+  Skipped: 48588
+  Failed: 0
+  Created files: []
+  Infrastructure test: Rebuild completed without errors
+Logiqx parser: 48588 games in 7.26s
+Rebuild Results:
+  Found ROMs: 0
+  Failed: 0
+  Skipped: 48588
+Testing Neo-Geo BIOS dependencies (synthetic ROM generation skipped)
+Scanning infrastructure test: COMPLETED - Found 0 games, 0 unknown files, 0 errors
+Testing with bundled Logiqx DAT...
+􁁛  Test testMergeScenarios() passed after 23.441 seconds.
+Logiqx parser: 48588 games in 7.11s
+
+Pac-Man family tree:
+  puckman → PARENT
+  pacman → clone of → puckman
+  puckmod → clone of → puckman
+  pacmod → clone of → puckman
+
+=== Comprehensive Test Set ===
+Testing 34 games covering:
+  - Classic arcade
+  - Neo-Geo (BIOS)
+  - CPS1/CPS2 (devices)
+  - Namco System 1 (multi-device)
+  - Edge cases
+Logiqx parser: 48588 games in 7.26s
+
+Generating synthetic ROMs for: pacman
+  Description: Pac-Man (Midway)
+    pacman.5e: 4096 bytes, CRC: 0c944964 [✗]
+    pacman.5f: 4096 bytes, CRC: 958fedf9 [✗]
+    pacman.6e: 4096 bytes, CRC: c1e6ab10 [✗]
+    pacman.6f: 4096 bytes, CRC: 1a6fb2d4 [✗]
+    pacman.6h: 4096 bytes, CRC: bcdd1beb [✗]
+    pacman.6j: 4096 bytes, CRC: 817d94e3 [✗]
+    82s123.7f: 32 bytes, CRC: 2fc650bd [✗]
+    82s126.3m: 256 bytes, CRC: 77245b66 [✗]
+    82s126.1m: 256 bytes, CRC: a9cc86bf [✗]
+    82s126.4a: 256 bytes, CRC: 3eb3a8e4 [✗]
+Logiqx parser: 48588 games in 7.17s
+Logiqx parser: 48588 games in 7.42s
+
+=== merged Rebuild Results ===
+  Rebuilt: 0
+  Skipped: 48588
+  Failed: 0
+  Created files: []
+  Infrastructure test: Rebuild completed without errors
+
+Analyzing Namco System 1 games with multiple devices:
+Skipping synthetic ROM generation for performance test
+
+Generation performance:
+  Games: 4
+  Time: 0.00 seconds
+  Rate: 500812.42 games/sec
+  Files created: 0
+Logiqx parser: 48588 games in 7.32s
+Logiqx parser: 48588 games in 7.29s
+
+dkong:
+  Samples: []
+  Sample of: none
+Logiqx parser: 48588 games in 7.16s
+
+Performance Results:
+=======================
+Logiqx DAT parsing: 7.20s
+Games parsed: 48588
+Rate: 6750 games/sec
+Can MAME parser handle Logiqx: true
+Logiqx parser: 48588 games in 7.27s
+Skipping synthetic ROM generation for validation test
+
+=== ssf2 ===
+Description: Super Street Fighter II: The New Challengers (World 931005)
+ROMs: 23
+Devices: m68000, timer, z80, 93c46_16, screen, gfxdecode, palette, speaker, qsound_hle
+Total size: 19072 KB
+Metal Slug ROM requirements:
+  Game ROMs: 43
+  BIOS ROMs: 34
+  Total: 77
+Logiqx parser: 48588 games in 7.66s
+Logiqx parser: 48588 games in 7.33s
+􁁛  Test testCompleteROMSet() passed after 31.109 seconds.
+Logiqx parser: 48588 games in 7.53s
+
+puckmanb:
+  Clone of: puckman
+  ROM of: puckman
+Neo-Geo BIOS confirmed: isBios = true
+
+Statistics:
+  Total games: 33
+  Clones: 4
+  Parents: 29
+  BIOS-dependent: 5
+  Device-dependent: 33
+  BIOS sets: 1
+  Device sets: 0
+  Total ROMs: 650
+  Total size: 292 MB
+  Average ROMs/game: 19
+Loaded bundled DAT: 78 MB
+􁁛  Test testBIOSDetection() passed after 31.462 seconds.
+􁁛  Test testMemoryUsage() passed after 31.478 seconds.
+✅ Metal GPU acceleration is available
+Logiqx parser: 48588 games in 7.58s
+
+=== split Rebuild Results ===
+  Rebuilt: 0
+  Skipped: 48588
+  Failed: 0
+  Created files: []
+  Infrastructure test: Rebuild completed without errors
+􁁛  Test testRequiredROMs() passed after 35.430 seconds.
+􁁛  Test testBIOSROMCategories() passed after 35.430 seconds.
+Compression Statistics:
+=======================
+Compressed:   10 MB
+Decompressed: 78 MB
+Ratio:        7.6:1
+Space saved:  86.8%
+
+📊 Index Performance Comparison
+Testing with 10000 ROMs
+
+🗂️ JSON-based Index:
+
+🗄️ SQLite-based Index:
+
+🔍 Directory Scanning Performance Comparison
+============================================================
+File Count   | Sequential   | Concurrent   | Speedup  
+--------------------------------------------------
+
+💾 Memory Efficiency Comparison
+============================================================
+
+Processing 10MB:
+􁁛  Test testScanningWithBIOS() passed after 35.604 seconds.
+􁁛  Test testXMLParsingPerformance() passed after 35.604 seconds.
+􁁛  Test testDeterministicGeneration() passed after 35.604 seconds.
+
+📦 Archive Operations Performance Comparison
+============================================================
+File Count   | Sequential   | Parallel     | Speedup  
+--------------------------------------------------
+􁁛  Test testBIOSDependencies() passed after 35.610 seconds.
+
+🎮 Real-World ROM Processing Performance Comparison
+============================================================
+Creating 20 test ROM files...
+
+📊 Processing Performance:
+--------------------------------------------------
+CPU/Sequential Processing:
+  Time: 0.001s
+  Files processed: 20
+
+GPU/Parallel Processing:
+􁁛  Test testROMDetails() passed after 35.813 seconds.
+􁁛  Test testRealMAMEDATParser() passed after 35.813 seconds.
+􁁛  Test testParentCloneRelationships() passed after 35.813 seconds.
+􁁛  Test testValidatorWithRealChecksums() passed after 35.813 seconds.
+􁁛  Test testRomKitWithRealDAT() passed after 35.813 seconds.
+􁁛  Test testGameMetadata() passed after 35.814 seconds.
+􁁛  Test testZeroByteROM() passed after 35.814 seconds.
+
+📊 Hash Computation Performance Comparison
+============================================================
+Size       | CPU Time     | GPU Time     | Speedup  | Winner     
+------------------------------------------------------------
+􁁛  Test testBinaryConversion() passed after 35.815 seconds.
+􁁛  Test testDeviceRefs() passed after 35.814 seconds.
+􁁛  Test testModernMAMEFormat() passed after 35.815 seconds.
+􁁛  Test testRebuildFromLooseROMs() passed after 35.815 seconds.
+􁁛  Test testStorageEfficiency() passed after 35.815 seconds.
+􁁛  Test testDisplay() passed after 35.815 seconds.
+􁁛  Test testROMVerification() passed after 35.815 seconds.
+􁁛  Test testDuplicateROMs() passed after 35.815 seconds.
+􁁛  Test testMergedROMs() passed after 35.815 seconds.
+􁁛  Test testPerformanceWithRealDAT() passed after 35.815 seconds.
+􁁛  Test testSamples() passed after 35.815 seconds.
+􁁛  Test testProgressCalculation() passed after 35.815 seconds.
+􁁛  Test testZIPArchiveCreation() passed after 35.815 seconds.
+􁁛  Test testDipSwitches() passed after 35.815 seconds.
+􁁛  Test testRealMAMEDATLoading() passed after 35.816 seconds.
+􁁛  Test testClosureCallbacks() passed after 35.815 seconds.
+􁁛  Test testSound() passed after 35.833 seconds.
+􁁛  Test testFeatures() passed after 35.833 seconds.
+􁁛  Test testRealDATPerformance() passed after 35.834 seconds.
+􁁛  Test testChips() passed after 35.833 seconds.
+􁁛  Test testWithRealROMs() passed after 35.833 seconds.
+✓ Detected CRC mismatch: expected 4a17b156, got 8a264394
+  ROM: rom1.bin, Size: 1024, CRC: fa82241d
+  ROM: rom2.bin, Size: 2048, CRC: 939dce47
+  ROM: rom3.bin, Size: 512, CRC: e17aa1f1
+✓ Successfully validated complete ZIP with all 3 ROMs
+✓ Successfully detected incomplete ZIP with 2 of 3 expected ROMs
+􁁛  Test testMissingROMDetection() passed after 35.894 seconds.
+􁁛  Test testDriver() passed after 35.894 seconds.
+􁁛  Test testAutoFormatDetection() passed after 35.895 seconds.
+􁁛  Test testParentCloneRelationships() passed after 35.895 seconds.
+􁁛  Test testDelegateCallbacks() passed after 35.895 seconds.
+􁁛  Test testMergedSetCreation() passed after 35.895 seconds.
+􁁛  Test testSplitSetCreation() passed after 35.895 seconds.
+􁁛  Test testNonMergedSetCreation() passed after 35.895 seconds.
+􁁛  Test testInput() passed after 35.895 seconds.
+Merged puckman.zip would contain:
+  - 6 puckman ROMs
+  - 6 pacman ROMs
+  - 2 shared ROMs (stored once)
+  - Total unique: 10 ROM files
+Without neogeo.zip, mslug is missing 5 BIOS ROMs
+Split mode mslug.zip contains 4 ROM files
+Also needs: neogeo.zip
+Non-merged mslug.zip would contain 9 ROM files
+Without device ZIPs, galaga is missing 2 device ROMs
+􁁛  Test testCancellation() passed after 35.913 seconds.
+􁁛  Test testAutoDetectionPrefersLogiqx() passed after 35.909 seconds.
+􁁛  Test testFormatComparison() passed after 35.913 seconds.
+􁁛  Test testPerfectROMValidation() passed after 35.913 seconds.
+􁁛  Test testNonMergedSetRebuild() passed after 35.914 seconds.
+􁁛  Test testRebuildFromLooseROMs() passed after 35.913 seconds.
+􁁛  Test testLogiqxIsPreferredFormat() passed after 35.909 seconds.
+􁁛  Test testRomKitDefaultsToAutoDetect() passed after 35.909 seconds.
+􁁛  Test testCorruptedROMDetection() passed after 35.913 seconds.
+􁁛  Test testExplicitLogiqxLoading() passed after 35.909 seconds.
+􁁛  Test testComplexCloneChains() passed after 35.909 seconds.
+􁁛  Test testMergedSetRebuild() passed after 35.914 seconds.
+􁁛  Test testGenericInterfaceShowsFormat() passed after 35.909 seconds.
+􁁛  Test testSyntheticGenerationPerformance() passed after 35.909 seconds.
+􁁛  Test testPerformanceComparison() passed after 35.909 seconds.
+􁁛  Test testNeoGeoBIOSDependencies() passed after 35.909 seconds.
+􁁛  Test testBIOSAsGame() passed after 35.909 seconds.
+􁁛  Test testLoadBundledCompressedDAT() passed after 35.909 seconds.
+􁁛  Test testComprehensiveSet() passed after 35.909 seconds.
+􁁛  Test "Parallel ZIP archive creation" passed after 35.909 seconds.
+􁁛  Test "Metal GPU hash computation availability" passed after 35.908 seconds.
+􁁛  Test testSplitSetRebuild() passed after 35.914 seconds.
+􁁛  Test testCompressionStats() passed after 35.908 seconds.
+􁁛  Test "GPU CRC32 computation correctness" passed after 35.908 seconds.
+100KB      |     0.08 | 36046.06 | CPU     
+  Time: 36.041s
+  Processed: 10 files
+
+🏆 Performance Result:
+  Speedup: 0.00x
+  ℹ️ Sequential is currently faster
+Event types received: ["scanCompleted", "scanStarted", "scanningFile", "warning"]
+􁁛  Test testZIPWithCorruptROM() passed after 23.975 seconds.
+􁁛  Test testCompleteZIP() passed after 23.974 seconds.
+􁁛  Test testZIPWithMissingROMs() passed after 23.974 seconds.
+􁁛  Test testFileHashMatching() passed after 20.979 seconds.
+􁁛  Test testAuditStatistics() passed after 20.979 seconds.
+􁁛  Test testGameModel() passed after 20.979 seconds.
+􁁛  Test testMAMEDATParser() passed after 20.979 seconds.
+􁁛  Test testRomKitInitialization() passed after 20.979 seconds.
+􁁛  Test testHashUtilities() passed after 20.979 seconds.
+􁁛  Test testFormatRegistry() passed after 20.979 seconds.
+􁁛  Test testDATFileModel() passed after 20.979 seconds.
+􁁛  Suite RealROMTests passed after 36.170 seconds.
+􁁛  Test testComplexInheritanceChain() passed after 20.581 seconds.
+􁁛  Test testDeviceIdentification() passed after 20.581 seconds.
+􁁛  Test testMergedSetRequirements() passed after 20.581 seconds.
+􁁛  Test testBIOSROMRequirements() passed after 20.581 seconds.
+􁁛  Test testParentCloneRelationships() passed after 20.581 seconds.
+􁁛  Test testMissingBIOSDetection() passed after 20.581 seconds.
+􁁛  Suite SyntheticROMTests passed after 36.170 seconds.
+􁁛  Test testDeviceROMRequirements() passed after 20.581 seconds.
+􁁛  Test testGalagaCloneFullInheritance() passed after 20.581 seconds.
+􁁛  Test testBIOSDependencies() passed after 20.581 seconds.
+􁁛  Test testSplitSetRequirements() passed after 20.581 seconds.
+􁁛  Test testStandaloneBootleg() passed after 20.581 seconds.
+􁁛  Test testDeviceDependencies() passed after 20.581 seconds.
+􁁛  Test testBIOSIdentification() passed after 20.581 seconds.
+􁁛  Test testNonMergedSetRequirements() passed after 20.581 seconds.
+􁁛  Test testCloneROMInheritance() passed after 20.581 seconds.
+􁁛  Test testMissingDeviceDetection() passed after 20.581 seconds.
+Received 2 events via async stream
+Received 0 progress updates via async stream
+􁁛  Suite BIOSTests passed after 36.274 seconds.
+􁁛  Suite ParserPerformanceTests passed after 36.274 seconds.
+Parallel XML parse time: 0.672s
+Read 3 chunks totaling 10485760 bytes
+􁁛  Suite IntegrationTests passed after 36.281 seconds.
+􁁛  Suite ComprehensiveROMTests passed after 36.283 seconds.
+􁁛  Suite ModernMAMETests passed after 36.283 seconds.
+􁁛  Test "Measure real-world ROM processing performance" passed after 36.283 seconds.
+􁁛  Test testEventTypes() passed after 36.283 seconds.
+􁁛  Suite ROMStorageTests passed after 36.284 seconds.
+􁁛  Suite DATFormatComparisonTests passed after 36.284 seconds.
+􁁛  Suite LogiqxPrimaryFormatTests passed after 36.284 seconds.
+􁁛  Test testAsyncStreamCallbacks() passed after 36.283 seconds.
+􁁛  Test "Parallel XML parsing" passed after 36.277 seconds.
+  CPU Memory Delta: 1.1 MB
+  GPU Memory Delta: 176.1 MB
+  ℹ️ CPU uses less additional memory
+
+Processing 50MB:
+􁁛  Test "Streaming file read" passed after 36.503 seconds.
+1MB        |     0.70 |   454.94 | CPU     
+Sequential: 2.00 ms
+Parallel:   36506.97 ms
+Sequential is faster for this workload
+􁁛  Suite "Incomplete ZIP Archive Tests" passed after 36.519 seconds.
+􁁛  Suite RomKitTests passed after 36.519 seconds.
+􁁛  Suite MAMEInheritanceTests passed after 36.519 seconds.
+􁁛  Test "GPU multi-hash computation" passed after 36.512 seconds.
+10           |     0.787 ms |   931.827 ms |   0.00x
+Progress: 1/10
+Progress: 2/10
+Progress: 3/10
+Progress: 4/10
+Progress: 5/10
+Progress: 6/10
+Progress: 7/10
+Progress: 8/10
+Progress: 9/10
+Progress: 10/10
+Async ZIP creation time for 100 files: 0.941s
+􁁛  Test "Compare sequential vs parallel archive operations" passed after 36.545 seconds.
+􁁛  Suite CallbackTests passed after 36.546 seconds.
+􁁛  Test "Concurrent directory scanning" passed after 36.539 seconds.
+10           |     0.757 ms |   935.425 ms |   0.00x
+CPU Time: 0.054s
+GPU Time: 0.629s
+Speedup: 0.09x
+ℹ️ GPU is slower due to simplified implementation - this is expected
+1KB        |     0.131 ms |   289.359 ms |   0.00x | 💻 CPU
+􁁛  Test "Duplicate file detection" passed after 36.675 seconds.
+􁁛  Test "Parallel ZIP async creation performance" passed after 36.675 seconds.
+10MB       |     4.94 |   166.49 | CPU     
+  CPU Memory Delta: 4.9 MB
+  GPU Memory Delta: 114.3 MB
+  ℹ️ CPU uses less additional memory
+
+Processing 100MB:
+􁁛  Test "GPU hash performance comparison" passed after 36.915 seconds.
+50           |    12.465 ms |   365.502 ms |   0.03x
+􁁛  Test "Async file read/write operations" passed after 37.167 seconds.
+50MB       |    24.27 |   455.29 | CPU     
+--------------------------------------------------
+✅ Test completed - hashes match between CPU and GPU
+􁁛  Test "Compare CPU vs GPU hash performance" passed after 37.175 seconds.
+  Time: 1.363s
+  Files processed: 20
+
+🚀 Performance Improvement: 0.00x
+ℹ️ Sequential processing is currently faster for this workload
+  CPU Memory Delta: 6.3 MB
+  GPU Memory Delta: -20.2 MB
+  ℹ️ CPU uses less additional memory
+
+============================================================
+10KB       |     0.121 ms |   165.363 ms |   0.00x | 💻 CPU
+􁁛  Suite "Simple Performance Comparison" passed after 37.181 seconds.
+􁁛  Test "Real-world scenario: ROM collection processing" passed after 37.181 seconds.
+􁁛  Test "Memory efficiency comparison" passed after 37.182 seconds.
+100KB      |     0.363 ms |     0.630 ms |   0.58x | 💻 CPU
+100          |    28.289 ms |   244.648 ms |   0.12x
+1MB        |     4.139 ms |     7.576 ms |   0.55x | 💻 CPU
+200          |     7.631 ms |    58.523 ms |   0.13x
+--------------------------------------------------
+✅ Parallel processing provides consistent benefits for archives
+Scanned 50 files in 1.287s
+Average time per file: 0.026s
+􁁛  Test "Archive operations: Sequential vs Parallel" passed after 37.277 seconds.
+50           |     5.704 ms |   761.247 ms |   0.01x
+5MB        |    14.543 ms |    25.094 ms |   0.58x | 💻 CPU
+10MB       |    28.415 ms |    24.954 ms |   1.14x | 🚀 GPU
+Logiqx parser: 48588 games in 7.39s
+
+pacland:
+  Devices: ["mc6809e", "hd63701v0", "watchdog", "screen", "gfxdecode", "palette", "speaker", "namco_cus30"]
+Logiqx parser: 48588 games in 7.34s
+
+galaga:
+  Samples: []
+  Sample of: none
+Logiqx parser: 48588 games in 7.25s
+􁁛  Test testGamesWithSamples() passed after 38.216 seconds.
+100          |     6.325 ms |   908.705 ms |   0.01x
+Logiqx parser: 48588 games in 7.81s
+50MB       |   132.561 ms |   136.094 ms |   0.97x | 💻 CPU
+Computed all hashes in 1.073s
+􁁛  Test "End-to-end performance optimization test" passed after 38.346 seconds.
+􁁛  Suite "GPU and Performance Optimization Tests" passed after 38.353 seconds.
+200          |    20.215 ms |    52.128 ms |   0.39x
+--------------------------------------------------
+✅ Concurrent scanning scales well with file count
+􁁛  Test "Directory scanning: Sequential vs Concurrent" passed after 38.390 seconds.
+
+📈 SQLite Scalability Test
+
+🔍 Search Performance:
+  CRC32 Lookups (5 queries):
+    JSON:   0.00 ms
+    SQLite: 0.65 ms
+
+  Name Pattern Searches:
+
+  Size: 100 ROMs
+    Index time: 0.03 seconds
+    Query time: 0.14 ms/query
+    Total indexed: 0
+    JSON:   0.05 ms
+    SQLite: 56.03 ms
+
+  Find Duplicates:
+    SQLite: 0.35 ms (0 duplicate groups found)
+
+💾 Storage Size:
+  JSON:   169.00 B
+  SQLite: 4.00 KB
+
+📈 Summary:
+  SQLite advantages:
+    - Indexed CRC lookups are O(log n) vs O(n)
+    - Pattern matching with LIKE is optimized
+    - Can query without loading entire index into memory
+    - Supports complex queries (duplicates, ranges, etc.)
+    - Better for large collections (>10,000 ROMs)
+
+  JSON advantages:
+    - Simpler implementation
+    - No external dependencies
+    - Easier to debug/inspect
+    - Good enough for small collections (<10,000 ROMs)
+
+  Note: SQLite shows advantages with larger datasets (see scalability test)
+􁁛  Test testIndexPerformanceComparison() passed after 38.524 seconds.
+
+  Size: 1000 ROMs
+    Index time: 0.02 seconds
+    Query time: 0.04 ms/query
+    Total indexed: 0
+
+  Size: 10000 ROMs
+    Index time: 0.00 seconds
+    Query time: 0.03 ms/query
+    Total indexed: 0
+
+  ✅ SQLite maintains consistent query performance regardless of collection size
+􁁛  Test testSQLiteScalability() passed after 38.592 seconds.
+􁁛  Suite "Index Performance Tests" passed after 38.599 seconds.
+Logiqx parser: 48588 games in 7.05s
+Iteration 1: 7.08s - 48588 games
+
+Metal Slug without BIOS:
+  Status: unknown
+  Found ROMs: 0
+  Missing ROMs: 0
+Skipping BIOS ROM generation
+
+Metal Slug with BIOS:
+  Status: unknown
+  Found ROMs: 0
+  Missing ROMs: 0
+Validation test completed (with synthetic generation skipped)
+Found Pac-Man: Pac-Man (Midway)
+Logiqx parser: 48588 games in 7.64s
+Logiqx parser: 48588 games in 7.59s
+􁁛  Test testValidationWithDependencies() passed after 38.820 seconds.
+✅ Tests work with bundled DAT - no external files needed!
+   Original env var: not set
+Logiqx parser: 48588 games in 7.45s
+􁁛  Test testBundledDATWithRomKit() passed after 38.857 seconds.
+
+=== ssf2t ===
+Description: Super Street Fighter II Turbo (World 940223)
+ROMs: 24
+Devices: m68000, timer, z80, 93c46_16, screen, gfxdecode, palette, speaker, qsound_hle
+Total size: 24320 KB
+
+CPS2 device dependency test (synthetic ROM generation skipped)
+􁁛  Test testCPS2DeviceDependencies() passed after 38.878 seconds.
+􁁛  Test testNoExternalDependencies() passed after 38.926 seconds.
+
+puckmod:
+  Clone of: puckman
+  ROM of: puckman
+􁁛  Test testBootlegsAndHacks() passed after 38.967 seconds.
+Logiqx parser: 48588 games in 7.31s
+Parsed bundled DAT: 48588 games
+Version: 0.278
+􁁛  Test testParseBundledDAT() passed after 39.157 seconds.
+100MB      |   284.507 ms |   249.771 ms |   1.14x | 🚀 GPU
+Logiqx parser: 48588 games in 4.74s
+
+baraduke:
+  Devices: ["mc6809e", "hd63701v0", "watchdog", "screen", "namco_cus4xtmap", "gfxdecode", "palette", "speaker", "namco_cus30"]
+􁁛  Test testNamcoMultiDeviceGames() passed after 42.974 seconds.
+􁁛  Suite MAMEComplexityTests passed after 42.979 seconds.
+200MB      |   528.158 ms |   537.684 ms |   0.98x | 💻 CPU
+------------------------------------------------------------
+
+📈 Summary:
+  GPU faster: 2 cases
+  CPU faster: 7 cases
+  Best GPU speedup: 1.14x for 100MB
+  GPU becomes beneficial at: 10MB
+􁁛  Test "Hash computation performance: CPU vs GPU across file sizes" passed after 43.194 seconds.
+􁁛  Suite "CPU vs GPU Performance Comparison" passed after 43.195 seconds.
+Logiqx parser: 48588 games in 4.50s
+Iteration 2: 4.53s - 48588 games
+Logiqx parser: 48588 games in 4.00s
+Iteration 3: 4.03s - 48588 games
+Average parse time: 5.21s
+􁁛  Test testPerformanceWithBundledDAT() passed after 47.482 seconds.
+􁁛  Suite BundledDATTests passed after 47.489 seconds.
+􁁛  Test run with 133 tests passed after 47.489 seconds.
