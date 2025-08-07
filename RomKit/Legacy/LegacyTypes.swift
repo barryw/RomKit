@@ -15,7 +15,7 @@ public struct DATFile {
     public let version: String?
     public let author: String?
     public let games: [Game]
-    
+
     public init(name: String, description: String, version: String? = nil, author: String? = nil, games: [Game]) {
         self.name = name
         self.description = description
@@ -35,7 +35,7 @@ public struct Game {
     public let manufacturer: String?
     public let roms: [ROM]
     public let disks: [Disk]
-    
+
     public init(
         name: String,
         description: String,
@@ -57,11 +57,11 @@ public struct Game {
         self.roms = roms
         self.disks = disks
     }
-    
+
     public var isClone: Bool {
         return cloneOf != nil
     }
-    
+
     public var isParent: Bool {
         return cloneOf == nil
     }
@@ -75,7 +75,7 @@ public struct ROM {
     public let md5: String?
     public let status: ROMStatus
     public let merge: String?
-    
+
     public init(
         name: String,
         size: UInt64,
@@ -101,7 +101,7 @@ public struct Disk {
     public let md5: String?
     public let status: ROMStatus
     public let merge: String?
-    
+
     public init(
         name: String,
         sha1: String? = nil,
@@ -132,7 +132,7 @@ public struct ScanResult {
     public let foundGames: [ScannedGame]
     public let unknownFiles: [String]
     public let scanDate: Date
-    
+
     public init(scannedPath: String, foundGames: [ScannedGame], unknownFiles: [String], scanDate: Date = Date()) {
         self.scannedPath = scannedPath
         self.foundGames = foundGames
@@ -146,12 +146,12 @@ public struct ScannedGame {
     public let foundRoms: [ScannedROM]
     public let missingRoms: [ROM]
     public let status: GameStatus
-    
+
     public init(game: Game, foundRoms: [ScannedROM], missingRoms: [ROM]) {
         self.game = game
         self.foundRoms = foundRoms
         self.missingRoms = missingRoms
-        
+
         if missingRoms.isEmpty && !foundRoms.isEmpty {
             let hasAllGood = foundRoms.allSatisfy { $0.status == .good }
             self.status = hasAllGood ? .complete : .incomplete
@@ -168,7 +168,7 @@ public struct ScannedROM {
     public let filePath: String
     public let hash: FileHash?
     public let status: ROMValidationStatus
-    
+
     public init(rom: ROM, filePath: String, hash: FileHash?, status: ROMValidationStatus) {
         self.rom = rom
         self.filePath = filePath
@@ -194,14 +194,14 @@ public struct FileHash {
     public let sha1: String
     public let md5: String
     public let size: UInt64
-    
+
     public init(crc32: String, sha1: String, md5: String, size: UInt64) {
         self.crc32 = crc32
         self.sha1 = sha1
         self.md5 = md5
         self.size = size
     }
-    
+
     public func matches(rom: ROM) -> Bool {
         if let romCRC = rom.crc, romCRC.lowercased() != crc32.lowercased() {
             return false
@@ -228,7 +228,7 @@ public struct AuditReport: Codable {
     public let badRoms: [BadROM]
     public let unknownFiles: [String]
     public let statistics: AuditStatistics
-    
+
     public init(
         scanDate: Date,
         scannedPath: String,
@@ -256,7 +256,7 @@ public struct IncompleteGame: Codable {
     public let gameName: String
     public let missingRoms: [String]
     public let badRoms: [String]
-    
+
     public init(gameName: String, missingRoms: [String], badRoms: [String]) {
         self.gameName = gameName
         self.missingRoms = missingRoms
@@ -271,7 +271,7 @@ public struct BadROM: Codable {
     public let actualCRC: String?
     public let expectedSize: UInt64
     public let actualSize: UInt64
-    
+
     public init(
         gameName: String,
         romName: String,
@@ -299,7 +299,7 @@ public struct AuditStatistics: Codable {
     public let badRoms: Int
     public let missingRoms: Int
     public let completionPercentage: Double
-    
+
     public init(
         totalGames: Int,
         completeGames: Int,

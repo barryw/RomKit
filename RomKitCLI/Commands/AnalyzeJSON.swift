@@ -17,7 +17,7 @@ public struct AnalysisJSON: Codable {
     let broken: [String: GameAnalysis]
     let missing: [String]
     let unrecognized: [UnrecognizedFile]
-    
+
     public struct AnalysisMetadata: Codable {
         let datFile: String
         let analyzedAt: Date
@@ -25,20 +25,20 @@ public struct AnalysisJSON: Codable {
         let totalGames: Int
         let romCount: Int
     }
-    
+
     public struct GameAnalysis: Codable {
         let status: GameStatus
         let foundROMs: [ROMAnalysis]?
         let missingROMs: [ROMReference]?
         let issues: [ROMIssue]?
-        
+
         enum GameStatus: String, Codable {
             case complete
             case incomplete
             case broken
         }
     }
-    
+
     public struct ROMAnalysis: Codable {
         let name: String
         let crc32: String
@@ -46,20 +46,20 @@ public struct AnalysisJSON: Codable {
         let location: String // File or archive path
         let verified: Bool
     }
-    
+
     public struct ROMReference: Codable {
         let name: String
         let crc32: String?
         let size: UInt64
     }
-    
+
     public struct ROMIssue: Codable {
         let rom: String
         let issue: String
         let expectedCRC: String?
         let actualCRC: String?
     }
-    
+
     public struct UnrecognizedFile: Codable {
         let path: String
         let size: UInt64
@@ -69,16 +69,16 @@ public struct AnalysisJSON: Codable {
 // MARK: - Analyze Extension for JSON Output
 
 extension Analyze {
-    
+
     func outputJSON(_ results: AnalysisResults, to url: URL? = nil) throws {
         let json = convertToJSON(results)
-        
+
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
-        
+
         let data = try encoder.encode(json)
-        
+
         if let url = url {
             try data.write(to: url)
         } else {
@@ -86,12 +86,12 @@ extension Analyze {
             print(String(data: data, encoding: .utf8) ?? "{}")
         }
     }
-    
+
     private func convertToJSON(_ results: AnalysisResults) -> AnalysisJSON {
         var completeGames: [String: AnalysisJSON.GameAnalysis] = [:]
         var incompleteGames: [String: AnalysisJSON.GameAnalysis] = [:]
         var brokenGames: [String: AnalysisJSON.GameAnalysis] = [:]
-        
+
         // Convert complete games
         for (name, game) in results.complete {
             completeGames[name] = AnalysisJSON.GameAnalysis(
@@ -109,7 +109,7 @@ extension Analyze {
                 issues: nil
             )
         }
-        
+
         // Convert incomplete games
         for (name, status) in results.incomplete {
             incompleteGames[name] = AnalysisJSON.GameAnalysis(
@@ -129,7 +129,7 @@ extension Analyze {
                 issues: nil
             )
         }
-        
+
         // Convert broken games
         for (name, status) in results.broken {
             brokenGames[name] = AnalysisJSON.GameAnalysis(
@@ -146,7 +146,7 @@ extension Analyze {
                 }
             )
         }
-        
+
         // Convert unrecognized files
         let unrecognized = results.unrecognized.map { file in
             AnalysisJSON.UnrecognizedFile(
@@ -154,13 +154,13 @@ extension Analyze {
                 size: file.size
             )
         }
-        
+
         return AnalysisJSON(
             metadata: AnalysisJSON.AnalysisMetadata(
                 datFile: datPath,
                 analyzedAt: Date(),
                 sourceDirectory: romPath,
-                totalGames: results.complete.count + results.incomplete.count + 
+                totalGames: results.complete.count + results.incomplete.count +
                           results.broken.count + results.missing.count,
                 romCount: results.complete.values.flatMap { $0.roms }.count
             ),
@@ -176,10 +176,10 @@ extension Analyze {
 // MARK: - Rebuild Extension to Consume JSON
 
 extension Rebuild {
-    
+
     func rebuildFromAnalysis(_ analysisPath: String) async throws {
         let data: Data
-        
+
         if analysisPath == "-" {
             // Read from stdin
             data = FileHandle.standardInput.readDataToEndOfFile()
@@ -187,31 +187,31 @@ extension Rebuild {
             let url = URL(fileURLWithPath: analysisPath)
             data = try Data(contentsOf: url)
         }
-        
+
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let analysis = try decoder.decode(AnalysisJSON.self, from: data)
-        
+
         print("📊 Loaded analysis of \(analysis.metadata.totalGames) games")
         print("  ✅ Complete: \(analysis.complete.count) (skipping)")
         print("  ⚠️  Incomplete: \(analysis.incomplete.count) (will rebuild)")
         print("  ❌ Broken: \(analysis.broken.count) (will rebuild)")
         print("  📭 Missing: \(analysis.missing.count) (will attempt)")
-        
+
         // Build list of games that need work
         var gamesToRebuild: Set<String> = []
         gamesToRebuild.formUnion(analysis.incomplete.keys)
         gamesToRebuild.formUnion(analysis.broken.keys)
         gamesToRebuild.formUnion(analysis.missing)
-        
+
         // Now proceed with targeted rebuild
         await performTargetedRebuild(games: gamesToRebuild, analysis: analysis)
     }
-    
+
     private func performTargetedRebuild(games: Set<String>, analysis: AnalysisJSON) async {
         // This is where we'd integrate with the existing rebuild logic
         // but only process the games identified by the analysis
-        
+
         for gameName in games {
             // Check if we have any ROMs for this game
             if analysis.incomplete[gameName] != nil {

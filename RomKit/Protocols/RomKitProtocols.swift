@@ -64,7 +64,7 @@ public struct ROMChecksums: Codable {
     public var sha1: String?
     public var sha256: String?
     public var md5: String?
-    
+
     public init(crc32: String? = nil, sha1: String? = nil, sha256: String? = nil, md5: String? = nil) {
         self.crc32 = crc32
         self.sha1 = sha1
@@ -77,7 +77,7 @@ public struct ROMAttributes: Codable {
     public var merge: String?
     public var date: String?
     public var optional: Bool
-    
+
     public init(merge: String? = nil, date: String? = nil, optional: Bool = false) {
         self.merge = merge
         self.date = date
@@ -89,7 +89,7 @@ public struct ROMAttributes: Codable {
 
 public protocol DATParser {
     associatedtype DATType: DATFormat
-    
+
     func canParse(data: Data) -> Bool
     func parse(data: Data) throws -> DATType
     func parse(url: URL) throws -> DATType
@@ -109,7 +109,7 @@ public struct ValidationResult {
     public let expectedChecksums: ROMChecksums
     public let sizeMismatch: Bool
     public let errors: [String]
-    
+
     public init(
         isValid: Bool,
         actualChecksums: ROMChecksums,
@@ -129,7 +129,7 @@ public struct ValidationResult {
 
 public protocol ArchiveHandler {
     var supportedExtensions: [String] { get }
-    
+
     func canHandle(url: URL) -> Bool
     func listContents(of url: URL) throws -> [ArchiveEntry]
     func extract(entry: ArchiveEntry, from url: URL) throws -> Data
@@ -143,7 +143,7 @@ public struct ArchiveEntry {
     public let uncompressedSize: UInt64
     public let modificationDate: Date?
     public let crc32: String?
-    
+
     public init(
         path: String,
         compressedSize: UInt64,
@@ -163,11 +163,11 @@ public struct ArchiveEntry {
 
 public protocol ROMScanner {
     associatedtype DATType: DATFormat
-    
+
     var datFile: DATType { get }
     var validator: any ROMValidator { get }
     var archiveHandlers: [any ArchiveHandler] { get }
-    
+
     func scan(directory: URL) async throws -> ScanResults
     func scan(files: [URL]) async throws -> ScanResults
 }
@@ -191,7 +191,7 @@ public struct ScannedItem {
     public let item: any ROMItem
     public let location: URL
     public let validationResult: ValidationResult
-    
+
     public init(item: any ROMItem, location: URL, validationResult: ValidationResult) {
         self.item = item
         self.location = location
@@ -209,7 +209,7 @@ public enum GameCompletionStatus {
 public struct ScanError: Error {
     public let file: URL
     public let message: String
-    
+
     public init(file: URL, message: String) {
         self.file = file
         self.message = message
@@ -220,10 +220,10 @@ public struct ScanError: Error {
 
 public protocol ROMRebuilder {
     associatedtype DATType: DATFormat
-    
+
     var datFile: DATType { get }
     var archiveHandlers: [any ArchiveHandler] { get }
-    
+
     func rebuild(from source: URL, to destination: URL, options: RebuildOptions) async throws -> RebuildResults
 }
 
@@ -234,12 +234,12 @@ public struct RebuildOptions {
         case nonMerged
         case raw
     }
-    
+
     public let style: Style
     public let deleteSource: Bool
     public let skipExisting: Bool
     public let verifyAfterBuild: Bool
-    
+
     public init(
         style: Style = .split,
         deleteSource: Bool = false,
@@ -258,7 +258,7 @@ public struct RebuildResults {
     public let skipped: Int
     public let failed: Int
     public let errors: [String]
-    
+
     public init(rebuilt: Int, skipped: Int, failed: Int, errors: [String] = []) {
         self.rebuilt = rebuilt
         self.skipped = skipped
@@ -273,7 +273,7 @@ public protocol ROMFormatHandler {
     var formatIdentifier: String { get }
     var formatName: String { get }
     var supportedExtensions: [String] { get }
-    
+
     func createParser() -> any DATParser
     func createValidator() -> any ROMValidator
     func createScanner(for datFile: any DATFormat) -> any ROMScanner

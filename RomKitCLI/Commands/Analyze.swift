@@ -15,7 +15,7 @@ struct Analyze: AsyncParsableCommand {
         discussion: """
             This command scans a directory of ROM files and compares them against
             a MAME DAT file to determine which games are complete, incomplete, or broken.
-            
+
             The analysis will report:
             - Complete games: All required ROM files present with correct CRC
             - Incomplete games: Some ROM files missing
@@ -23,54 +23,54 @@ struct Analyze: AsyncParsableCommand {
             - Extra files: ROM files not recognized in the DAT
             """
     )
-    
+
     @Argument(help: "Path to the ROM directory to analyze")
     var romPath: String
-    
+
     @Argument(help: "Path to the MAME DAT file")
     var datPath: String
-    
+
     @Flag(name: .shortAndLong, help: "Show detailed information for each game")
     var verbose = false
-    
+
     @Flag(name: .shortAndLong, help: "Use GPU acceleration for hash computation")
     var gpu = false
-    
+
     @Flag(name: .long, help: "Show progress during analysis")
     var showProgress = false
-    
+
     @Option(name: .shortAndLong, help: "Export results to JSON file")
     var output: String?
-    
+
     mutating func run() async throws {
         RomKitCLI.printHeader("🎮 RomKit ROM Analysis")
-        
+
         // Validate inputs
         let romURL = URL(fileURLWithPath: romPath)
         let datURL = URL(fileURLWithPath: datPath)
-        
+
         guard FileManager.default.fileExists(atPath: romURL.path) else {
             throw ValidationError("ROM directory does not exist: \(romPath)")
         }
-        
+
         guard FileManager.default.fileExists(atPath: datURL.path) else {
             throw ValidationError("DAT file does not exist: \(datPath)")
         }
-        
+
         print("📁 ROM Directory: \(romURL.path)")
         print("📄 DAT File: \(datURL.lastPathComponent)")
         print("⚡ GPU Acceleration: \(gpu ? "Enabled" : "Disabled")")
-        
+
         // Load DAT file
         RomKitCLI.printSection("Loading DAT File")
         let datFile = try await loadDATFile(from: datURL)
         print("✅ Loaded \(datFile.games.count) games from DAT")
-        
+
         // Scan ROM directory
         RomKitCLI.printSection("Scanning ROM Directory")
         let romFiles = try await scanROMDirectory(at: romURL)
         print("✅ Found \(romFiles.count) ROM files")
-        
+
         // Analyze ROMs
         RomKitCLI.printSection("Analyzing ROMs")
         let results = try await analyzeROMs(
@@ -79,26 +79,26 @@ struct Analyze: AsyncParsableCommand {
             useGPU: gpu,
             showProgress: showProgress
         )
-        
+
         // Display results
         displayResults(results)
-        
+
         // Export if requested
         if let outputPath = output {
             try exportResults(results, to: outputPath)
             print("\n📊 Results exported to: \(outputPath)")
         }
     }
-    
+
     private func loadDATFile(from url: URL) async throws -> DATFile {
         // Try to load as string first to handle encoding issues
         let fileContent = try String(contentsOf: url, encoding: .utf8)
         let data = fileContent.data(using: .utf8)!
-        
+
         // Parse using MAME parser
         let parser = MAMEFastParser()
         let mameDatFile: MAMEDATFile
-        
+
         do {
             mameDatFile = try await parser.parseXMLParallel(data: data)
         } catch {
@@ -107,7 +107,7 @@ struct Analyze: AsyncParsableCommand {
             // Try the regular parser as fallback
             mameDatFile = try parser.parseXMLStreaming(data: data)
         }
-        
+
         // Convert MAMEDATFile to DATFile
         let games = mameDatFile.games.compactMap { gameEntry -> Game? in
             // Convert GameEntry to Game
@@ -123,16 +123,16 @@ struct Analyze: AsyncParsableCommand {
                     merge: item.attributes.merge
                 )
             }
-            
+
             // Try to get cloneOf and romOf from metadata if it's MAMEGameMetadata
             var cloneOf: String? = nil
             var romOf: String? = nil
-            
+
             if let mameGameMetadata = gameEntry.metadata as? MAMEGameMetadata {
                 cloneOf = mameGameMetadata.cloneOf
                 romOf = mameGameMetadata.romOf
             }
-            
+
             return Game(
                 name: gameEntry.name,
                 description: gameEntry.description,
@@ -145,7 +145,7 @@ struct Analyze: AsyncParsableCommand {
                 disks: []
             )
         }
-        
+
         return DATFile(
             name: mameDatFile.metadata.name,
             description: mameDatFile.metadata.description,
@@ -154,16 +154,16 @@ struct Analyze: AsyncParsableCommand {
             games: games
         )
     }
-    
+
     private func scanROMDirectory(at url: URL) async throws -> [ROMFile] {
         let scanner = ConcurrentScanner()
         var romFiles: [ROMFile] = []
-        
+
         let results = try await scanner.scanDirectory(
             at: url,
             computeHashes: false // We'll compute hashes during analysis
         )
-        
+
         for result in results {
             if result.isArchive {
                 // It's a ZIP file containing ROMs
@@ -181,10 +181,10 @@ struct Analyze: AsyncParsableCommand {
                 ))
             }
         }
-        
+
         return romFiles
     }
-    
+
     private func analyzeROMs(
         romFiles: [ROMFile],
         datFile: DATFile,
@@ -194,12 +194,12 @@ struct Analyze: AsyncParsableCommand {
         var results = AnalysisResults()
         let totalFiles = romFiles.count
         var processedFiles = 0
-        
+
         // Create a game lookup dictionary for faster matching
         let gamesByName = Dictionary(
             uniqueKeysWithValues: datFile.games.map { (cleanGameName($0.name), $0) }
         )
-        
+
         // Analyze each ROM file
         let startTime = Date()
         for romFile in romFiles {
@@ -209,18 +209,18 @@ struct Analyze: AsyncParsableCommand {
                 let rate = Double(processedFiles) / elapsed
                 let remaining = Double(totalFiles - processedFiles) / rate
                 let percentage = Double(processedFiles) / Double(totalFiles) * 100
-                
-                let timeStr = remaining > 60 
+
+                let timeStr = remaining > 60
                     ? String(format: "%.0f min", remaining / 60)
                     : String(format: "%.0f sec", remaining)
-                
+
                 // Clear line and print progress
                 print("\u{1B}[2K\rProgress: \(processedFiles)/\(totalFiles) (\(String(format: "%.1f%%", percentage))) - ETA: \(timeStr)", terminator: "")
                 fflush(stdout)
             }
-            
+
             let gameName = cleanGameName(romFile.url.deletingPathExtension().lastPathComponent)
-            
+
             if romFile.isArchive {
                 // Analyze ZIP archive
                 try await analyzeArchive(
@@ -241,26 +241,26 @@ struct Analyze: AsyncParsableCommand {
                 )
             }
         }
-        
+
         if showProgress {
             print("") // New line after progress
         }
-        
+
         // Find missing games (in DAT but not on disk)
         let foundGameNames = Set(results.complete.keys)
             .union(results.incomplete.keys)
             .union(results.broken.keys)
-        
+
         for game in datFile.games {
             let gameName = cleanGameName(game.name)
             if !foundGameNames.contains(gameName) {
                 results.missing[gameName] = game
             }
         }
-        
+
         return results
     }
-    
+
     private func analyzeArchive(
         romFile: ROMFile,
         gameName: String,
@@ -272,10 +272,10 @@ struct Analyze: AsyncParsableCommand {
             results.unrecognized.append(romFile)
             return
         }
-        
+
         let handler = ParallelZIPArchiveHandler()
         let entries: [ArchiveEntry]
-        
+
         do {
             entries = try handler.listContents(of: romFile.url)
         } catch {
@@ -286,13 +286,13 @@ struct Analyze: AsyncParsableCommand {
             )
             return
         }
-        
+
         var matchedROMs: Set<String> = []
         var brokenROMs: [String: String] = [:] // ROM name -> issue
-        
+
         for entry in entries {
             let romName = entry.path.lowercased()
-            
+
             // Find matching ROM in game
             if let expectedROM = expectedGame.roms.first(where: { $0.name.lowercased() == romName }) {
                 do {
@@ -301,8 +301,8 @@ struct Analyze: AsyncParsableCommand {
                     let actualCRC = useGPU
                         ? await ParallelHashUtilities.crc32GPU(data: data)
                         : HashUtilities.crc32(data: data)
-                    
-                    if let expectedCRC = expectedROM.crc, 
+
+                    if let expectedCRC = expectedROM.crc,
                        actualCRC.lowercased() == expectedCRC.lowercased() {
                         matchedROMs.insert(romName)
                     } else if let expectedCRC = expectedROM.crc {
@@ -317,11 +317,11 @@ struct Analyze: AsyncParsableCommand {
                 }
             }
         }
-        
+
         // Determine game status
         let requiredROMs = Set(expectedGame.roms.map { $0.name.lowercased() })
         let missingROMs = requiredROMs.subtracting(matchedROMs).subtracting(brokenROMs.keys)
-        
+
         if !brokenROMs.isEmpty {
             results.broken[gameName] = GameStatus(
                 game: expectedGame,
@@ -336,7 +336,7 @@ struct Analyze: AsyncParsableCommand {
             )
         }
     }
-    
+
     private func analyzeIndividualROM(
         romFile: ROMFile,
         gameName: String,
@@ -348,7 +348,7 @@ struct Analyze: AsyncParsableCommand {
         // to group them by game. For now, mark as unrecognized
         results.unrecognized.append(romFile)
     }
-    
+
     private func cleanGameName(_ name: String) -> String {
         // Remove common suffixes and clean up game names for matching
         return name
@@ -357,13 +357,13 @@ struct Analyze: AsyncParsableCommand {
             .lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
+
     private func displayResults(_ results: AnalysisResults) {
         RomKitCLI.printHeader("📊 Analysis Results")
-        
-        let total = results.complete.count + results.incomplete.count + 
+
+        let total = results.complete.count + results.incomplete.count +
                    results.broken.count + results.missing.count
-        
+
         print("\n📈 Summary:")
         print("  Total games in DAT: \(total)")
         print("  ✅ Complete: \(results.complete.count) (\(RomKitCLI.formatPercentage(Double(results.complete.count) / Double(max(total, 1)))))")
@@ -371,7 +371,7 @@ struct Analyze: AsyncParsableCommand {
         print("  ❌ Broken: \(results.broken.count) (\(RomKitCLI.formatPercentage(Double(results.broken.count) / Double(max(total, 1)))))")
         print("  📭 Missing: \(results.missing.count) (\(RomKitCLI.formatPercentage(Double(results.missing.count) / Double(max(total, 1)))))")
         print("  ❓ Unrecognized files: \(results.unrecognized.count)")
-        
+
         if verbose {
             if !results.broken.isEmpty {
                 RomKitCLI.printSection("❌ Broken Games")
@@ -385,7 +385,7 @@ struct Analyze: AsyncParsableCommand {
                     print("  ... and \(results.broken.count - 10) more")
                 }
             }
-            
+
             if !results.incomplete.isEmpty {
                 RomKitCLI.printSection("⚠️  Incomplete Games")
                 for (name, status) in results.incomplete.sorted(by: { $0.key < $1.key }).prefix(10) {
@@ -401,7 +401,7 @@ struct Analyze: AsyncParsableCommand {
                     print("  ... and \(results.incomplete.count - 10) more")
                 }
             }
-            
+
             if !results.missing.isEmpty {
                 RomKitCLI.printSection("📭 Missing Games (Top 10)")
                 for (name, _) in results.missing.sorted(by: { $0.key < $1.key }).prefix(10) {
@@ -413,12 +413,12 @@ struct Analyze: AsyncParsableCommand {
             }
         }
     }
-    
+
     private func exportResults(_ results: AnalysisResults, to path: String) throws {
         let export = AnalysisExport(
             timestamp: Date(),
             summary: AnalysisSummary(
-                totalGames: results.complete.count + results.incomplete.count + 
+                totalGames: results.complete.count + results.incomplete.count +
                            results.broken.count + results.missing.count,
                 complete: results.complete.count,
                 incomplete: results.incomplete.count,
@@ -431,7 +431,7 @@ struct Analyze: AsyncParsableCommand {
             brokenGames: results.broken.mapValues { $0.issues },
             missingGames: Array(results.missing.keys).sorted()
         )
-        
+
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(export)

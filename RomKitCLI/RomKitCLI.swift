@@ -35,19 +35,19 @@ extension RomKitCLI {
         print(text)
         print(String(repeating: "=", count: 60))
     }
-    
+
     static func printSection(_ text: String) {
         print("\n" + String(repeating: "-", count: 40))
         print(text)
         print(String(repeating: "-", count: 40))
     }
-    
+
     static func formatFileSize(_ bytes: Int64) -> String {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         return formatter.string(fromByteCount: bytes)
     }
-    
+
     static func formatPercentage(_ value: Double) -> String {
         return String(format: "%.1f%%", value * 100)
     }

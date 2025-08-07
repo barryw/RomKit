@@ -17,18 +17,18 @@ public class LogiqxFormatHandler: ROMFormatHandler {
     public let formatIdentifier = "logiqx"
     public let formatName = "Logiqx DAT"
     public let supportedExtensions = ["dat", "xml"]
-    
+
     public init() {}
-    
+
     public func createParser() -> any DATParser {
         return LogiqxDATParser()
     }
-    
+
     public func createValidator() -> any ROMValidator {
         // Reuse MAME validator since ROM validation is the same
         return MAMEROMValidator()
     }
-    
+
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         guard let mameDat = datFile as? MAMEDATFile else {
             fatalError("Invalid DAT file type for Logiqx scanner")
@@ -39,7 +39,7 @@ public class LogiqxFormatHandler: ROMFormatHandler {
             archiveHandlers: createArchiveHandlers()
         )
     }
-    
+
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         guard let mameDat = datFile as? MAMEDATFile else {
             fatalError("Invalid DAT file type for Logiqx rebuilder")
@@ -49,7 +49,7 @@ public class LogiqxFormatHandler: ROMFormatHandler {
             archiveHandlers: createArchiveHandlers()
         )
     }
-    
+
     public func createArchiveHandlers() -> [any ArchiveHandler] {
         return [
             ZIPArchiveHandler(),

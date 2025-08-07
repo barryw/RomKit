@@ -13,31 +13,31 @@ public class RedumpFormatHandler: ROMFormatHandler {
     public let formatIdentifier = "redump"
     public let formatName = "Redump"
     public let supportedExtensions = ["dat", "xml"]
-    
+
     public init() {}
-    
+
     public func createParser() -> any DATParser {
         return RedumpDATParser()
     }
-    
+
     public func createValidator() -> any ROMValidator {
         return RedumpROMValidator()
     }
-    
+
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         guard let redumpDat = datFile as? RedumpDATFile else {
             fatalError("Invalid DAT file type for Redump scanner")
         }
         return RedumpROMScanner(datFile: redumpDat, validator: createValidator(), archiveHandlers: createArchiveHandlers())
     }
-    
+
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         guard let redumpDat = datFile as? RedumpDATFile else {
             fatalError("Invalid DAT file type for Redump rebuilder")
         }
         return RedumpROMRebuilder(datFile: redumpDat, archiveHandlers: createArchiveHandlers())
     }
-    
+
     public func createArchiveHandlers() -> [any ArchiveHandler] {
         // Redump primarily deals with disc images
         return [ZIPArchiveHandler(), CHDArchiveHandler(), CUEBINArchiveHandler()]
@@ -51,7 +51,7 @@ public struct RedumpDATFile: DATFormat {
     public let formatVersion: String?
     public let games: [any GameEntry]
     public let metadata: DATMetadata
-    
+
     public init(formatVersion: String? = nil, games: [RedumpGame], metadata: RedumpMetadata) {
         self.formatVersion = formatVersion
         self.games = games
@@ -68,7 +68,7 @@ public struct RedumpMetadata: DATMetadata {
     public let comment: String?
     public let url: String?
     public let system: String?
-    
+
     public init(
         name: String,
         description: String,
@@ -97,7 +97,7 @@ public struct RedumpGame: GameEntry {
     public let items: [any ROMItem]
     public let metadata: GameMetadata
     public let tracks: [RedumpTrack]
-    
+
     public init(name: String, description: String, roms: [RedumpROM], tracks: [RedumpTrack] = [], metadata: RedumpGameMetadata) {
         self.identifier = name
         self.name = name
@@ -122,7 +122,7 @@ public struct RedumpGameMetadata: GameMetadata {
     public let languages: [String]
     public let discNumber: Int?
     public let discTotal: Int?
-    
+
     public init(
         year: String? = nil,
         manufacturer: String? = nil,
@@ -156,7 +156,7 @@ public struct RedumpROM: ROMItem {
     public let checksums: ROMChecksums
     public let status: ROMStatus
     public let attributes: ROMAttributes
-    
+
     public init(
         name: String,
         size: UInt64,
@@ -180,7 +180,7 @@ public struct RedumpTrack {
     public let crc32: String?
     public let md5: String?
     public let sha1: String?
-    
+
     public init(
         number: Int,
         type: String,
@@ -204,26 +204,26 @@ public struct RedumpTrack {
 
 public class CUEBINArchiveHandler: ArchiveHandler {
     public let supportedExtensions = ["cue", "bin", "iso", "img"]
-    
+
     public init() {}
-    
+
     public func canHandle(url: URL) -> Bool {
         return supportedExtensions.contains(url.pathExtension.lowercased())
     }
-    
+
     public func listContents(of url: URL) throws -> [ArchiveEntry] {
         // CUE/BIN handling would require specialized parsing
         throw ArchiveError.unsupportedFormat("CUE/BIN support not yet implemented")
     }
-    
+
     public func extract(entry: ArchiveEntry, from url: URL) throws -> Data {
         throw ArchiveError.unsupportedFormat("CUE/BIN support not yet implemented")
     }
-    
+
     public func extractAll(from url: URL, to destination: URL) throws {
         throw ArchiveError.unsupportedFormat("CUE/BIN support not yet implemented")
     }
-    
+
     public func create(at url: URL, with entries: [(name: String, data: Data)]) throws {
         throw ArchiveError.unsupportedFormat("CUE/BIN creation not supported")
     }
@@ -233,16 +233,16 @@ public class CUEBINArchiveHandler: ArchiveHandler {
 
 public class RedumpDATParser: NSObject, DATParser {
     public typealias DATType = RedumpDATFile
-    
+
     public func canParse(data: Data) -> Bool {
         guard let xmlString = String(data: data.prefix(1000), encoding: .utf8) else {
             return false
         }
-        
+
         return xmlString.contains("<!DOCTYPE datafile") &&
                xmlString.contains("redump.org")
     }
-    
+
     public func parse(data: Data) throws -> RedumpDATFile {
         // Simplified implementation - would need full XML parsing
         let metadata = RedumpMetadata(
@@ -250,14 +250,14 @@ public class RedumpDATParser: NSObject, DATParser {
             description: "Redump DAT File",
             url: "http://redump.org"
         )
-        
+
         return RedumpDATFile(
             formatVersion: "1.0",
             games: [],
             metadata: metadata
         )
     }
-    
+
     public func parse(url: URL) throws -> RedumpDATFile {
         let data = try Data(contentsOf: url)
         return try parse(data: data)
@@ -268,15 +268,15 @@ public class RedumpDATParser: NSObject, DATParser {
 
 public class RedumpROMValidator: ROMValidator {
     private let mameValidator = MAMEROMValidator()
-    
+
     public func validate(item: any ROMItem, against data: Data) -> ValidationResult {
         return mameValidator.validate(item: item, against: data)
     }
-    
+
     public func validate(item: any ROMItem, at url: URL) throws -> ValidationResult {
         return try mameValidator.validate(item: item, at: url)
     }
-    
+
     public func computeChecksums(for data: Data) -> ROMChecksums {
         return mameValidator.computeChecksums(for: data)
     }
@@ -286,17 +286,17 @@ public class RedumpROMValidator: ROMValidator {
 
 public class RedumpROMScanner: ROMScanner {
     public typealias DATType = RedumpDATFile
-    
+
     public let datFile: RedumpDATFile
     public let validator: any ROMValidator
     public let archiveHandlers: [any ArchiveHandler]
-    
+
     public init(datFile: RedumpDATFile, validator: any ROMValidator, archiveHandlers: [any ArchiveHandler]) {
         self.datFile = datFile
         self.validator = validator
         self.archiveHandlers = archiveHandlers
     }
-    
+
     public func scan(directory: URL) async throws -> ScanResults {
         return RedumpScanResults(
             scannedPath: directory.path,
@@ -306,7 +306,7 @@ public class RedumpROMScanner: ROMScanner {
             errors: []
         )
     }
-    
+
     public func scan(files: [URL]) async throws -> ScanResults {
         return RedumpScanResults(
             scannedPath: "",
@@ -330,15 +330,15 @@ public struct RedumpScanResults: ScanResults {
 
 public class RedumpROMRebuilder: ROMRebuilder {
     public typealias DATType = RedumpDATFile
-    
+
     public let datFile: RedumpDATFile
     public let archiveHandlers: [any ArchiveHandler]
-    
+
     public init(datFile: RedumpDATFile, archiveHandlers: [any ArchiveHandler]) {
         self.datFile = datFile
         self.archiveHandlers = archiveHandlers
     }
-    
+
     public func rebuild(from source: URL, to destination: URL, options: RebuildOptions) async throws -> RebuildResults {
         return RebuildResults(rebuilt: 0, skipped: 0, failed: 0)
     }

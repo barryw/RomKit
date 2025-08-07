@@ -14,7 +14,7 @@ public struct MAMEDATFile: DATFormat {
     public let formatVersion: String?
     public let games: [any GameEntry]
     public let metadata: DATMetadata
-    
+
     public init(formatVersion: String? = nil, games: [MAMEGame], metadata: MAMEMetadata) {
         self.formatVersion = formatVersion
         self.games = games
@@ -31,7 +31,7 @@ public struct MAMEMetadata: DATMetadata, Codable {
     public let comment: String?
     public let url: String?
     public let build: String?
-    
+
     public init(
         name: String,
         description: String,
@@ -61,7 +61,7 @@ public struct MAMEGame: GameEntry {
     public let metadata: GameMetadata
     public let disks: [MAMEDisk]
     public let samples: [MAMESample]
-    
+
     public init(
         name: String,
         description: String,
@@ -94,7 +94,7 @@ public struct MAMEGameMetadata: GameMetadata, Codable {
     public let runnable: Bool
     public let biosSet: String?  // BIOS this game uses (e.g., "neogeo")
     public let deviceRefs: [String]  // Device ROMs needed (e.g., ["ym2608"])
-    
+
     // New elements from modern MAME format
     public let chips: [MAMEChip]
     public let display: MAMEDisplay?
@@ -103,7 +103,7 @@ public struct MAMEGameMetadata: GameMetadata, Codable {
     public let dipswitches: [MAMEDipSwitch]
     public let driver: MAMEDriver?
     public let features: [MAMEFeature]
-    
+
     public init(
         year: String? = nil,
         manufacturer: String? = nil,
@@ -157,7 +157,7 @@ public struct MAMEROM: ROMItem, Codable {
     public let attributes: ROMAttributes
     public let region: String?
     public let offset: String?
-    
+
     public init(
         name: String,
         size: UInt64,
@@ -184,7 +184,7 @@ public struct MAMEDisk: ROMItem, Codable {
     public let status: ROMStatus
     public let attributes: ROMAttributes
     public let index: Int?
-    
+
     public init(
         name: String,
         checksums: ROMChecksums,
@@ -203,7 +203,7 @@ public struct MAMEDisk: ROMItem, Codable {
 
 public struct MAMESample: Codable {
     public let name: String
-    
+
     public init(name: String) {
         self.name = name
     }
@@ -216,7 +216,7 @@ public struct MAMEChip: Codable {
     public let tag: String
     public let name: String
     public let clock: Int?
-    
+
     public init(type: String, tag: String, name: String, clock: Int? = nil) {
         self.type = type
         self.tag = tag
@@ -239,8 +239,8 @@ public struct MAMEDisplay: Codable {
     public let vTotal: Int?
     public let vbEnd: Int?
     public let vbStart: Int?
-    
-    public init(tag: String, type: String, rotate: Int, width: Int, height: Int, 
+
+    public init(tag: String, type: String, rotate: Int, width: Int, height: Int,
                 refresh: Double, pixelClock: Int? = nil, hTotal: Int? = nil,
                 hbEnd: Int? = nil, hbStart: Int? = nil, vTotal: Int? = nil,
                 vbEnd: Int? = nil, vbStart: Int? = nil) {
@@ -262,7 +262,7 @@ public struct MAMEDisplay: Codable {
 
 public struct MAMESound: Codable {
     public let channels: Int
-    
+
     public init(channels: Int) {
         self.channels = channels
     }
@@ -273,7 +273,7 @@ public struct MAMEInput: Codable {
     public let coins: Int?
     public let service: Bool
     public let controls: [MAMEControl]
-    
+
     public init(players: Int, coins: Int? = nil, service: Bool = false, controls: [MAMEControl] = []) {
         self.players = players
         self.coins = coins
@@ -287,7 +287,7 @@ public struct MAMEControl: Codable {
     public let player: Int?
     public let buttons: Int?
     public let ways: Int?
-    
+
     public init(type: String, player: Int? = nil, buttons: Int? = nil, ways: Int? = nil) {
         self.type = type
         self.player = player
@@ -302,7 +302,7 @@ public struct MAMEDipSwitch: Codable {
     public let mask: Int
     public let locations: [MAMEDipLocation]
     public let values: [MAMEDipValue]
-    
+
     public init(name: String, tag: String, mask: Int, locations: [MAMEDipLocation] = [], values: [MAMEDipValue] = []) {
         self.name = name
         self.tag = tag
@@ -315,7 +315,7 @@ public struct MAMEDipSwitch: Codable {
 public struct MAMEDipLocation: Codable {
     public let name: String
     public let number: String
-    
+
     public init(name: String, number: String) {
         self.name = name
         self.number = number
@@ -326,7 +326,7 @@ public struct MAMEDipValue: Codable {
     public let name: String
     public let value: Int
     public let isDefault: Bool
-    
+
     public init(name: String, value: Int, isDefault: Bool = false) {
         self.name = name
         self.value = value
@@ -338,7 +338,7 @@ public struct MAMEDriver: Codable {
     public let status: String
     public let emulation: String
     public let savestate: String
-    
+
     public init(status: String, emulation: String, savestate: String) {
         self.status = status
         self.emulation = emulation
@@ -349,7 +349,7 @@ public struct MAMEDriver: Codable {
 public struct MAMEFeature: Codable {
     public let type: String
     public let status: String
-    
+
     public init(type: String, status: String) {
         self.type = type
         self.status = status

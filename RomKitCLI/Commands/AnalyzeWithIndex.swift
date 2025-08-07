@@ -14,37 +14,37 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
         commandName: "analyze-indexed",
         abstract: "Analyze ROMs using the index system for better performance"
     )
-    
+
     @Argument(help: "Path to the ROM directory to analyze")
     var romPath: String
-    
+
     @Argument(help: "Path to the MAME DAT file")
     var datPath: String
-    
+
     @Flag(name: .long, help: "Force re-scan even if index exists")
     var forceScan = false
-    
+
     @Flag(name: .long, help: "Auto-create index if missing")
     var autoIndex = false
-    
+
     @Option(name: .long, help: "Path to index database")
     var indexPath: String?
-    
+
     mutating func run() async throws {
         let romURL = URL(fileURLWithPath: romPath)
         let datURL = URL(fileURLWithPath: datPath)
-        
+
         // Initialize index manager
         let dbPath = indexPath.map { URL(fileURLWithPath: $0) }
         let indexManager = try await ROMIndexManager(databasePath: dbPath)
-        
+
         // Check if this source is already indexed
         let sources = await indexManager.listSources()
         let isIndexed = sources.contains { $0.path == romURL.path }
-        
+
         if isIndexed && !forceScan {
             print("✅ Using existing index for fast analysis")
-            
+
             // Check if index is stale
             if let source = sources.first(where: { $0.path == romURL.path }) {
                 let age = Date().timeIntervalSince(source.lastScan)
@@ -61,7 +61,7 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
                 print("ℹ️  No index found for this directory")
                 print("   Create one with --auto-index for faster analysis")
                 print("   Falling back to direct scan...")
-                
+
                 // Fall back to current behavior
                 let scanner = ConcurrentScanner()
                 _ = try await scanner.scanDirectory(
@@ -75,28 +75,28 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
             print("🔄 Force re-scanning directory...")
             try await indexManager.refreshSources([romURL], showProgress: true)
         }
-        
+
         // Now perform analysis using the index
         print("\n📊 Analyzing using index...")
-        
+
         // Load DAT file
         let datFile = try await loadDATFile(from: datURL)
-        
+
         // Analyze each game using the index
         var complete = 0
         var incomplete = 0
         var missing = 0
-        
+
         for game in datFile.games {
             var foundROMs = 0
             let requiredROMs = game.roms.count
-            
+
             for rom in game.roms {
                 if let _ = await indexManager.findBestSource(for: rom) {
                     foundROMs += 1
                 }
             }
-            
+
             if foundROMs == requiredROMs && requiredROMs > 0 {
                 complete += 1
             } else if foundROMs > 0 {
@@ -105,12 +105,12 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
                 missing += 1
             }
         }
-        
+
         print("\n📈 Results:")
         print("  ✅ Complete: \(complete) games")
         print("  ⚠️  Incomplete: \(incomplete) games")
         print("  ❌ Missing: \(missing) games")
-        
+
         // Show index statistics
         let analysis = await indexManager.analyzeIndex()
         print("\n💾 Index Statistics:")
@@ -124,22 +124,22 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
             }
         }
     }
-    
+
     private func loadDATFile(from url: URL) async throws -> DATFile {
         // Implementation from Rebuild.swift
         let fileContent = try String(contentsOf: url, encoding: .utf8)
         let data = fileContent.data(using: .utf8)!
-        
+
         let parser = MAMEFastParser()
         if let mameDatFile = try? await parser.parseXMLParallel(data: data) {
             return convertMAMEToGeneric(mameDatFile)
         }
-        
+
         let logiqxParser = LogiqxDATParser()
         let mameDatFile = try logiqxParser.parse(data: data)
         return convertMAMEToGeneric(mameDatFile)
     }
-    
+
     private func convertMAMEToGeneric(_ mameDAT: MAMEDATFile) -> DATFile {
         // Implementation from Rebuild.swift
         let games = mameDAT.games.compactMap { gameEntry -> Game? in
@@ -154,7 +154,7 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
                     merge: item.attributes.merge
                 )
             }
-            
+
             return Game(
                 name: gameEntry.name,
                 description: gameEntry.description,
@@ -167,7 +167,7 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
                 disks: []
             )
         }
-        
+
         return DATFile(
             name: mameDAT.metadata.name,
             description: mameDAT.metadata.description,

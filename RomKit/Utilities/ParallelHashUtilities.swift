@@ -10,21 +10,21 @@ import CryptoKit
 import zlib
 
 public actor ParallelHashUtilities {
-    
+
     private static let chunkSize = 1024 * 1024 * 4 // 4MB chunks
     private static let maxConcurrentChunks = ProcessInfo.processInfo.activeProcessorCount
-    
+
     public static func crc32(data: Data) async -> String {
         // For small files, use the simple CPU implementation
         if data.count < chunkSize {
             return HashUtilities.crc32(data: data)
         }
-        
+
         // For large files, just use the CPU implementation directly
         // The parallel chunking doesn't work for CRC32 due to its sequential nature
         return HashUtilities.crc32(data: data)
     }
-    
+
     public static func crc32GPU(data: Data) async -> String {
         // Try to use Metal GPU acceleration if available
         if #available(macOS 10.13, *) {
@@ -35,77 +35,77 @@ public actor ParallelHashUtilities {
         // Fall back to CPU
         return await crc32(data: data)
     }
-    
+
     public static func sha1(data: Data) async -> String {
         if data.count < chunkSize {
             return HashUtilities.sha1(data: data)
         }
-        
+
         return await Task.detached(priority: .userInitiated) {
             var hasher = Insecure.SHA1()
-            
+
             for offset in stride(from: 0, to: data.count, by: chunkSize) {
                 let length = min(chunkSize, data.count - offset)
                 let chunk = data.subdata(in: offset..<(offset + length))
                 hasher.update(data: chunk)
             }
-            
+
             let digest = hasher.finalize()
             return digest.map { String(format: "%02x", $0) }.joined()
         }.value
     }
-    
+
     public static func sha256(data: Data) async -> String {
         if data.count < chunkSize {
             return HashUtilities.sha256(data: data)
         }
-        
+
         return await Task.detached(priority: .userInitiated) {
             var hasher = SHA256()
-            
+
             for offset in stride(from: 0, to: data.count, by: chunkSize) {
                 let length = min(chunkSize, data.count - offset)
                 let chunk = data.subdata(in: offset..<(offset + length))
                 hasher.update(data: chunk)
             }
-            
+
             let digest = hasher.finalize()
             return digest.map { String(format: "%02x", $0) }.joined()
         }.value
     }
-    
+
     public static func md5(data: Data) async -> String {
         if data.count < chunkSize {
             return HashUtilities.md5(data: data)
         }
-        
+
         return await Task.detached(priority: .userInitiated) {
             var hasher = Insecure.MD5()
-            
+
             for offset in stride(from: 0, to: data.count, by: chunkSize) {
                 let length = min(chunkSize, data.count - offset)
                 let chunk = data.subdata(in: offset..<(offset + length))
                 hasher.update(data: chunk)
             }
-            
+
             let digest = hasher.finalize()
             return digest.map { String(format: "%02x", $0) }.joined()
         }.value
     }
-    
+
     public struct MultiHash: Sendable {
         public let crc32: String
         public let sha1: String
         public let sha256: String
         public let md5: String
     }
-    
+
     public static func computeAllHashes(data: Data) async -> MultiHash {
         async let crc32Task = crc32(data: data)
         async let sha1Task = sha1(data: data)
         async let sha256Task = sha256(data: data)
         async let md5Task = md5(data: data)
-        
+
         return await MultiHash(
             crc32: crc32Task,
             sha1: sha1Task,
@@ -113,16 +113,16 @@ public actor ParallelHashUtilities {
             md5: md5Task
         )
     }
-    
+
     public static func computeAllHashesFromFile(at url: URL) async throws -> MultiHash {
         let fileHandle = try FileHandle(forReadingFrom: url)
         defer { try? fileHandle.close() }
-        
+
         var crc32Value: uLong = 0
         var sha1Hasher = Insecure.SHA1()
         var sha256Hasher = SHA256()
         var md5Hasher = Insecure.MD5()
-        
+
         while true {
             autoreleasepool {
                 if let chunk = try? fileHandle.read(upToCount: chunkSize), !chunk.isEmpty {
@@ -137,11 +137,11 @@ public actor ParallelHashUtilities {
                 }
             }
         }
-        
+
         let sha1Digest = sha1Hasher.finalize()
         let sha256Digest = sha256Hasher.finalize()
         let md5Digest = md5Hasher.finalize()
-        
+
         return MultiHash(
             crc32: String(format: "%08x", UInt32(crc32Value)),
             sha1: sha1Digest.map { String(format: "%02x", $0) }.joined(),
@@ -152,23 +152,23 @@ public actor ParallelHashUtilities {
 }
 
 public extension HashUtilities {
-    
+
     static func crc32Async(data: Data) async -> String {
         await ParallelHashUtilities.crc32(data: data)
     }
-    
+
     static func sha1Async(data: Data) async -> String {
         await ParallelHashUtilities.sha1(data: data)
     }
-    
+
     static func sha256Async(data: Data) async -> String {
         await ParallelHashUtilities.sha256(data: data)
     }
-    
+
     static func md5Async(data: Data) async -> String {
         await ParallelHashUtilities.md5(data: data)
     }
-    
+
     static func computeAllHashesAsync(data: Data) async -> ParallelHashUtilities.MultiHash {
         await ParallelHashUtilities.computeAllHashes(data: data)
     }

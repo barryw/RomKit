@@ -16,7 +16,7 @@ public struct IndexedROM {
     public let md5: String?
     public let location: ROMLocation
     public let lastModified: Date
-    
+
     public init(
         name: String,
         size: UInt64,
@@ -41,7 +41,7 @@ public enum ROMLocation: Codable, Hashable {
     case archive(path: URL, entryPath: String) // ZIP/7z file with internal path
     case file(path: URL)                       // Loose file on disk
     case remote(url: URL, credentials: String?) // Network location (NAS/SMB/HTTP)
-    
+
     public var displayPath: String {
         switch self {
         case .archive(let path, let entry):
@@ -52,7 +52,7 @@ public enum ROMLocation: Codable, Hashable {
             return url.absoluteString
         }
     }
-    
+
     public var isLocal: Bool {
         switch self {
         case .archive, .file:
@@ -65,31 +65,31 @@ public enum ROMLocation: Codable, Hashable {
 
 /// Main ROM indexing system that catalogs ROMs from multiple sources
 public actor ROMIndex {
-    
+
     // MARK: - Properties
-    
+
     /// All indexed ROMs by CRC32 for fast lookup
     private var romsByCRC: [String: [IndexedROM]] = [:]
-    
+
     /// All indexed ROMs by name for name-based lookup
     private var romsByName: [String: [IndexedROM]] = [:]
-    
+
     /// Source directories being indexed
     private var sourcePaths: Set<URL> = []
-    
+
     /// Cache file for persistence
     private let cacheURL: URL?
-    
+
     /// Statistics
     public private(set) var totalROMs: Int = 0
     public private(set) var totalSize: UInt64 = 0
     public private(set) var duplicates: Int = 0
-    
+
     // MARK: - Initialization
-    
+
     public init(cacheURL: URL? = nil) {
         self.cacheURL = cacheURL
-        
+
         // Try to load cached index
         if let cacheURL = cacheURL {
             Task {
@@ -97,30 +97,30 @@ public actor ROMIndex {
             }
         }
     }
-    
+
     // MARK: - Indexing Operations
-    
+
     /// Index ROMs from multiple source directories
     public func indexSources(_ sources: [URL], showProgress: Bool = false) async throws {
         for source in sources {
             if showProgress {
                 print("📂 Indexing: \(source.path)")
             }
-            
+
             try await indexDirectory(source, showProgress: showProgress)
             sourcePaths.insert(source)
         }
-        
+
         // Save to cache after indexing
         if let cacheURL = cacheURL {
             try await saveCache(to: cacheURL)
         }
-        
+
         if showProgress {
             printStatistics()
         }
     }
-    
+
     /// Index a single directory recursively
     public func indexDirectory(_ directory: URL, showProgress: Bool = false) async throws {
         let scanner = ConcurrentScanner()
@@ -128,15 +128,15 @@ public actor ROMIndex {
             at: directory,
             computeHashes: true
         )
-        
+
         var processedCount = 0
         let totalCount = results.count
-        
+
         for result in results {
             if showProgress && processedCount % 100 == 0 {
                 print("  Processing: \(processedCount)/\(totalCount) files...")
             }
-            
+
             if result.isArchive {
                 // Index contents of archive
                 try await indexArchive(at: result.url)
@@ -149,7 +149,7 @@ public actor ROMIndex {
                     let data = try Data(contentsOf: result.url)
                     crc32 = HashUtilities.crc32(data: data)
                 }
-                
+
                 let rom = IndexedROM(
                     name: result.url.lastPathComponent,
                     size: result.size,
@@ -161,15 +161,15 @@ public actor ROMIndex {
                 )
                 addROM(rom)
             }
-            
+
             processedCount += 1
         }
     }
-    
+
     /// Index contents of an archive file
     private func indexArchive(at url: URL) async throws {
         let handler: ArchiveHandler
-        
+
         switch url.pathExtension.lowercased() {
         case "zip":
             handler = ParallelZIPArchiveHandler()
@@ -178,15 +178,15 @@ public actor ROMIndex {
         default:
             return // Unsupported archive type
         }
-        
+
         guard handler.canHandle(url: url) else { return }
-        
+
         let entries = try handler.listContents(of: url)
-        
+
         for entry in entries {
             // Skip non-ROM files in archives
             guard isROMFile(url: URL(fileURLWithPath: entry.path)) else { continue }
-            
+
             // For performance, we'll compute hashes on-demand during rebuild/repair
             let rom = IndexedROM(
                 name: URL(fileURLWithPath: entry.path).lastPathComponent,
@@ -200,7 +200,7 @@ public actor ROMIndex {
             addROM(rom)
         }
     }
-    
+
     /// Add a ROM to the index
     private func addROM(_ rom: IndexedROM) {
         // Index by CRC32
@@ -212,7 +212,7 @@ public actor ROMIndex {
                 romsByCRC[rom.crc32] = [rom]
             }
         }
-        
+
         // Index by name
         let normalizedName = rom.name.lowercased()
         if romsByName[normalizedName] != nil {
@@ -220,43 +220,43 @@ public actor ROMIndex {
         } else {
             romsByName[normalizedName] = [rom]
         }
-        
+
         totalROMs += 1
         totalSize += rom.size
     }
-    
+
     // MARK: - Search Operations
-    
+
     /// Find ROMs by CRC32
     public func findByCRC(_ crc32: String) -> [IndexedROM] {
         return romsByCRC[crc32.lowercased()] ?? []
     }
-    
+
     /// Find ROMs by name (case-insensitive)
     public func findByName(_ name: String) -> [IndexedROM] {
         return romsByName[name.lowercased()] ?? []
     }
-    
+
     /// Find best match for a ROM requirement
     public func findBestMatch(for rom: ROM) -> IndexedROM? {
         // First try CRC32 match (most reliable)
         if let crc = rom.crc {
             let matches = findByCRC(crc)
-            
+
             // Prefer local files over remote
             if let localMatch = matches.first(where: { $0.location.isLocal }) {
                 return localMatch
             }
-            
+
             return matches.first
         }
-        
+
         // Fall back to name match
         let matches = findByName(rom.name)
-        
+
         // Filter by size if available
         let sizeMatches = matches.filter { $0.size == rom.size }
-        
+
         if !sizeMatches.isEmpty {
             // Prefer local files
             if let localMatch = sizeMatches.first(where: { $0.location.isLocal }) {
@@ -264,28 +264,26 @@ public actor ROMIndex {
             }
             return sizeMatches.first
         }
-        
+
         // Return any name match as last resort
         return matches.first
     }
-    
+
     /// Find all available sources for a ROM
     public func findAllSources(for rom: ROM) -> [IndexedROM] {
         var sources: [IndexedROM] = []
-        
+
         // Add CRC matches
         if let crc = rom.crc {
             sources.append(contentsOf: findByCRC(crc))
         }
-        
+
         // Add name+size matches if not already included
         let nameMatches = findByName(rom.name).filter { $0.size == rom.size }
-        for match in nameMatches {
-            if !sources.contains(where: { $0.location == match.location }) {
-                sources.append(match)
-            }
+        for match in nameMatches where !sources.contains(where: { $0.location == match.location }) {
+            sources.append(match)
         }
-        
+
         // Sort by preference: local files first, then archives, then remote
         return sources.sorted { lhs, rhs in
             switch (lhs.location, rhs.location) {
@@ -302,9 +300,9 @@ public actor ROMIndex {
             }
         }
     }
-    
+
     // MARK: - Cache Management
-    
+
     /// Save index to cache file
     public func saveCache(to url: URL) async throws {
         let cache = IndexCache(
@@ -316,27 +314,27 @@ public actor ROMIndex {
             duplicates: duplicates,
             timestamp: Date()
         )
-        
+
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         let data = try encoder.encode(cache)
         try data.write(to: url)
     }
-    
+
     /// Load index from cache file
     public func loadCache(from url: URL) async throws {
         guard FileManager.default.fileExists(atPath: url.path) else { return }
-        
+
         let data = try Data(contentsOf: url)
         let decoder = JSONDecoder()
         let cache = try decoder.decode(IndexCache.self, from: data)
-        
+
         // Check if cache is recent (within 24 hours)
         let age = Date().timeIntervalSince(cache.timestamp)
         if age > 86400 { // 24 hours
             print("⚠️ Cache is \(Int(age/3600)) hours old, consider re-indexing")
         }
-        
+
         self.romsByCRC = cache.romsByCRC
         self.romsByName = cache.romsByName
         self.sourcePaths = Set(cache.sourcePaths)
@@ -344,7 +342,7 @@ public actor ROMIndex {
         self.totalSize = cache.totalSize
         self.duplicates = cache.duplicates
     }
-    
+
     /// Clear the index
     public func clear() {
         romsByCRC.removeAll()
@@ -354,24 +352,24 @@ public actor ROMIndex {
         totalSize = 0
         duplicates = 0
     }
-    
+
     /// Refresh index for specific sources
     public func refresh(sources: [URL]? = nil) async throws {
         let sourcesToRefresh = sources ?? Array(sourcePaths)
-        
+
         // Clear existing entries from these sources
         if sources != nil {
             // TODO: Implement selective clearing
         } else {
             clear()
         }
-        
+
         // Re-index
         try await indexSources(sourcesToRefresh, showProgress: true)
     }
-    
+
     // MARK: - Statistics
-    
+
     public func printStatistics() {
         print("\n📊 Index Statistics:")
         print("  Total ROMs: \(totalROMs)")
@@ -380,7 +378,7 @@ public actor ROMIndex {
         print("  Duplicates: \(duplicates)")
         print("  Sources: \(sourcePaths.count)")
     }
-    
+
     public func getStatistics() -> IndexStatistics {
         return IndexStatistics(
             totalROMs: totalROMs,
@@ -391,24 +389,24 @@ public actor ROMIndex {
             newROMs: 0
         )
     }
-    
+
     // MARK: - Helpers
-    
+
     private func isROMFile(url: URL) -> Bool {
         let romExtensions = ["rom", "bin", "chd", "neo", "a78", "col", "int", "vec", "ws", "wsc"]
         return romExtensions.contains(url.pathExtension.lowercased())
     }
-    
+
     private func formatBytes(_ bytes: UInt64) -> String {
         let units = ["B", "KB", "MB", "GB", "TB"]
         var size = Double(bytes)
         var unitIndex = 0
-        
+
         while size >= 1024 && unitIndex < units.count - 1 {
             size /= 1024
             unitIndex += 1
         }
-        
+
         return String(format: "%.2f %@", size, units[unitIndex])
     }
 }
@@ -425,7 +423,6 @@ struct IndexCache: Codable {
     let duplicates: Int
     let timestamp: Date
 }
-
 
 // Make IndexedROM Codable for caching
 extension IndexedROM: Codable {}

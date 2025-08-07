@@ -15,19 +15,19 @@ public class RomKitGeneric {
     private var scanner: (any ROMScanner)?
     private var rebuilder: (any ROMRebuilder)?
     private let registry = RomKitFormatRegistry.shared
-    
+
     public init() {}
-    
+
     // MARK: - DAT Loading
-    
+
     public func loadDAT(from path: String, format: String? = nil) throws {
         let url = URL(fileURLWithPath: path)
         try loadDAT(from: url, format: format)
     }
-    
+
     public func loadDAT(from url: URL, format: String? = nil) throws {
         let handler: any ROMFormatHandler
-        
+
         if let formatId = format {
             guard let hdlr = registry.handler(for: formatId) else {
                 throw RomKitGenericError.unsupportedFormat(formatId)
@@ -39,19 +39,19 @@ public class RomKitGeneric {
             }
             handler = hdlr
         }
-        
+
         let parser = handler.createParser()
         let dat = try parser.parse(url: url)
-        
+
         self.datFile = dat
         self.formatHandler = handler
         self.scanner = handler.createScanner(for: dat)
         self.rebuilder = handler.createRebuilder(for: dat)
     }
-    
+
     public func loadDAT(data: Data, format: String? = nil) throws {
         let handler: any ROMFormatHandler
-        
+
         if let formatId = format {
             guard let hdlr = registry.handler(for: formatId) else {
                 throw RomKitGenericError.unsupportedFormat(formatId)
@@ -63,37 +63,37 @@ public class RomKitGeneric {
             }
             handler = hdlr
         }
-        
+
         let parser = handler.createParser()
         let dat = try parser.parse(data: data)
-        
+
         self.datFile = dat
         self.formatHandler = handler
         self.scanner = handler.createScanner(for: dat)
         self.rebuilder = handler.createRebuilder(for: dat)
     }
-    
+
     // MARK: - Scanning
-    
+
     public func scan(directory: String) async throws -> (any ScanResults)? {
         guard let scanner = scanner else {
             throw RomKitGenericError.datNotLoaded
         }
-        
+
         let url = URL(fileURLWithPath: directory)
         return try await scanner.scan(directory: url)
     }
-    
+
     public func scan(files: [URL]) async throws -> (any ScanResults)? {
         guard let scanner = scanner else {
             throw RomKitGenericError.datNotLoaded
         }
-        
+
         return try await scanner.scan(files: files)
     }
-    
+
     // MARK: - Rebuilding
-    
+
     public func rebuild(
         from source: String,
         to destination: String,
@@ -102,19 +102,19 @@ public class RomKitGeneric {
         guard let rebuilder = rebuilder else {
             throw RomKitGenericError.datNotLoaded
         }
-        
+
         let sourceURL = URL(fileURLWithPath: source)
         let destinationURL = URL(fileURLWithPath: destination)
-        
+
         return try await rebuilder.rebuild(
             from: sourceURL,
             to: destinationURL,
             options: options
         )
     }
-    
+
     // MARK: - Auditing
-    
+
     public func generateAuditReport(from scanResults: any ScanResults) -> GenericAuditReport {
         var completeGames = 0
         var incompleteGames = 0
@@ -122,7 +122,7 @@ public class RomKitGeneric {
         var totalItems = 0
         var foundItems = 0
         var missingItems = 0
-        
+
         for game in scanResults.foundGames {
             switch game.status {
             case .complete:
@@ -134,12 +134,12 @@ public class RomKitGeneric {
             case .unknown:
                 break
             }
-            
+
             totalItems += game.foundItems.count + game.missingItems.count
             foundItems += game.foundItems.count
             missingItems += game.missingItems.count
         }
-        
+
         return GenericAuditReport(
             scanDate: scanResults.scanDate,
             scannedPath: scanResults.scannedPath,
@@ -154,21 +154,21 @@ public class RomKitGeneric {
             errors: scanResults.errors.count
         )
     }
-    
+
     // MARK: - Properties
-    
+
     public var currentFormat: String? {
         return formatHandler?.formatName
     }
-    
+
     public var currentDATFile: (any DATFormat)? {
         return datFile
     }
-    
+
     public var isLoaded: Bool {
         return datFile != nil
     }
-    
+
     public var availableFormats: [String] {
         return registry.availableFormats
     }
@@ -188,12 +188,12 @@ public struct GenericAuditReport: Codable {
     public let missingItems: Int
     public let unknownFiles: Int
     public let errors: Int
-    
+
     public var completionPercentage: Double {
         guard totalGames > 0 else { return 0 }
         return (Double(completeGames) / Double(totalGames)) * 100.0
     }
-    
+
     public var itemCompletionPercentage: Double {
         guard totalItems > 0 else { return 0 }
         return (Double(foundItems) / Double(totalItems)) * 100.0
@@ -208,7 +208,7 @@ public enum RomKitGenericError: Error, LocalizedError {
     case formatDetectionFailed
     case scanFailed(String)
     case rebuildFailed(String)
-    
+
     public var errorDescription: String? {
         switch self {
         case .datNotLoaded:

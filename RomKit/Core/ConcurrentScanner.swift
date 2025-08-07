@@ -187,16 +187,16 @@ public actor ConcurrentScanner {
 }
 
 private actor AsyncSemaphore {
-    private var count: Int
+    private var availablePermits: Int
     private var waiters: [CheckedContinuation<Void, Never>] = []
 
     init(limit: Int) {
-        self.count = limit
+        self.availablePermits = limit
     }
 
     func wait() async {
-        if count > 0 {
-            count -= 1
+        if availablePermits > 0 {
+            availablePermits -= 1
             return
         }
 
@@ -210,7 +210,7 @@ private actor AsyncSemaphore {
             waiters.removeFirst()
             waiter.resume()
         } else {
-            count += 1
+            availablePermits += 1
         }
     }
 }

@@ -11,26 +11,26 @@ import CryptoKit
 
 /// Generates synthetic ROM files for testing without using copyrighted content
 public struct SyntheticROMGenerator {
-    
+
     // MARK: - Basic Generation
-    
+
     /// Generate deterministic ROM data using a seed
     /// This ensures the same seed always produces the same data (important for checksums)
     public static func generateROM(size: Int, seed: UInt32) -> Data {
         var data = Data(capacity: size)
         var rng = seed
-        
+
         for index in 0..<size {
             // Simple deterministic pattern
             rng = (rng ^ UInt32(index)) &+ 1
             data.append(UInt8(rng & 0xFF))
         }
-        
+
         return data
     }
-    
+
     // MARK: - Generate with Target CRC32
-    
+
     /// Generate a ROM that will have a specific CRC32 checksum
     /// TEMPORARILY DISABLED due to integer overflow issues
     public static func generateROMWithCRC32(size: Int, targetCRC: String) -> Data? {
@@ -38,13 +38,13 @@ public struct SyntheticROMGenerator {
         print("Warning: CRC32 forcing temporarily disabled, generating basic ROM instead")
         return generateROM(size: size, seed: UInt32(targetCRC.hashValue & 0x7FFFFFFF))
     }
-    
+
     // MARK: - Generate Test ROM Set
-    
+
     /// Create a complete test ROM set that mimics MAME structure
     public static func generateTestROMSet() -> SyntheticROMSet {
         var romSet = SyntheticROMSet()
-        
+
         // BIOS ROMs (like neogeo)
         romSet.addBIOS(
             name: "testbios",
@@ -63,7 +63,7 @@ public struct SyntheticROMGenerator {
                 )
             ]
         )
-        
+
         // Parent game
         romSet.addGame(
             name: "parentgame",
@@ -91,7 +91,7 @@ public struct SyntheticROMGenerator {
                 )
             ]
         )
-        
+
         // Clone game (shares some ROMs)
         romSet.addGame(
             name: "clonegame",
@@ -119,18 +119,18 @@ public struct SyntheticROMGenerator {
                 )
             ]
         )
-        
+
         return romSet
     }
-    
+
     // MARK: - Generate Mini DAT File
-    
+
     /// Generate a minimal DAT file for testing
     public static func generateTestDAT() -> MAMEDATFile {
         let romSet = generateTestROMSet()
-        
+
         var games: [MAMEGame] = []
-        
+
         // Add BIOS
         if let bios = romSet.bios.first {
             let biosGame = MAMEGame(
@@ -152,7 +152,7 @@ public struct SyntheticROMGenerator {
             )
             games.append(biosGame)
         }
-        
+
         // Add games
         for game in romSet.games {
             let mameGame = MAMEGame(
@@ -177,7 +177,7 @@ public struct SyntheticROMGenerator {
             )
             games.append(mameGame)
         }
-        
+
         return MAMEDATFile(
             formatVersion: "Test",
             games: games,
@@ -187,12 +187,12 @@ public struct SyntheticROMGenerator {
             )
         )
     }
-    
+
     // MARK: - CRC32 Calculation
-    
+
     private static func crc32(_ data: Data) -> UInt32 {
         var crc: UInt32 = 0xFFFFFFFF
-        
+
         for byte in data {
             crc ^= UInt32(byte)
             for _ in 0..<8 {
@@ -203,7 +203,7 @@ public struct SyntheticROMGenerator {
                 }
             }
         }
-        
+
         return crc ^ 0xFFFFFFFF
     }
 }
@@ -213,12 +213,12 @@ public struct SyntheticROMGenerator {
 public struct SyntheticROMSet {
     public var bios: [SyntheticBIOS] = []
     public var games: [SyntheticGame] = []
-    
+
     public struct SyntheticBIOS {
         public let name: String
         public let roms: [SyntheticROM]
     }
-    
+
     public struct SyntheticGame {
         public let name: String
         public let description: String
@@ -226,11 +226,11 @@ public struct SyntheticROMSet {
         public let bios: String?
         public let roms: [SyntheticROM]
     }
-    
+
     public mutating func addBIOS(name: String, roms: [SyntheticROM]) {
         bios.append(SyntheticBIOS(name: name, roms: roms))
     }
-    
+
     public mutating func addGame(name: String, description: String, parent: String?, bios: String?, roms: [SyntheticROM]) {
         games.append(SyntheticGame(
             name: name,
@@ -240,62 +240,62 @@ public struct SyntheticROMSet {
             roms: roms
         ))
     }
-    
+
     /// Generate all ROM files to a directory
     public func generateFiles(to directory: URL) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        
+
         // Generate BIOS ROMs
         for biosSet in bios {
             let biosDir = directory.appendingPathComponent(biosSet.name)
             try FileManager.default.createDirectory(at: biosDir, withIntermediateDirectories: true)
-            
+
             for rom in biosSet.roms {
                 let romPath = biosDir.appendingPathComponent(rom.name)
                 try rom.generateData().write(to: romPath)
             }
         }
-        
+
         // Generate game ROMs
         for game in games {
             let gameDir = directory.appendingPathComponent(game.name)
             try FileManager.default.createDirectory(at: gameDir, withIntermediateDirectories: true)
-            
+
             for rom in game.roms {
                 let romPath = gameDir.appendingPathComponent(rom.name)
                 try rom.generateData().write(to: romPath)
             }
         }
     }
-    
+
     /// Generate loose ROMs with scrambled names (for rebuild testing)
     public func generateLooseROMs(to directory: URL) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        
+
         var allROMs: [(original: String, rom: SyntheticROM)] = []
-        
+
         // Collect all ROMs
         for biosSet in bios {
             for rom in biosSet.roms {
                 allROMs.append((biosSet.name + "/" + rom.name, rom))
             }
         }
-        
+
         for game in games {
             for rom in game.roms {
                 allROMs.append((game.name + "/" + rom.name, rom))
             }
         }
-        
+
         // Save with scrambled names
         for (original, rom) in allROMs {
             // Create a scrambled but deterministic name
             let scrambled = "rom_\(rom.crc32 ?? "unknown")_\(UUID().uuidString).bin"
             let path = directory.appendingPathComponent(scrambled)
-            
+
             let data = rom.generateData()
             try data.write(to: path)
-            
+
             print("Generated: \(scrambled) (was: \(original))")
         }
     }
@@ -306,19 +306,19 @@ public struct SyntheticROM {
     public let size: Int
     public let crc32: String?
     public let sha1: String?
-    
+
     public init(name: String, size: Int, crc32: String? = nil, sha1: String? = nil) {
         self.name = name
         self.size = size
         self.crc32 = crc32
         self.sha1 = sha1
     }
-    
+
     /// Generate the actual ROM data
     public func generateData() -> Data {
         if let targetCRC = crc32 {
             // Generate with specific CRC32
-            return SyntheticROMGenerator.generateROMWithCRC32(size: size, targetCRC: targetCRC) 
+            return SyntheticROMGenerator.generateROMWithCRC32(size: size, targetCRC: targetCRC)
                 ?? SyntheticROMGenerator.generateROM(size: size, seed: 0)
         } else {
             // Generate with seed based on name
@@ -326,11 +326,11 @@ public struct SyntheticROM {
             return SyntheticROMGenerator.generateROM(size: size, seed: seed)
         }
     }
-    
+
     /// Calculate actual checksums of generated data
     public func calculateChecksums() -> ROMChecksums {
         let data = generateData()
-        
+
         // CRC32
         var crc: UInt32 = 0xFFFFFFFF
         for byte in data {
@@ -344,11 +344,11 @@ public struct SyntheticROM {
             }
         }
         let calculatedCRC = String(format: "%08x", crc ^ 0xFFFFFFFF)
-        
+
         // SHA1
         let sha1Hash = Insecure.SHA1.hash(data: data)
         let calculatedSHA1 = sha1Hash.map { String(format: "%02x", $0) }.joined()
-        
+
         return ROMChecksums(
             crc32: crc32 ?? calculatedCRC,
             sha1: sha1 ?? calculatedSHA1,

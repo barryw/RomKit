@@ -11,54 +11,54 @@ import zlib
 
 public class ParallelZIPArchiveHandler: ArchiveHandler {
     public let supportedExtensions = ["zip"]
-    
+
     private let maxConcurrentOperations = ProcessInfo.processInfo.activeProcessorCount
-    
+
     public init() {}
-    
+
     public func canHandle(url: URL) -> Bool {
         return supportedExtensions.contains(url.pathExtension.lowercased())
     }
-    
+
     public func listContents(of url: URL) throws -> [ArchiveEntry] {
         let handler = FastZIPArchiveHandler()
         return try handler.listContents(of: url)
     }
-    
+
     public func extract(entry: ArchiveEntry, from url: URL) throws -> Data {
         let handler = FastZIPArchiveHandler()
         return try handler.extract(entry: entry, from: url)
     }
-    
+
     public func extractAll(from url: URL, to destination: URL) throws {
         let entries = try listContents(of: url)
-        
+
         for entry in entries {
             let data = try extract(entry: entry, from: url)
             let destinationFile = destination.appendingPathComponent(entry.path)
-            
+
             try FileManager.default.createDirectory(
                 at: destinationFile.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-            
+
             try data.write(to: destinationFile)
         }
     }
-    
+
     public func create(at url: URL, with entries: [(name: String, data: Data)]) throws {
         guard let fileHandle = FileHandle(forWritingAtPath: url.path) ?? createFile(at: url) else {
             throw ArchiveError.cannotCreateArchive(url.path)
         }
         defer { try? fileHandle.close() }
-        
+
         var centralDirectory: [CentralDirectoryRecord] = []
-        
+
         for (name, data) in entries {
             let offset = fileHandle.offsetInFile
             let compressed = deflateData(data)
             let crc32 = computeCRC32(data: data)
-            
+
             try writeLocalFileHeader(
                 to: fileHandle,
                 fileName: name,
@@ -66,9 +66,9 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
                 uncompressedSize: UInt32(data.count),
                 crc32: crc32
             )
-            
+
             fileHandle.write(compressed)
-            
+
             centralDirectory.append(CentralDirectoryRecord(
                 fileName: name,
                 offset: offset,
@@ -77,12 +77,12 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
                 crc32: crc32
             ))
         }
-        
+
         let centralDirOffset = fileHandle.offsetInFile
         for record in centralDirectory {
             try writeCentralDirectoryRecord(to: fileHandle, record: record)
         }
-        
+
         try writeEndOfCentralDirectory(
             to: fileHandle,
             numberOfEntries: UInt16(centralDirectory.count),
@@ -90,36 +90,36 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
             centralDirectoryOffset: UInt32(centralDirOffset)
         )
     }
-    
+
     // MARK: - Async versions for parallel processing
-    
+
     public func extractAllAsync(from url: URL, to destination: URL) async throws {
         let entries = try listContents(of: url)
-        
+
         try await withThrowingTaskGroup(of: Void.self) { group in
             let semaphore = AsyncSemaphore(limit: maxConcurrentOperations)
-            
+
             for entry in entries {
                 group.addTask {
                     await semaphore.wait()
-                    
+
                     let data = try self.extract(entry: entry, from: url)
                     let destinationFile = destination.appendingPathComponent(entry.path)
-                    
+
                     try FileManager.default.createDirectory(
                         at: destinationFile.deletingLastPathComponent(),
                         withIntermediateDirectories: true
                     )
-                    
+
                     try data.write(to: destinationFile)
                     await semaphore.signal()
                 }
             }
-            
+
             try await group.waitForAll()
         }
     }
-    
+
     public func createAsync(at url: URL, with entries: [(name: String, data: Data)]) async throws {
         let compressedEntries = try await withThrowingTaskGroup(of: CompressedEntry.self) { group in
             for (name, data) in entries {
@@ -127,11 +127,11 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
                     let compressed = await Task.detached(priority: .userInitiated) {
                         self.deflateData(data)
                     }.value
-                    
+
                     let crc = await Task.detached(priority: .userInitiated) {
                         self.computeCRC32(data: data)
                     }.value
-                    
+
                     return CompressedEntry(
                         name: name,
                         originalData: data,
@@ -140,36 +140,36 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
                     )
                 }
             }
-            
+
             var results: [CompressedEntry] = []
             for try await entry in group {
                 results.append(entry)
             }
             return results
         }
-        
+
         try writeZipFile(at: url, with: compressedEntries)
     }
-    
+
     // MARK: - Helper Methods
-    
+
     private func computeCRC32(data: Data) -> UInt32 {
         return data.withUnsafeBytes { bytes in
             UInt32(crc32(0, bytes.bindMemory(to: UInt8.self).baseAddress, uInt(data.count)))
         }
     }
-    
+
     private func writeZipFile(at url: URL, with entries: [CompressedEntry]) throws {
         guard let fileHandle = FileHandle(forWritingAtPath: url.path) ?? createFile(at: url) else {
             throw ArchiveError.cannotCreateArchive(url.path)
         }
         defer { try? fileHandle.close() }
-        
+
         var centralDirectory: [CentralDirectoryRecord] = []
-        
+
         for entry in entries {
             let offset = fileHandle.offsetInFile
-            
+
             try writeLocalFileHeader(
                 to: fileHandle,
                 fileName: entry.name,
@@ -177,9 +177,9 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
                 uncompressedSize: UInt32(entry.originalData.count),
                 crc32: entry.crc32
             )
-            
+
             fileHandle.write(entry.compressedData)
-            
+
             centralDirectory.append(CentralDirectoryRecord(
                 fileName: entry.name,
                 offset: offset,
@@ -188,12 +188,12 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
                 crc32: entry.crc32
             ))
         }
-        
+
         let centralDirOffset = fileHandle.offsetInFile
         for record in centralDirectory {
             try writeCentralDirectoryRecord(to: fileHandle, record: record)
         }
-        
+
         try writeEndOfCentralDirectory(
             to: fileHandle,
             numberOfEntries: UInt16(centralDirectory.count),
@@ -201,50 +201,50 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
             centralDirectoryOffset: UInt32(centralDirOffset)
         )
     }
-    
+
     private struct CompressedEntry {
         let name: String
         let originalData: Data
         let compressedData: Data
         let crc32: UInt32
     }
-    
+
     private func deflateData(_ data: Data) -> Data {
         return data.withUnsafeBytes { bytes in
             guard let pointer = bytes.bindMemory(to: UInt8.self).baseAddress else {
                 return Data()
             }
-            
+
             let bufferSize = data.count + 1024
             let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
             defer { buffer.deallocate() }
-            
+
             var stream = z_stream()
             stream.next_in = UnsafeMutablePointer(mutating: pointer)
             stream.avail_in = uInt(data.count)
             stream.next_out = buffer
             stream.avail_out = uInt(bufferSize)
-            
+
             deflateInit2_(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size))
             defer { deflateEnd(&stream) }
-            
+
             let result = deflate(&stream, Z_FINISH)
             guard result == Z_STREAM_END else {
                 return Data()
             }
-            
+
             return Data(bytes: buffer, count: bufferSize - Int(stream.avail_out))
         }
     }
-    
+
     private func createFile(at url: URL) -> FileHandle? {
         FileManager.default.createFile(atPath: url.path, contents: nil)
         return FileHandle(forWritingAtPath: url.path)
     }
-    
+
     private func writeLocalFileHeader(to fileHandle: FileHandle, fileName: String, compressedSize: UInt32, uncompressedSize: UInt32, crc32: UInt32) throws {
         var header = Data()
-        
+
         header.append(contentsOf: [0x50, 0x4B, 0x03, 0x04])
         header.append(contentsOf: withUnsafeBytes(of: UInt16(20).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
@@ -257,13 +257,13 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
         header.append(contentsOf: withUnsafeBytes(of: UInt16(fileName.count).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
         header.append(fileName.data(using: .utf8)!)
-        
+
         fileHandle.write(header)
     }
-    
+
     private func writeCentralDirectoryRecord(to fileHandle: FileHandle, record: CentralDirectoryRecord) throws {
         var header = Data()
-        
+
         header.append(contentsOf: [0x50, 0x4B, 0x01, 0x02])
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0x031E).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt16(20).littleEndian) { Array($0) })
@@ -282,13 +282,13 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
         header.append(contentsOf: withUnsafeBytes(of: UInt32(0).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt32(record.offset).littleEndian) { Array($0) })
         header.append(record.fileName.data(using: .utf8)!)
-        
+
         fileHandle.write(header)
     }
-    
+
     private func writeEndOfCentralDirectory(to fileHandle: FileHandle, numberOfEntries: UInt16, centralDirectorySize: UInt32, centralDirectoryOffset: UInt32) throws {
         var header = Data()
-        
+
         header.append(contentsOf: [0x50, 0x4B, 0x05, 0x06])
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
@@ -297,7 +297,7 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
         header.append(contentsOf: withUnsafeBytes(of: centralDirectorySize.littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: centralDirectoryOffset.littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
-        
+
         fileHandle.write(header)
     }
 }
@@ -311,30 +311,30 @@ private struct CentralDirectoryRecord {
 }
 
 private actor AsyncSemaphore {
-    private var count: Int
+    private var availablePermits: Int
     private var waiters: [CheckedContinuation<Void, Never>] = []
-    
+
     init(limit: Int) {
-        self.count = limit
+        self.availablePermits = limit
     }
-    
+
     func wait() async {
-        if count > 0 {
-            count -= 1
+        if availablePermits > 0 {
+            availablePermits -= 1
             return
         }
-        
+
         await withCheckedContinuation { continuation in
             waiters.append(continuation)
         }
     }
-    
+
     func signal() {
         if let waiter = waiters.first {
             waiters.removeFirst()
             waiter.resume()
         } else {
-            count += 1
+            availablePermits += 1
         }
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 
 public class MAMEDATParser: NSObject, DATParser {
     public typealias DATType = MAMEDATFile
-    
+
     private var games: [MAMEGame] = []
     private var currentGame: MAMEGame?
     private var currentRoms: [MAMEROM] = []
@@ -21,7 +21,7 @@ public class MAMEDATParser: NSObject, DATParser {
     private var inHeader: Bool = false
     private var headerData: [String: String] = [:]
     private var currentGameData: [String: String] = [:]
-    
+
     // New element collections
     private var currentChips: [MAMEChip] = []
     private var currentDisplay: MAMEDisplay?
@@ -34,47 +34,47 @@ public class MAMEDATParser: NSObject, DATParser {
     private var currentDipSwitch: MAMEDipSwitch?
     private var currentDipLocations: [MAMEDipLocation] = []
     private var currentDipValues: [MAMEDipValue] = []
-    
+
     public override init() {
         super.init()
     }
-    
+
     public func canParse(data: Data) -> Bool {
         guard let xmlString = String(data: data.prefix(1000), encoding: .utf8) else {
             return false
         }
-        
-        return xmlString.contains("<datafile") || 
+
+        return xmlString.contains("<datafile") ||
                xmlString.contains("<mame") ||
                xmlString.contains("<!DOCTYPE mame")
     }
-    
+
     public func parse(data: Data) throws -> MAMEDATFile {
         reset()
-        
+
         let parser = XMLParser(data: data)
         parser.delegate = self
-        
+
         guard parser.parse() else {
             throw MAMEParserError.parsingFailed(parser.parserError?.localizedDescription ?? "Unknown error")
         }
-        
+
         guard let metadata = metadata else {
             throw MAMEParserError.missingMetadata
         }
-        
+
         return MAMEDATFile(
             formatVersion: metadata.version,
             games: games,
             metadata: metadata
         )
     }
-    
+
     public func parse(url: URL) throws -> MAMEDATFile {
         let data = try Data(contentsOf: url)
         return try parse(data: data)
     }
-    
+
     private func reset() {
         games = []
         currentGame = nil
@@ -87,7 +87,7 @@ public class MAMEDATParser: NSObject, DATParser {
         inHeader = false
         headerData = [:]
         currentGameData = [:]
-        
+
         // Reset new elements
         currentChips = []
         currentDisplay = nil
@@ -109,7 +109,7 @@ extension MAMEDATParser: XMLParserDelegate {
     public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         currentElement = elementName
         currentElementText = ""
-        
+
         switch elementName {
         case "datafile", "mame":
             parseDatafileHeader(attributes: attributeDict)
@@ -150,7 +150,7 @@ extension MAMEDATParser: XMLParserDelegate {
             break
         }
     }
-    
+
     public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if inHeader {
             switch elementName {
@@ -182,7 +182,7 @@ extension MAMEDATParser: XMLParserDelegate {
                 break
             }
         }
-        
+
         switch elementName {
         case "game", "machine":
             finalizeCurrentGame()
@@ -193,14 +193,14 @@ extension MAMEDATParser: XMLParserDelegate {
         default:
             break
         }
-        
+
         currentElementText = ""
     }
-    
+
     public func parser(_ parser: XMLParser, foundCharacters string: String) {
         currentElementText += string
     }
-    
+
     private func parseDatafileHeader(attributes: [String: String]) {
         if metadata == nil {
             metadata = MAMEMetadata(
@@ -211,7 +211,7 @@ extension MAMEDATParser: XMLParserDelegate {
             )
         }
     }
-    
+
     private func parseHeader(attributes: [String: String]) {
         // Header element contains child elements, not attributes in MAME XML
         // We'll handle these in parser:foundCharacters if needed
@@ -225,13 +225,13 @@ extension MAMEDATParser: XMLParserDelegate {
             )
         }
     }
-    
+
     private func parseGame(attributes: [String: String]) {
         guard let name = attributes["name"] else { return }
-        
+
         // Clear game data for new game
         currentGameData = [:]
-        
+
         // Store attributes in currentGameData (may be overridden by child elements)
         currentGameData["name"] = name
         if let desc = attributes["description"] {
@@ -243,7 +243,7 @@ extension MAMEDATParser: XMLParserDelegate {
         if let manufacturer = attributes["manufacturer"] {
             currentGameData["manufacturer"] = manufacturer
         }
-        
+
         // Parse device references from deviceref_N attributes
         var deviceRefs: [String] = []
         for (key, value) in attributes {
@@ -251,7 +251,7 @@ extension MAMEDATParser: XMLParserDelegate {
                 deviceRefs.append(value)
             }
         }
-        
+
         // Store other attributes temporarily
         currentGameData["cloneof"] = attributes["cloneof"]
         currentGameData["romof"] = attributes["romof"]
@@ -263,7 +263,7 @@ extension MAMEDATParser: XMLParserDelegate {
         currentGameData["runnable"] = attributes["runnable"]
         currentGameData["bios"] = attributes["bios"]
         currentGameData["deviceRefs"] = deviceRefs.joined(separator: ",")
-        
+
         // Create temporary game (will be finalized with child element data)
         let gameMetadata = MAMEGameMetadata(
             year: nil,
@@ -279,13 +279,13 @@ extension MAMEDATParser: XMLParserDelegate {
             biosSet: attributes["bios"],
             deviceRefs: deviceRefs
         )
-        
+
         currentGame = MAMEGame(
             name: name,
             description: name,  // Will be updated from child elements
             metadata: gameMetadata
         )
-        
+
         currentRoms = []
         currentDisks = []
         currentSamples = []
@@ -298,28 +298,28 @@ extension MAMEDATParser: XMLParserDelegate {
         currentFeatures = []
         currentControls = []
     }
-    
+
     private func parseROM(attributes: [String: String]) {
         guard let name = attributes["name"],
               let sizeString = attributes["size"],
               let size = UInt64(sizeString) else { return }
-        
+
         let checksums = ROMChecksums(
             crc32: attributes["crc"],
             sha1: attributes["sha1"],
             sha256: attributes["sha256"],
             md5: attributes["md5"]
         )
-        
+
         let statusString = attributes["status"] ?? "good"
         let status = ROMStatus(rawValue: statusString) ?? .good
-        
+
         let romAttributes = ROMAttributes(
             merge: attributes["merge"],
             date: attributes["date"],
             optional: attributes["optional"] == "yes"
         )
-        
+
         let rom = MAMEROM(
             name: name,
             size: size,
@@ -329,29 +329,29 @@ extension MAMEDATParser: XMLParserDelegate {
             region: attributes["region"],
             offset: attributes["offset"]
         )
-        
+
         currentRoms.append(rom)
     }
-    
+
     private func parseDisk(attributes: [String: String]) {
         guard let name = attributes["name"] else { return }
-        
+
         let checksums = ROMChecksums(
             sha1: attributes["sha1"],
             sha256: attributes["sha256"],
             md5: attributes["md5"]
         )
-        
+
         let statusString = attributes["status"] ?? "good"
         let status = ROMStatus(rawValue: statusString) ?? .good
-        
+
         let diskAttributes = ROMAttributes(
             merge: attributes["merge"],
             optional: attributes["optional"] == "yes"
         )
-        
+
         let indexValue = attributes["index"].flatMap { Int($0) }
-        
+
         let disk = MAMEDisk(
             name: name,
             checksums: checksums,
@@ -359,15 +359,15 @@ extension MAMEDATParser: XMLParserDelegate {
             attributes: diskAttributes,
             index: indexValue
         )
-        
+
         currentDisks.append(disk)
     }
-    
+
     private func parseSample(attributes: [String: String]) {
         guard let name = attributes["name"] else { return }
         currentSamples.append(MAMESample(name: name))
     }
-    
+
     private func parseDeviceRef(attributes: [String: String]) {
         guard let name = attributes["name"] else { return }
         if !currentGameData["deviceRefs", default: ""].isEmpty {
@@ -375,11 +375,11 @@ extension MAMEDATParser: XMLParserDelegate {
         }
         currentGameData["deviceRefs", default: ""] += name
     }
-    
+
     private func parseChip(attributes: [String: String]) {
         guard let name = attributes["name"],
               let type = attributes["type"] else { return }
-        
+
         let chip = MAMEChip(
             type: type,
             tag: attributes["tag"] ?? "",
@@ -388,11 +388,11 @@ extension MAMEDATParser: XMLParserDelegate {
         )
         currentChips.append(chip)
     }
-    
+
     private func parseDisplay(attributes: [String: String]) {
         guard let type = attributes["type"],
               let refresh = attributes["refresh"].flatMap({ Double($0) }) else { return }
-        
+
         currentDisplay = MAMEDisplay(
             tag: attributes["tag"] ?? "",
             type: type,
@@ -409,15 +409,15 @@ extension MAMEDATParser: XMLParserDelegate {
             vbStart: attributes["vbstart"].flatMap { Int($0) }
         )
     }
-    
+
     private func parseSound(attributes: [String: String]) {
         guard let channels = attributes["channels"].flatMap({ Int($0) }) else { return }
         currentSound = MAMESound(channels: channels)
     }
-    
+
     private func parseInput(attributes: [String: String]) {
         guard let players = attributes["players"].flatMap({ Int($0) }) else { return }
-        
+
         currentInput = MAMEInput(
             players: players,
             coins: attributes["coins"].flatMap { Int($0) },
@@ -426,10 +426,10 @@ extension MAMEDATParser: XMLParserDelegate {
         )
         currentControls = []
     }
-    
+
     private func parseControl(attributes: [String: String]) {
         guard let type = attributes["type"] else { return }
-        
+
         let control = MAMEControl(
             type: type,
             player: attributes["player"].flatMap { Int($0) },
@@ -438,12 +438,12 @@ extension MAMEDATParser: XMLParserDelegate {
         )
         currentControls.append(control)
     }
-    
+
     private func parseDipSwitch(attributes: [String: String]) {
         guard let name = attributes["name"],
               let tag = attributes["tag"],
               let mask = attributes["mask"].flatMap({ Int($0) }) else { return }
-        
+
         currentDipSwitch = MAMEDipSwitch(
             name: name,
             tag: tag,
@@ -454,46 +454,46 @@ extension MAMEDATParser: XMLParserDelegate {
         currentDipLocations = []
         currentDipValues = []
     }
-    
+
     private func parseDipLocation(attributes: [String: String]) {
         guard let name = attributes["name"],
               let number = attributes["number"] else { return }
-        
+
         currentDipLocations.append(MAMEDipLocation(name: name, number: number))
     }
-    
+
     private func parseDipValue(attributes: [String: String]) {
         guard let name = attributes["name"],
               let value = attributes["value"].flatMap({ Int($0) }) else { return }
-        
+
         currentDipValues.append(MAMEDipValue(
             name: name,
             value: value,
             isDefault: attributes["default"] == "yes"
         ))
     }
-    
+
     private func parseDriver(attributes: [String: String]) {
         guard let status = attributes["status"],
               let emulation = attributes["emulation"],
               let savestate = attributes["savestate"] else { return }
-        
+
         currentDriver = MAMEDriver(
             status: status,
             emulation: emulation,
             savestate: savestate
         )
     }
-    
+
     private func parseFeature(attributes: [String: String]) {
         guard let type = attributes["type"] else { return }
-        
+
         currentFeatures.append(MAMEFeature(
             type: type,
             status: attributes["status"] ?? ""
         ))
     }
-    
+
     private func finalizeCurrentInput() {
         guard var input = currentInput else { return }
         input = MAMEInput(
@@ -505,7 +505,7 @@ extension MAMEDATParser: XMLParserDelegate {
         currentInput = input
         currentControls = []
     }
-    
+
     private func finalizeCurrentDipSwitch() {
         guard var dipSwitch = currentDipSwitch else { return }
         dipSwitch = MAMEDipSwitch(
@@ -520,13 +520,13 @@ extension MAMEDATParser: XMLParserDelegate {
         currentDipLocations = []
         currentDipValues = []
     }
-    
+
     private func finalizeCurrentGame() {
         guard let game = currentGame else { return }
-        
+
         // Parse device refs from stored string
         let deviceRefs = currentGameData["deviceRefs"]?.split(separator: ",").map { String($0) } ?? []
-        
+
         // Create final metadata with both attribute and child element data
         let finalMetadata = MAMEGameMetadata(
             year: currentGameData["year"],
@@ -549,7 +549,7 @@ extension MAMEDATParser: XMLParserDelegate {
             driver: currentDriver,
             features: currentFeatures
         )
-        
+
         let finalGame = MAMEGame(
             name: game.name,
             description: currentGameData["description"] ?? game.name,
@@ -558,9 +558,9 @@ extension MAMEDATParser: XMLParserDelegate {
             samples: currentSamples,
             metadata: finalMetadata
         )
-        
+
         games.append(finalGame)
-        
+
         currentGame = nil
         currentRoms = []
         currentDisks = []
@@ -579,7 +579,7 @@ extension MAMEDATParser: XMLParserDelegate {
 public enum MAMEParserError: Error, LocalizedError {
     case parsingFailed(String)
     case missingMetadata
-    
+
     public var errorDescription: String? {
         switch self {
         case .parsingFailed(let reason):

@@ -13,31 +13,31 @@ public class NoIntroFormatHandler: ROMFormatHandler {
     public let formatIdentifier = "no-intro"
     public let formatName = "No-Intro"
     public let supportedExtensions = ["dat", "xml"]
-    
+
     public init() {}
-    
+
     public func createParser() -> any DATParser {
         return NoIntroDATParser()
     }
-    
+
     public func createValidator() -> any ROMValidator {
         return NoIntroROMValidator()
     }
-    
+
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         guard let noIntroDat = datFile as? NoIntroDATFile else {
             fatalError("Invalid DAT file type for No-Intro scanner")
         }
         return NoIntroROMScanner(datFile: noIntroDat, validator: createValidator(), archiveHandlers: createArchiveHandlers())
     }
-    
+
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         guard let noIntroDat = datFile as? NoIntroDATFile else {
             fatalError("Invalid DAT file type for No-Intro rebuilder")
         }
         return NoIntroROMRebuilder(datFile: noIntroDat, archiveHandlers: createArchiveHandlers())
     }
-    
+
     public func createArchiveHandlers() -> [any ArchiveHandler] {
         return [ZIPArchiveHandler(), SevenZipArchiveHandler()]
     }
@@ -50,7 +50,7 @@ public struct NoIntroDATFile: DATFormat {
     public let formatVersion: String?
     public let games: [any GameEntry]
     public let metadata: DATMetadata
-    
+
     public init(formatVersion: String? = nil, games: [NoIntroGame], metadata: NoIntroMetadata) {
         self.formatVersion = formatVersion
         self.games = games
@@ -67,7 +67,7 @@ public struct NoIntroMetadata: DATMetadata {
     public let comment: String?
     public let url: String?
     public let category: String?
-    
+
     public init(
         name: String,
         description: String,
@@ -95,7 +95,7 @@ public struct NoIntroGame: GameEntry {
     public let description: String
     public let items: [any ROMItem]
     public let metadata: GameMetadata
-    
+
     public init(name: String, description: String, roms: [NoIntroROM], metadata: NoIntroGameMetadata) {
         self.identifier = name
         self.name = name
@@ -117,7 +117,7 @@ public struct NoIntroGameMetadata: GameMetadata {
     public let revision: String?
     public let region: String?
     public let language: String?
-    
+
     public init(
         year: String? = nil,
         manufacturer: String? = nil,
@@ -147,7 +147,7 @@ public struct NoIntroROM: ROMItem {
     public let checksums: ROMChecksums
     public let status: ROMStatus
     public let attributes: ROMAttributes
-    
+
     public init(
         name: String,
         size: UInt64,
@@ -167,30 +167,30 @@ public struct NoIntroROM: ROMItem {
 
 public class NoIntroDATParser: NSObject, DATParser {
     public typealias DATType = NoIntroDATFile
-    
+
     public func canParse(data: Data) -> Bool {
         guard let xmlString = String(data: data.prefix(1000), encoding: .utf8) else {
             return false
         }
-        
+
         return xmlString.contains("<!DOCTYPE datafile") &&
                (xmlString.contains("No-Intro") || xmlString.contains("clrmamepro"))
     }
-    
+
     public func parse(data: Data) throws -> NoIntroDATFile {
         // Simplified implementation - would need full XML parsing
         let metadata = NoIntroMetadata(
             name: "No-Intro Collection",
             description: "No-Intro DAT File"
         )
-        
+
         return NoIntroDATFile(
             formatVersion: "1.0",
             games: [],
             metadata: metadata
         )
     }
-    
+
     public func parse(url: URL) throws -> NoIntroDATFile {
         let data = try Data(contentsOf: url)
         return try parse(data: data)
@@ -201,15 +201,15 @@ public class NoIntroDATParser: NSObject, DATParser {
 
 public class NoIntroROMValidator: ROMValidator {
     private let mameValidator = MAMEROMValidator()
-    
+
     public func validate(item: any ROMItem, against data: Data) -> ValidationResult {
         return mameValidator.validate(item: item, against: data)
     }
-    
+
     public func validate(item: any ROMItem, at url: URL) throws -> ValidationResult {
         return try mameValidator.validate(item: item, at: url)
     }
-    
+
     public func computeChecksums(for data: Data) -> ROMChecksums {
         return mameValidator.computeChecksums(for: data)
     }
@@ -219,17 +219,17 @@ public class NoIntroROMValidator: ROMValidator {
 
 public class NoIntroROMScanner: ROMScanner {
     public typealias DATType = NoIntroDATFile
-    
+
     public let datFile: NoIntroDATFile
     public let validator: any ROMValidator
     public let archiveHandlers: [any ArchiveHandler]
-    
+
     public init(datFile: NoIntroDATFile, validator: any ROMValidator, archiveHandlers: [any ArchiveHandler]) {
         self.datFile = datFile
         self.validator = validator
         self.archiveHandlers = archiveHandlers
     }
-    
+
     public func scan(directory: URL) async throws -> ScanResults {
         // Simplified implementation
         return NoIntroScanResults(
@@ -240,7 +240,7 @@ public class NoIntroROMScanner: ROMScanner {
             errors: []
         )
     }
-    
+
     public func scan(files: [URL]) async throws -> ScanResults {
         return NoIntroScanResults(
             scannedPath: "",
@@ -264,15 +264,15 @@ public struct NoIntroScanResults: ScanResults {
 
 public class NoIntroROMRebuilder: ROMRebuilder {
     public typealias DATType = NoIntroDATFile
-    
+
     public let datFile: NoIntroDATFile
     public let archiveHandlers: [any ArchiveHandler]
-    
+
     public init(datFile: NoIntroDATFile, archiveHandlers: [any ArchiveHandler]) {
         self.datFile = datFile
         self.archiveHandlers = archiveHandlers
     }
-    
+
     public func rebuild(from source: URL, to destination: URL, options: RebuildOptions) async throws -> RebuildResults {
         return RebuildResults(rebuilt: 0, skipped: 0, failed: 0)
     }
