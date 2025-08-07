@@ -23,7 +23,7 @@ struct RomKitErrorsTests {
         for error in errors {
             #expect(error.category == .configuration)
             #expect(error.errorDescription != nil)
-            #expect(error.localizedDescription != nil)
+            #expect(!error.localizedDescription.isEmpty)
             
             // Check severity levels
             switch error {
