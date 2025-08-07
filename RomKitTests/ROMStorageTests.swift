@@ -331,17 +331,13 @@ struct TestROMSet {
         var zipData = Data()
 
         // Simple header
-        guard let header = Data("TESTZIP\n".utf8) else {
-            throw NSError(domain: "TestROMSet", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to create header data"])
-        }
+        let header = Data("TESTZIP\n".utf8)
         zipData.append(header)
 
         // Add each ROM with a simple format: "FILENAME:SIZE:DATA"
         for (name, data) in romsToInclude {
-            guard let entry = Data("\(name):\(data.count):".utf8),
-                  let newline = Data("\n".utf8) else {
-                throw NSError(domain: "TestROMSet", code: 3, userInfo: [NSLocalizedDescriptionKey: "Failed to create entry data"])
-            }
+            let entry = Data("\(name):\(data.count):".utf8)
+            let newline = Data("\n".utf8)
             zipData.append(entry)
             zipData.append(data)
             zipData.append(newline)

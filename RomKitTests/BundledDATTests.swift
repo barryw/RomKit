@@ -111,7 +111,7 @@ struct BundledDATTests {
         let compressedPath = TestDATLoader.getTestDATPath(named: "MAME_0278.dat.gz")
 
         if let path = compressedPath {
-            let compressedURL = URL(fileURLWithPath: path)
+            _ = URL(fileURLWithPath: path)
             let compressedSize = try FileManager.default.attributesOfItem(atPath: path)[.size] as? Int ?? 0
 
             // Load and check decompressed size

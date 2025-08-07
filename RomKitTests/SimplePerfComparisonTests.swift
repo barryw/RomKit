@@ -140,16 +140,18 @@ struct SimplePerfComparisonTests {
         let parStart = Date()
 
         var parHashes: [String] = []
-        await withTaskGroup(of: String.self) { group in
+        await withTaskGroup(of: String?.self) { group in
             for file in files {
                 group.addTask {
-                    let data = try Data(contentsOf: file)
+                    guard let data = try? Data(contentsOf: file) else { return nil }
                     return await ParallelHashUtilities.crc32(data: data)
                 }
             }
 
             for await hash in group {
-                parHashes.append(hash)
+                if let hash = hash {
+                    parHashes.append(hash)
+                }
             }
         }
 

@@ -51,9 +51,7 @@ struct RomKitTests {
     }
 
     @Test func testHashUtilities() async throws {
-        guard let testData = Data("Hello, World!".utf8) else {
-            throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create test data"])
-        }
+        let testData = Data("Hello, World!".utf8)
 
         let crc = HashUtilities.crc32(data: testData)
         #expect(crc.count == 8)
@@ -111,9 +109,7 @@ struct RomKitTests {
         </datafile>
         """
 
-        guard let xmlData = Data(xmlString.utf8) else {
-            throw NSError(domain: "TestError", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to create XML data"])
-        }
+        let xmlData = Data(xmlString.utf8)
 
         let parser = MAMEDATParser()
         let datFile = try parser.parse(data: xmlData)
@@ -147,7 +143,7 @@ struct RomKitTests {
     }
 
     @Test func testRomKitInitialization() async throws {
-        let romKit = RomKit(concurrencyLevel: 4)
+        _ = RomKit(concurrencyLevel: 4)
 
         // Test generic version
         let genericKit = RomKitGeneric()

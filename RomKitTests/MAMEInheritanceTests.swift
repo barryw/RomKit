@@ -155,7 +155,7 @@ struct MAMEInheritanceTests {
         let mergedROMs = bootlegGame?.items.compactMap { $0 as? MAMEROM }.filter { rom in
             rom.attributes.merge != nil
         }
-        #expect(mergedROMs?.isEmpty)
+        #expect(mergedROMs?.isEmpty ?? true)
     }
 
     // MARK: - Complex Inheritance Tests

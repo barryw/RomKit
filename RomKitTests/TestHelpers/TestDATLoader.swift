@@ -114,7 +114,7 @@ extension Data {
 
         // Manual fallback using Compression framework
         return self.withUnsafeBytes { bytes in
-            guard let pointer = bytes.baseAddress else { return nil }
+            guard bytes.baseAddress != nil else { return nil }
 
             // Skip gzip header (10 bytes minimum)
             var headerSize = 10
