@@ -154,7 +154,7 @@ struct IncompleteZIPTests {
         print("✓ Successfully validated complete ZIP with all \(entries.count) ROMs")
     }
 
-    @Test(.disabled("Empty ZIPs cause unzip to return error"))
+    @Test
     func testEmptyZIP() async throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("empty_zip_test_\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
