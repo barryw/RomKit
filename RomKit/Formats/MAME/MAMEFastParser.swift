@@ -200,7 +200,7 @@ public class MAMEFastParser {
         var binaryData = Data()
 
         // Header
-        binaryData.append("MAMEBIN\0".data(using: .utf8)!)
+        binaryData.append(Data("MAMEBIN\0".utf8))
 
         // Version
         binaryData.append(UInt32(1).littleEndianData)

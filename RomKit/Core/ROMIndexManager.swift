@@ -22,7 +22,9 @@ public class ROMIndexManager {
         if let path = databasePath {
             self.dbPath = path
         } else {
-            let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+            guard let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+                throw ConfigurationError.missingCacheDirectory
+            }
             let romkitDir = cacheDir.appendingPathComponent("RomKit", isDirectory: true)
             try FileManager.default.createDirectory(at: romkitDir, withIntermediateDirectories: true)
             self.dbPath = romkitDir.appendingPathComponent("romkit_index.db")
@@ -109,12 +111,14 @@ public class ROMIndexManager {
     // MARK: - ROM Lookup
 
     /// Find ROM by CRC32 - returns all locations where this ROM exists
-    public func findROM(crc32: String) async -> ROMInfo? {
+    public func findROM(crc32: String) async throws -> ROMInfo? {
         let locations = await index.findByCRC(crc32)
         guard !locations.isEmpty else { return nil }
 
         // Group by actual ROM (same CRC = same ROM)
-        let first = locations.first!
+        guard let first = locations.first else {
+            return nil
+        }
         return ROMInfo(
             crc32: crc32,
             name: first.name, // Use most common name
@@ -206,7 +210,7 @@ public class ROMIndexManager {
         var spaceSaveable: UInt64 = 0
         for dup in duplicates where dup.count > 1 {
             // Each duplicate beyond the first is saveable space
-            if let romInfo = await findROM(crc32: dup.crc32) {
+            if let romInfo = try? await findROM(crc32: dup.crc32) {
                 spaceSaveable += romInfo.size * UInt64(dup.count - 1)
             }
         }
@@ -223,7 +227,7 @@ public class ROMIndexManager {
         )
     }
 
-    private func generateRecommendations(stats: IndexStatistics, duplicates: [(crc32: String, count: Int, locations: [String])]) -> [String] {
+    private func generateRecommendations(stats: IndexStatistics, duplicates: [DuplicateEntry]) -> [String] {
         var recommendations: [String] = []
 
         // Check for excessive duplication
@@ -363,6 +367,13 @@ public struct VerificationResult {
     public let valid: Int
     public let stale: Int
     public let removed: Int
+}
+
+/// Entry representing duplicate ROM information
+public struct DuplicateEntry {
+    public let crc32: String
+    public let count: Int
+    public let locations: [String]
 }
 
 // MARK: - Extensions

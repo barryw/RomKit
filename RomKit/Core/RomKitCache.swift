@@ -16,8 +16,10 @@ public class RomKitCache {
 
     public init() {
         // Use app support directory for cache
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory,
-                                                  in: .userDomainMask).first!
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory,
+                                                        in: .userDomainMask).first else {
+            fatalError("Unable to locate application support directory")
+        }
         self.cacheDirectory = appSupport.appendingPathComponent("RomKit/Cache")
 
         // Create cache directory if needed

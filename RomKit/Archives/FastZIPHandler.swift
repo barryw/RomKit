@@ -256,7 +256,10 @@ public class FastZIPArchiveHandler: ArchiveHandler {
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
 
         // File name
-        header.append(fileName.data(using: .utf8)!)
+        guard let fileNameData = fileName.data(using: .utf8) else {
+            throw ArchiveError.invalidFileName("Unable to encode filename: \(fileName)")
+        }
+        header.append(fileNameData)
 
         fileHandle.write(header)
     }

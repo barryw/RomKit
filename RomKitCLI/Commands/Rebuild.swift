@@ -181,7 +181,7 @@ struct Rebuild: AsyncParsableCommand {
 
     private func loadDATFile(from url: URL) async throws -> DATFile {
         let fileContent = try String(contentsOf: url, encoding: .utf8)
-        let data = fileContent.data(using: .utf8)!
+        let data = Data(fileContent.utf8)
 
         // Try MAME parser first
         let parser = MAMEFastParser()

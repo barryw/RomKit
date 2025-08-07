@@ -222,7 +222,10 @@ extension UnsafeRawBufferPointer {
     func loadLittleEndian<T>(fromByteOffset offset: Int, as type: T.Type) -> T where T: FixedWidthInteger {
         var value: T = 0
         withUnsafeMutableBytes(of: &value) { dest in
-            let source = self.baseAddress!.advanced(by: offset)
+            guard let baseAddress = self.baseAddress else {
+                return
+            }
+            let source = baseAddress.advanced(by: offset)
             dest.copyMemory(from: UnsafeRawBufferPointer(start: source, count: MemoryLayout<T>.size))
         }
         return value.littleEndian

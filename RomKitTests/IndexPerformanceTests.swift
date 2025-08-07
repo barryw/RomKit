@@ -187,8 +187,14 @@ struct IndexPerformanceTests {
 
     // Helper functions
 
-    private func createTestROMs(count: Int) -> [(name: String, crc: String, size: UInt64)] {
-        var roms: [(String, String, UInt64)] = []
+    private struct TestROM {
+        let name: String
+        let crc: String
+        let size: UInt64
+    }
+    
+    private func createTestROMs(count: Int) -> [TestROM] {
+        var roms: [TestROM] = []
 
         let gameNames = ["mario", "sonic", "pacman", "galaga", "streetfighter", "tekken", "metroid", "zelda"]
         let extensions = [".rom", ".bin", ".chd"]
@@ -200,7 +206,7 @@ struct IndexPerformanceTests {
             let crc = String(format: "%08x", index)
             let size = UInt64.random(in: 1024...10_000_000)
 
-            roms.append((name, crc, size))
+            roms.append(TestROM(name: name, crc: crc, size: size))
         }
 
         return roms

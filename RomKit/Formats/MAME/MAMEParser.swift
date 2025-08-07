@@ -371,7 +371,7 @@ extension MAMEDATParser: XMLParserDelegate {
     private func parseDeviceRef(attributes: [String: String]) {
         guard let name = attributes["name"] else { return }
         if !currentGameData["deviceRefs", default: ""].isEmpty {
-            currentGameData["deviceRefs"]! += ","
+            currentGameData["deviceRefs", default: ""] += ","
         }
         currentGameData["deviceRefs", default: ""] += name
     }

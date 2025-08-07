@@ -420,7 +420,7 @@ extension Index {
         private func searchByCRC32(_ crc: String, manager: ROMIndexManager) async {
             print("Searching for CRC32: \(crc)")
 
-            if let romInfo = await manager.findROM(crc32: crc) {
+            if let romInfo = try? await manager.findROM(crc32: crc) {
                 print("\n✅ Found ROM:")
                 print("  Name: \(romInfo.name)")
                 print("  Size: \(formatBytes(romInfo.size))")

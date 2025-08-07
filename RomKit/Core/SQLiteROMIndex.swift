@@ -29,7 +29,9 @@ public actor SQLiteROMIndex {
         if let path = databasePath {
             self.dbPath = path
         } else {
-            let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+            guard let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+                throw ConfigurationError.missingCacheDirectory
+            }
             let romkitDir = cacheDir.appendingPathComponent("RomKit", isDirectory: true)
             try FileManager.default.createDirectory(at: romkitDir, withIntermediateDirectories: true)
             self.dbPath = romkitDir.appendingPathComponent("rom_index.db")
@@ -312,7 +314,7 @@ public actor SQLiteROMIndex {
     }
 
     /// Find duplicate ROMs
-    public func findDuplicates() async -> [(crc32: String, count: Int, locations: [String])] {
+    public func findDuplicates() async -> [DuplicateEntry] {
         let query = """
             SELECT crc32, COUNT(*) as count, GROUP_CONCAT(location_path || COALESCE('::' || location_entry, ''), '|||') as locations
             FROM roms
@@ -322,7 +324,7 @@ public actor SQLiteROMIndex {
             ORDER BY count DESC
             """
 
-        var results: [(crc32: String, count: Int, locations: [String])] = []
+        var results: [DuplicateEntry] = []
 
         await withCheckedContinuation { continuation in
             queue.async(flags: .barrier) {
@@ -341,7 +343,7 @@ public actor SQLiteROMIndex {
                     let locationsStr = String(cString: sqlite3_column_text(statement, 2))
                     let locations = locationsStr.split(separator: "|||").map(String.init)
 
-                    results.append((crc32, count, locations))
+                    results.append(DuplicateEntry(crc32: crc32, count: count, locations: locations))
                 }
 
                 continuation.resume()

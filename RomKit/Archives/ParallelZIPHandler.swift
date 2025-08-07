@@ -256,7 +256,10 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
         header.append(contentsOf: withUnsafeBytes(of: uncompressedSize.littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt16(fileName.count).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
-        header.append(fileName.data(using: .utf8)!)
+        guard let fileNameData = fileName.data(using: .utf8) else {
+            throw ArchiveError.invalidFileName("Unable to encode filename: \(fileName)")
+        }
+        header.append(fileNameData)
 
         fileHandle.write(header)
     }
@@ -281,7 +284,10 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
         header.append(contentsOf: withUnsafeBytes(of: UInt16(0).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt32(0).littleEndian) { Array($0) })
         header.append(contentsOf: withUnsafeBytes(of: UInt32(record.offset).littleEndian) { Array($0) })
-        header.append(record.fileName.data(using: .utf8)!)
+        guard let recordFileNameData = record.fileName.data(using: .utf8) else {
+            throw ArchiveError.invalidFileName("Unable to encode filename: \(record.fileName)")
+        }
+        header.append(recordFileNameData)
 
         fileHandle.write(header)
     }

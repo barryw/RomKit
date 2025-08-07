@@ -128,7 +128,7 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
     private func loadDATFile(from url: URL) async throws -> DATFile {
         // Implementation from Rebuild.swift
         let fileContent = try String(contentsOf: url, encoding: .utf8)
-        let data = fileContent.data(using: .utf8)!
+        let data = Data(fileContent.utf8)
 
         let parser = MAMEFastParser()
         if let mameDatFile = try? await parser.parseXMLParallel(data: data) {

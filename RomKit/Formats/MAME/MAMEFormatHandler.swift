@@ -174,8 +174,14 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
         let totalCount = files.count
         let processorCount = ProcessInfo.processInfo.activeProcessorCount
         let maxConcurrency = min(processorCount * 2, 8)
+        
+        struct FileScanResult {
+            let game: MAMEScannedGame?
+            let url: URL
+            let index: Int
+        }
 
-        _ = try await withThrowingTaskGroup(of: (MAMEScannedGame?, URL, Int).self) { group in
+        _ = try await withThrowingTaskGroup(of: FileScanResult.self) { group in
             let semaphore = AsyncSemaphore(limit: maxConcurrency)
 
             for (index, file) in files.enumerated() {
@@ -191,11 +197,11 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
 
                     let result = await self.scanFileOptimized(file)
                     await semaphore.signal()
-                    return (result, file, index)
+                    return FileScanResult(game: result, url: file, index: index)
                 }
             }
 
-            var results: [(MAMEScannedGame?, URL, Int)] = []
+            var results: [FileScanResult] = []
             for try await result in group {
                 results.append(result)
 
@@ -204,17 +210,17 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
                     current: processedCount,
                     total: totalCount,
                     message: "Scanning files...",
-                    currentItem: result.1.lastPathComponent
+                    currentItem: result.url.lastPathComponent
                 )
 
-                if let scannedGame = result.0 {
+                if let scannedGame = result.game {
                     foundGames.append(scannedGame)
                     callbackManager?.sendEvent(.gameFound(
                         name: scannedGame.game.name,
                         status: scannedGame.status
                     ))
                 } else {
-                    unknownFiles.append(result.1)
+                    unknownFiles.append(result.url)
                 }
             }
             return results

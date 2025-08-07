@@ -93,7 +93,7 @@ struct Analyze: AsyncParsableCommand {
     private func loadDATFile(from url: URL) async throws -> DATFile {
         // Try to load as string first to handle encoding issues
         let fileContent = try String(contentsOf: url, encoding: .utf8)
-        let data = fileContent.data(using: .utf8)!
+        let data = Data(fileContent.utf8)
 
         // Parse using MAME parser
         let parser = MAMEFastParser()
