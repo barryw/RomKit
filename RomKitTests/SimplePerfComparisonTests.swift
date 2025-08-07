@@ -47,8 +47,11 @@ struct SimplePerfComparisonTests {
             #expect(cpuSHA == gpuHashes.sha256, "SHA256 should match")
             
             let winner = cpuTime < gpuTime ? "CPU" : "GPU"
-            let line = "\(label.padding(toLength: 10, withPad: " ", startingAt: 0)) | \(String(format: "%8.2f", cpuTime)) | \(String(format: "%8.2f", gpuTime)) | \(winner.padding(toLength: 8, withPad: " ", startingAt: 0))"
-            print(line)
+            let labelPad = label.padding(toLength: 10, withPad: " ", startingAt: 0)
+            let cpuStr = String(format: "%8.2f", cpuTime)
+            let gpuStr = String(format: "%8.2f", gpuTime)
+            let winnerPad = winner.padding(toLength: 8, withPad: " ", startingAt: 0)
+            print("\(labelPad) | \(cpuStr) | \(gpuStr) | \(winnerPad)")
         }
         
         print(String(repeating: "-", count: 50))
@@ -111,9 +114,9 @@ struct SimplePerfComparisonTests {
         
         // Create 10 test ROM files
         print("Creating test ROM files...")
-        for i in 0..<10 {
-            let romData = Data(repeating: UInt8(i), count: 1024 * 500) // 500KB each
-            let romPath = tempDir.appendingPathComponent("rom\(i).dat")
+        for index in 0..<10 {
+            let romData = Data(repeating: UInt8(index), count: 1024 * 500) // 500KB each
+            let romPath = tempDir.appendingPathComponent("rom\(index).dat")
             try romData.write(to: romPath)
         }
         
@@ -140,7 +143,7 @@ struct SimplePerfComparisonTests {
         await withTaskGroup(of: String.self) { group in
             for file in files {
                 group.addTask {
-                    let data = try! Data(contentsOf: file)
+                    let data = try Data(contentsOf: file)
                     return await ParallelHashUtilities.crc32(data: data)
                 }
             }

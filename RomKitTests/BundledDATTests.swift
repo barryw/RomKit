@@ -67,14 +67,14 @@ struct BundledDATTests {
         let iterations = 3
         var totalTime: TimeInterval = 0
         
-        for i in 1...iterations {
+        for index in 1...iterations {
             let start = Date()
             let parser = LogiqxDATParser()
             let dat = try parser.parse(data: data)
             let elapsed = Date().timeIntervalSince(start)
             
             totalTime += elapsed
-            print("Iteration \(i): \(String(format: "%.2f", elapsed))s - \(dat.games.count) games")
+            print("Iteration \(index): \(String(format: "%.2f", elapsed))s - \(dat.games.count) games")
         }
         
         let avgTime = totalTime / Double(iterations)

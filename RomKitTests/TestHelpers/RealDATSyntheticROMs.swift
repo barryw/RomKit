@@ -92,9 +92,9 @@ public struct RealDATSyntheticROMs {
         
         // Fill with pattern based on target CRC (for variety)
         var seed = targetValue
-        for i in 0..<(size - 4) {
+        for index in 0..<(size - 4) {
             seed = (seed &* 1664525) &+ 1013904223 // LCG
-            data[i] = UInt8((seed >> 16) & 0xFF)
+            data[index] = UInt8((seed >> 16) & 0xFF)
         }
         
         // Calculate current CRC32 of base data

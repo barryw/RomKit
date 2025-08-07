@@ -45,9 +45,9 @@ struct IndexPerformanceTests {
         try FileManager.default.createDirectory(at: romDir, withIntermediateDirectories: true)
         
         // Create a subset of actual files for testing
-        for i in 0..<100 {
-            let romFile = romDir.appendingPathComponent("rom_\(i).bin")
-            try Data(repeating: UInt8(i % 256), count: 1024).write(to: romFile)
+        for index in 0..<100 {
+            let romFile = romDir.appendingPathComponent("rom_\(index).bin")
+            try Data(repeating: UInt8(index % 256), count: 1024).write(to: romFile)
         }
         
         let sqliteIndexStart = Date()
@@ -158,9 +158,9 @@ struct IndexPerformanceTests {
             try FileManager.default.createDirectory(at: testDir, withIntermediateDirectories: true)
             
             // Create test files
-            for i in 0..<min(size, 100) { // Limit actual file creation
-                let file = testDir.appendingPathComponent("rom_\(i).bin")
-                try Data(repeating: UInt8(i % 256), count: 1024).write(to: file)
+            for index in 0..<min(size, 100) { // Limit actual file creation
+                let file = testDir.appendingPathComponent("rom_\(index).bin")
+                try Data(repeating: UInt8(index % 256), count: 1024).write(to: file)
             }
             
             let indexStart = Date()
@@ -193,11 +193,11 @@ struct IndexPerformanceTests {
         let gameNames = ["mario", "sonic", "pacman", "galaga", "streetfighter", "tekken", "metroid", "zelda"]
         let extensions = [".rom", ".bin", ".chd"]
         
-        for i in 0..<count {
-            let game = gameNames[i % gameNames.count]
-            let ext = extensions[i % extensions.count]
-            let name = "\(game)_\(i)\(ext)"
-            let crc = String(format: "%08x", i)
+        for index in 0..<count {
+            let game = gameNames[index % gameNames.count]
+            let ext = extensions[index % extensions.count]
+            let name = "\(game)_\(index)\(ext)"
+            let crc = String(format: "%08x", index)
             let size = UInt64.random(in: 1024...10_000_000)
             
             roms.append((name, crc, size))

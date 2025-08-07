@@ -318,13 +318,13 @@ struct GPUPerformanceTests {
         
         // Create test ROM files
         let romCount = 50
-        for i in 0..<romCount {
-            let romData = Data(repeating: UInt8(i % 256), count: 1024 * 100) // 100KB each
-            let romPath = tempDir.appendingPathComponent("rom\(i).zip")
+        for index in 0..<romCount {
+            let romData = Data(repeating: UInt8(index % 256), count: 1024 * 100) // 100KB each
+            let romPath = tempDir.appendingPathComponent("rom\(index).zip")
             
             // Use parallel ZIP handler to create archives
             let handler = ParallelZIPArchiveHandler()
-            try handler.create(at: romPath, with: [("game\(i).rom", romData)])
+            try handler.create(at: romPath, with: [("game\(index).rom", romData)])
         }
         
         // Scan directory with concurrent scanner
