@@ -21,10 +21,10 @@ struct ROMStorageTests {
         
         // Fill with deterministic pseudo-random data
         var rng = seed
-        for i in 0..<size {
+        for index in 0..<size {
             // Simple deterministic pattern to avoid overflow issues
-            rng = (rng ^ UInt32(i)) &+ 1
-            data[i] = UInt8(rng & 0xFF)
+            rng = (rng ^ UInt32(index)) &+ 1
+            data[index] = UInt8(rng & 0xFF)
         }
         
         return data

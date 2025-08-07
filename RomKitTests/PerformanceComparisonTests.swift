@@ -32,7 +32,14 @@ struct PerformanceComparisonTests {
         print("Size       | CPU Time     | GPU Time     | Speedup  | Winner     ")
         print(String(repeating: "-", count: 60))
         
-        var results: [(size: String, cpuTime: Double, gpuTime: Double, speedup: Double)] = []
+        struct TestResult {
+            let size: String
+            let cpuTime: Double
+            let gpuTime: Double
+            let speedup: Double
+        }
+        
+        var results: [TestResult] = []
         
         for testCase in testSizes {
             // Skip very large sizes if they take too long
@@ -77,7 +84,7 @@ struct PerformanceComparisonTests {
             let speedupStr = String(format: "%6.2fx", speedup)
             print("\(testCase.label.padding(toLength: 10, withPad: " ", startingAt: 0)) | \(cpuStr) | \(gpuStr) | \(speedupStr) | \(winner)")
             
-            results.append((size: testCase.label, cpuTime: avgCPUTime, gpuTime: avgGPUTime, speedup: speedup))
+            results.append(TestResult(size: testCase.label, cpuTime: avgCPUTime, gpuTime: avgGPUTime, speedup: speedup))
         }
         
         print(String(repeating: "-", count: 60))
@@ -121,9 +128,9 @@ struct PerformanceComparisonTests {
         
         for count in fileCounts {
             var entries: [(name: String, data: Data)] = []
-            for i in 0..<count {
-                let data = Data(repeating: UInt8(i % 256), count: 1024 * 10) // 10KB each
-                entries.append(("file\(i).dat", data))
+            for index in 0..<count {
+                let data = Data(repeating: UInt8(index % 256), count: 1024 * 10) // 10KB each
+                entries.append(("file\(index).dat", data))
             }
             
             let zipPath = tempDir.appendingPathComponent("test_\(count).zip")
@@ -172,9 +179,9 @@ struct PerformanceComparisonTests {
         
         for count in fileCounts {
             // Create test files
-            for i in 0..<count {
-                let filePath = tempDir.appendingPathComponent("file\(i).zip")
-                let data = Data(repeating: UInt8(i % 256), count: 1024 * 50) // 50KB each
+            for index in 0..<count {
+                let filePath = tempDir.appendingPathComponent("file\(index).zip")
+                let data = Data(repeating: UInt8(index % 256), count: 1024 * 50) // 50KB each
                 try data.write(to: filePath)
             }
             
@@ -245,14 +252,14 @@ struct PerformanceComparisonTests {
         print("Creating \(romCount) test ROM files...")
         
         // Create test ROM files
-        for i in 0..<romCount {
-            let size = romSizes[i % romSizes.count]
-            let romData = Data(repeating: UInt8(i), count: size)
+        for index in 0..<romCount {
+            let size = romSizes[index % romSizes.count]
+            let romData = Data(repeating: UInt8(index), count: size)
             
             // Create as ZIP archive
             let handler = ParallelZIPArchiveHandler()
-            let zipPath = tempDir.appendingPathComponent("game\(i).zip")
-            try handler.create(at: zipPath, with: [("game\(i).rom", romData)])
+            let zipPath = tempDir.appendingPathComponent("game\(index).zip")
+            try handler.create(at: zipPath, with: [("game\(index).rom", romData)])
         }
         
         print("\n📊 Processing Performance:")

@@ -20,9 +20,9 @@ public struct SyntheticROMGenerator {
         var data = Data(capacity: size)
         var rng = seed
         
-        for i in 0..<size {
+        for index in 0..<size {
             // Simple deterministic pattern
-            rng = (rng ^ UInt32(i)) &+ 1
+            rng = (rng ^ UInt32(index)) &+ 1
             data.append(UInt8(rng & 0xFF))
         }
         
