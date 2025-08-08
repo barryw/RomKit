@@ -125,8 +125,8 @@ struct Analyze: AsyncParsableCommand {
             }
 
             // Try to get cloneOf and romOf from metadata if it's MAMEGameMetadata
-            var cloneOf: String? = nil
-            var romOf: String? = nil
+            var cloneOf: String?
+            var romOf: String?
 
             if let mameGameMetadata = gameEntry.metadata as? MAMEGameMetadata {
                 cloneOf = mameGameMetadata.cloneOf

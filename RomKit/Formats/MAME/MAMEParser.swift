@@ -106,7 +106,7 @@ public class MAMEDATParser: NSObject, DATParser {
 // MARK: - XML Parser Delegate
 
 extension MAMEDATParser: XMLParserDelegate {
-    public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
+    public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
         currentElement = elementName
         currentElementText = ""
 

@@ -174,7 +174,7 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
         let totalCount = files.count
         let processorCount = ProcessInfo.processInfo.activeProcessorCount
         let maxConcurrency = min(processorCount * 2, 8)
-        
+
         struct FileScanResult {
             let game: MAMEScannedGame?
             let url: URL

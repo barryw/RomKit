@@ -173,4 +173,3 @@ struct SimplePerfComparisonTests {
         #expect(seqHashes.count == parHashes.count, "Should process same number of files")
     }
 }
-

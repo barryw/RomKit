@@ -251,7 +251,7 @@ struct MAMEInheritanceTests {
 
     @Test func testMissingBIOSDetection() async throws {
         // Simulate scanning mslug without neogeo BIOS
-        let _ = datFile.games.first { ($0 as? MAMEGame)?.name == "mslug" } as? MAMEGame
+        _ = datFile.games.first { ($0 as? MAMEGame)?.name == "mslug" } as? MAMEGame
         let requiredBIOS = biosManager.getRequiredBIOS(for: "mslug")
 
         #expect(requiredBIOS?.name == "neogeo")

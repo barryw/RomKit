@@ -71,7 +71,7 @@ public struct RealDATSyntheticROMs {
             "dkong",      // Donkey Kong
             "frogger",    // Frogger
             "asteroid",   // Asteroids
-            "invaders",   // Space Invaders
+            "invaders"   // Space Invaders
         ]
 
         try generateSyntheticROMs(for: testGames, to: directory)

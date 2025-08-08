@@ -33,7 +33,7 @@ public struct MAMETestGameSets {
         "qbert",        // 1982 - Isometric puzzle
         "digdug",       // 1982 - Namco classic
         "centipede",    // 1980 - Trackball game
-        "missile",      // 1980 - Missile Command
+        "missile"      // 1980 - Missile Command
     ]
 
     // MARK: - Neo-Geo Games (Complex BIOS dependencies)
@@ -54,7 +54,7 @@ public struct MAMETestGameSets {
         "viewpoin",     // Viewpoint
         "aof",          // Art of Fighting
         "lastblad",     // Last Blade
-        "shocktro",     // Shock Troopers
+        "shocktro"     // Shock Troopers
     ]
 
     // MARK: - CPS1 Games (Capcom - Complex parent/clone)
@@ -70,7 +70,7 @@ public struct MAMETestGameSets {
         "willow",       // Willow
         "ffight",       // Final Fight
         "dino",         // Cadillacs and Dinosaurs
-        "punisher",     // The Punisher
+        "punisher"     // The Punisher
     ]
 
     // MARK: - CPS2 Games (Requires qsound device)
@@ -83,7 +83,7 @@ public struct MAMETestGameSets {
         "mvsc",         // Marvel vs. Capcom
         "ddtod",        // Dungeons & Dragons: Tower of Doom
         "ddsom",        // Dungeons & Dragons: Shadow over Mystara
-        "19xx",         // 19XX: The War Against Destiny
+        "19xx"         // 19XX: The War Against Destiny
     ]
 
     // MARK: - Namco System 1 (Multiple device ROMs)
@@ -93,7 +93,7 @@ public struct MAMETestGameSets {
         "pacland",      // Pac-Land
         "baraduke",     // Baraduke
         "metro",        // Metro-Cross
-        "wldcourt",     // World Court
+        "wldcourt"     // World Court
     ]
 
     // MARK: - Sega System 16 (Complex hardware)
@@ -103,7 +103,7 @@ public struct MAMETestGameSets {
         "goldnaxe",     // Golden Axe
         "altbeast",     // Altered Beast
         "outrun",       // OutRun
-        "hangon",       // Hang-On
+        "hangon"       // Hang-On
     ]
 
     // MARK: - Modern Games (2000s+, complex dependencies)
@@ -113,7 +113,7 @@ public struct MAMETestGameSets {
         "mslug5",       // Metal Slug 5 (Neo-Geo)
         "samsho5",      // Samurai Shodown V (Neo-Geo)
         "rotd",         // Rage of the Dragons (Neo-Geo)
-        "matrimelee",   // Matrimelee (Neo-Geo)
+        "matrimelee"   // Matrimelee (Neo-Geo)
     ]
 
     // MARK: - Weird/Edge Cases
@@ -149,7 +149,7 @@ public struct MAMETestGameSets {
 
         // Games with samples
         "dkong",        // Uses sample files
-        "galaga",       // Uses sample files
+        "galaga"       // Uses sample files
     ]
 
     // MARK: - Test Subsets
@@ -159,7 +159,7 @@ public struct MAMETestGameSets {
         "puckman",      // Simple parent
         "pacman",       // Clone of puckman
         "mslug",        // Neo-Geo game (BIOS dependency)
-        "dkong",        // Has samples
+        "dkong"        // Has samples
     ]
 
     /// Medium set covering major scenarios
@@ -178,7 +178,7 @@ public struct MAMETestGameSets {
         "pacland",
 
         // Samples
-        "dkong", "galaga",
+        "dkong", "galaga"
     ]
 
     /// Comprehensive test covering all scenarios

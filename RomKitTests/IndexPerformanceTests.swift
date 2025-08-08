@@ -192,7 +192,7 @@ struct IndexPerformanceTests {
         let crc: String
         let size: UInt64
     }
-    
+
     private func createTestROMs(count: Int) -> [TestROM] {
         var roms: [TestROM] = []
 

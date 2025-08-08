@@ -41,9 +41,9 @@ public enum ConfigurationError: RomKitErrorProtocol {
     case invalidPath(String)
     case missingConfiguration(String)
     case invalidConfiguration(key: String, value: String)
-    
+
     public var category: ErrorCategory { .configuration }
-    
+
     public var severity: ErrorSeverity {
         switch self {
         case .missingCacheDirectory:
@@ -56,7 +56,7 @@ public enum ConfigurationError: RomKitErrorProtocol {
             return .warning
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .missingCacheDirectory:
@@ -69,7 +69,7 @@ public enum ConfigurationError: RomKitErrorProtocol {
             return "Invalid configuration for \(key): \(value)"
         }
     }
-    
+
     public var suggestedRecovery: String? {
         switch self {
         case .missingCacheDirectory:
@@ -93,9 +93,9 @@ public enum FileSystemError: RomKitErrorProtocol {
     case diskFull
     case fileCorrupted(URL, reason: String?)
     case writeFailed(URL, underlyingError: Error?)
-    
+
     public var category: ErrorCategory { .fileSystem }
-    
+
     public var severity: ErrorSeverity {
         switch self {
         case .diskFull:
@@ -106,7 +106,7 @@ public enum FileSystemError: RomKitErrorProtocol {
             return .error
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .fileNotFound(let url):
@@ -123,7 +123,7 @@ public enum FileSystemError: RomKitErrorProtocol {
             return "Failed to write to: \(url.path)\(error.map { " - \($0.localizedDescription)" } ?? "")"
         }
     }
-    
+
     public var suggestedRecovery: String? {
         switch self {
         case .fileNotFound, .directoryNotFound:
@@ -148,9 +148,9 @@ public enum ParsingError: RomKitErrorProtocol {
     case malformedXML(line: Int?, column: Int?, reason: String)
     case missingRequiredField(String)
     case invalidDataType(field: String, expected: String, got: String)
-    
+
     public var category: ErrorCategory { .parsing }
-    
+
     public var severity: ErrorSeverity {
         switch self {
         case .missingRequiredField:
@@ -159,7 +159,7 @@ public enum ParsingError: RomKitErrorProtocol {
             return .error
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .invalidFormat(let format):
@@ -177,7 +177,7 @@ public enum ParsingError: RomKitErrorProtocol {
             return "Invalid data type for \(field): expected \(expected), got \(got)"
         }
     }
-    
+
     public var suggestedRecovery: String? {
         switch self {
         case .invalidFormat:
@@ -202,9 +202,9 @@ public enum ScanningError: RomKitErrorProtocol {
     case invalidROMStructure(URL, reason: String)
     case duplicateROM(name: String, locations: [URL])
     case missingDependency(String)
-    
+
     public var category: ErrorCategory { .scanning }
-    
+
     public var severity: ErrorSeverity {
         switch self {
         case .scanCancelled:
@@ -215,7 +215,7 @@ public enum ScanningError: RomKitErrorProtocol {
             return .error
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .noResultsFound:
@@ -230,7 +230,7 @@ public enum ScanningError: RomKitErrorProtocol {
             return "Missing required dependency: \(dependency)"
         }
     }
-    
+
     public var suggestedRecovery: String? {
         switch self {
         case .noResultsFound:
@@ -256,9 +256,9 @@ public enum ArchiveHandlingError: RomKitErrorProtocol {
     case compressionFailed(reason: String)
     case invalidFileName(String)
     case passwordProtected(URL)
-    
+
     public var category: ErrorCategory { .archive }
-    
+
     public var severity: ErrorSeverity {
         switch self {
         case .passwordProtected:
@@ -267,7 +267,7 @@ public enum ArchiveHandlingError: RomKitErrorProtocol {
             return .error
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .unsupportedFormat(let format):
@@ -284,7 +284,7 @@ public enum ArchiveHandlingError: RomKitErrorProtocol {
             return "Archive is password protected: \(url.lastPathComponent)"
         }
     }
-    
+
     public var suggestedRecovery: String? {
         switch self {
         case .unsupportedFormat:
@@ -314,9 +314,9 @@ public enum DatabaseError: RomKitErrorProtocol {
     case databaseLocked
     case databaseError(String)
     case invalidPath(String)
-    
+
     public var category: ErrorCategory { .database }
-    
+
     public var severity: ErrorSeverity {
         switch self {
         case .corruptedDatabase:
@@ -327,7 +327,7 @@ public enum DatabaseError: RomKitErrorProtocol {
             return .error
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .connectionFailed(let reason):
@@ -348,7 +348,7 @@ public enum DatabaseError: RomKitErrorProtocol {
             return "Invalid database path: \(path)"
         }
     }
-    
+
     public var suggestedRecovery: String? {
         switch self {
         case .connectionFailed:
@@ -377,9 +377,9 @@ public enum ValidationError: RomKitErrorProtocol {
     case missingRequiredROM(String)
     case invalidROMContent(String)
     case validationSkipped(reason: String)
-    
+
     public var category: ErrorCategory { .validation }
-    
+
     public var severity: ErrorSeverity {
         switch self {
         case .validationSkipped:
@@ -390,7 +390,7 @@ public enum ValidationError: RomKitErrorProtocol {
             return .warning
         }
     }
-    
+
     public var errorDescription: String? {
         switch self {
         case .checksumMismatch(let expected, let got):
@@ -405,7 +405,7 @@ public enum ValidationError: RomKitErrorProtocol {
             return "Validation skipped: \(reason)"
         }
     }
-    
+
     public var suggestedRecovery: String? {
         switch self {
         case .checksumMismatch, .sizeMismatch:
@@ -424,30 +424,30 @@ public enum ValidationError: RomKitErrorProtocol {
 
 public struct ErrorCollection {
     private var errors: [RomKitErrorProtocol] = []
-    
+
     public var count: Int { errors.count }
     public var isEmpty: Bool { errors.isEmpty }
-    
+
     public var criticalErrors: [RomKitErrorProtocol] {
         errors.filter { $0.severity == .critical }
     }
-    
+
     public var hasCriticalErrors: Bool {
         !criticalErrors.isEmpty
     }
-    
+
     public mutating func append(_ error: RomKitErrorProtocol) {
         errors.append(error)
     }
-    
+
     public mutating func append(contentsOf newErrors: [RomKitErrorProtocol]) {
         errors.append(contentsOf: newErrors)
     }
-    
+
     public func grouped(by category: ErrorCategory) -> [RomKitErrorProtocol] {
         errors.filter { $0.category == category }
     }
-    
+
     public func formatted() -> String {
         errors.map { error in
             let severity = switch error.severity {
@@ -456,7 +456,7 @@ public struct ErrorCollection {
             case .warning: "⚠️ WARNING"
             case .info: "ℹ️ INFO"
             }
-            
+
             var message = "\(severity): \(error.localizedDescription)"
             if let recovery = error.suggestedRecovery {
                 message += "\n  💡 \(recovery)"

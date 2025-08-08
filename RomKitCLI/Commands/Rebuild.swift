@@ -209,8 +209,8 @@ struct Rebuild: AsyncParsableCommand {
                 )
             }
 
-            var cloneOf: String? = nil
-            var romOf: String? = nil
+            var cloneOf: String?
+            var romOf: String?
 
             if let mameMetadata = gameEntry.metadata as? MAMEGameMetadata {
                 cloneOf = mameMetadata.cloneOf
@@ -421,7 +421,7 @@ struct Rebuild: AsyncParsableCommand {
 
             return try handler.extract(entry: entry, from: archivePath)
 
-        case .remote(_, _):
+        case .remote:
             // TODO: Implement network fetching
             throw ArchiveError.unsupportedFormat("Remote sources not yet implemented")
         }

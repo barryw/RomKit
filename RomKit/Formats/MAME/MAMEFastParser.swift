@@ -324,7 +324,7 @@ class OptimizedXMLParser: NSObject, XMLParserDelegate {
     // Simplified delegate methods - only parse what we need
     func parser(_ parser: XMLParser, didStartElement elementName: String,
                 namespaceURI: String?, qualifiedName qName: String?,
-                attributes attributeDict: [String : String] = [:]) {
+                attributes attributeDict: [String: String] = [:]) {
 
         if elementName == "machine" || elementName == "game" {
             // Only parse essential attributes
@@ -353,7 +353,7 @@ class OptimizedXMLParser: NSObject, XMLParserDelegate {
     func parser(_ parser: XMLParser, didEndElement elementName: String,
                 namespaceURI: String?, qualifiedName qName: String?) {
 
-        if (elementName == "machine" || elementName == "game"), let game = currentGame {
+        if elementName == "machine" || elementName == "game", let game = currentGame {
             gameBuffer.append(game)
 
             // Batch append to main array

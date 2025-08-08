@@ -88,7 +88,7 @@ struct ComprehensiveROMTests {
         let results = try await scanner.scan(directory: tempDir)
 
         // Should find the game but report it as incomplete due to bad ROM
-        let _ = results.foundGames.first { $0.game.name == "galaga" }
+        _ = results.foundGames.first { $0.game.name == "galaga" }
         // Since CRC32 forcing is disabled, scanning might not work as expected
         // Just verify the scan completed without crashing
         // The fact that we got here without throwing means the scan completed
@@ -147,7 +147,7 @@ struct ComprehensiveROMTests {
         try RealDATSyntheticROMs.generateSyntheticROMs(for: games, to: tempDir)
 
         // Create ZIP for each game
-        let _ = FastZIPArchiveHandler() // Placeholder for future ZIP creation
+        _ = FastZIPArchiveHandler() // Placeholder for future ZIP creation
 
         for game in games {
             let gameDir = tempDir.appendingPathComponent(game)
