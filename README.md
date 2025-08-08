@@ -1,8 +1,6 @@
 <div align="center">
-  <img src="Images/romkit-logo.svg" alt="RomKit Logo" width="400">
+  <img src="Images/romkit-logo.svg" alt="RomKit Logo" width="800">
   
-  # RomKit
-
   A high-performance Swift library and CLI for managing ROM collections, with comprehensive support for MAME and other ROM formats.
 </div>
 
