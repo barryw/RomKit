@@ -547,7 +547,7 @@ public class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder {
         ))
 
         var rebuilt = 0
-        var failed = 0
+        let failed = 0
         var skipped = 0
 
         let totalGames = datFile.games.count

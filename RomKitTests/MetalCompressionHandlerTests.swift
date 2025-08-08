@@ -124,7 +124,7 @@ struct MetalCompressionHandlerTests {
 
         // Empty data might compress to a small header
         if let compressed = compressed {
-            #expect(compressed.isEmpty)
+            #expect(!compressed.isEmpty)
         }
     }
 

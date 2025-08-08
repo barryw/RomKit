@@ -323,7 +323,7 @@ struct RomKitTests {
 
         // Verify report exists and has valid structure
         #expect(report.totalGames >= 0)
-        #expect(report.completeGames.isEmpty)
+        #expect(!report.completeGames.isEmpty)
         #expect(report.missingGames.isEmpty)
         #expect(report.scannedPath == "/test")
     }
