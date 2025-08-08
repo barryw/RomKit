@@ -172,7 +172,7 @@ func scanWithAsyncStreams() async throws {
     )
     
     // Process events concurrently
-    Task {
+    Task { @MainActor in
         for await event in eventStream.events {
             await handleEvent(event)
         }

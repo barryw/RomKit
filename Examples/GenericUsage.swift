@@ -80,12 +80,39 @@ struct TOSECFormatHandler: ROMFormatHandler {
     
     func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         // Implementation would go here
-        fatalError("Not implemented")
+        // In a real implementation, you would return a proper scanner
+        // For this example, we'll throw an error instead of using fatalError
+        struct NotImplementedScanner: ROMScanner {
+            typealias DATType = TOSECDATFile
+            let datFile: any DATFormat
+            let validator: any ROMValidator
+            let archiveHandlers: [any ArchiveHandler]
+            
+            func scan(directory: URL) async throws -> any ScanResults {
+                throw NSError(domain: "TOSEC", code: -1, userInfo: [NSLocalizedDescriptionKey: "TOSEC scanner not yet implemented"])
+            }
+            
+            func scan(files: [URL]) async throws -> any ScanResults {
+                throw NSError(domain: "TOSEC", code: -1, userInfo: [NSLocalizedDescriptionKey: "TOSEC scanner not yet implemented"])
+            }
+        }
+        return NotImplementedScanner(datFile: datFile, validator: createValidator(), archiveHandlers: createArchiveHandlers())
     }
     
     func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         // Implementation would go here
-        fatalError("Not implemented")
+        // In a real implementation, you would return a proper rebuilder
+        // For this example, we'll throw an error instead of using fatalError
+        struct NotImplementedRebuilder: ROMRebuilder {
+            typealias DATType = TOSECDATFile
+            let datFile: any DATFormat
+            let archiveHandlers: [any ArchiveHandler]
+            
+            func rebuild(from source: URL, to destination: URL, options: RebuildOptions) async throws -> any RebuildResults {
+                throw NSError(domain: "TOSEC", code: -1, userInfo: [NSLocalizedDescriptionKey: "TOSEC rebuilder not yet implemented"])
+            }
+        }
+        return NotImplementedRebuilder(datFile: datFile, archiveHandlers: createArchiveHandlers())
     }
     
     func createArchiveHandlers() -> [any ArchiveHandler] {
