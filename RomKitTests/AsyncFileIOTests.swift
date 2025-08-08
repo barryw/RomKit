@@ -45,8 +45,8 @@ struct AsyncFileIOTests {
         let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent("test_stream_\(UUID()).txt")
         let lineCount = 100
         var content = ""
-        for i in 0..<lineCount {
-            content += "Line \(i): This is test content that will be streamed in chunks\n"
+        for lineNum in 0..<lineCount {
+            content += "Line \(lineNum): This is test content that will be streamed in chunks\n"
         }
         try content.write(to: tempFile, atomically: true, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: tempFile) }
@@ -92,10 +92,10 @@ struct AsyncFileIOTests {
         // Write multiple files concurrently
         let fileCount = 10
         await withTaskGroup(of: Void.self) { group in
-            for i in 0..<fileCount {
+            for fileIndex in 0..<fileCount {
                 group.addTask {
-                    let file = tempDir.appendingPathComponent("file_\(i).txt")
-                    let data = Data("Content \(i)".utf8)
+                    let file = tempDir.appendingPathComponent("file_\(fileIndex).txt")
+                    let data = Data("Content \(fileIndex)".utf8)
                     try? await AsyncFileIO.writeData(data, to: file)
                 }
             }
@@ -148,9 +148,9 @@ struct AsyncFileIOTests {
         let fileCount = 5
         var files: [URL] = []
 
-        for i in 0..<fileCount {
-            let file = tempDir.appendingPathComponent("file_\(i).txt")
-            try "Content \(i)".write(to: file, atomically: true, encoding: .utf8)
+        for fileNum in 0..<fileCount {
+            let file = tempDir.appendingPathComponent("file_\(fileNum).txt")
+            try "Content \(fileNum)".write(to: file, atomically: true, encoding: .utf8)
             files.append(file)
         }
 

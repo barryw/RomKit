@@ -117,14 +117,14 @@ struct RomKitCacheTests {
 
         // Create a larger DAT with multiple games
         var games: [MAMEGame] = []
-        for i in 0..<100 {
+        for index in 0..<100 {
             let gameMetadata = MAMEGameMetadata(
                 year: "2024",
                 manufacturer: "Mfg"
             )
             games.append(MAMEGame(
-                name: "game\(i)",
-                description: "Game \(i)",
+                name: "game\(index)",
+                description: "Game \(index)",
                 roms: [],
                 metadata: gameMetadata
             ))

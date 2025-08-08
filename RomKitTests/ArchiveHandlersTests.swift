@@ -74,9 +74,9 @@ struct ArchiveHandlersTests {
 
         // Create multiple test files
         var testFiles: [URL] = []
-        for i in 0..<5 {
-            let file = tempDir.appendingPathComponent("file_\(i).txt")
-            try "Content \(i)".write(to: file, atomically: true, encoding: .utf8)
+        for index in 0..<5 {
+            let file = tempDir.appendingPathComponent("file_\(index).txt")
+            try "Content \(index)".write(to: file, atomically: true, encoding: .utf8)
             testFiles.append(file)
         }
 
