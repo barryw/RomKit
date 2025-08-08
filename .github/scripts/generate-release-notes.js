@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const fullVersion = process.argv[2]; // e.g., "1.4.0+lua5.4.8"
+const fullVersion = process.argv[2]; // e.g., "1.4.0"
 
 if (!ANTHROPIC_API_KEY) {
   console.error('ANTHROPIC_API_KEY is required');
@@ -14,21 +14,20 @@ if (!ANTHROPIC_API_KEY) {
 }
 
 if (!fullVersion) {
-  console.error('Full version (x.x.x+luax.x.x) is required as argument');
+  console.error('Full version (x.x.x) is required as argument');
   process.exit(1);
 }
 
 // Parse the version components
 function parseVersion(fullVersion) {
-  const match = fullVersion.match(/^(\d+\.\d+\.\d+)\+lua(\d+\.\d+\.\d+)$/);
+  const match = fullVersion.match(/^(\d+\.\d+\.\d+)$/);
   if (!match) {
-    throw new Error(`Invalid version format: ${fullVersion}. Expected format: x.x.x+luax.x.x`);
+    throw new Error(`Invalid version format: ${fullVersion}. Expected format: x.x.x`);
   }
   
   return {
     semanticVersion: match[1],    // e.g., "1.4.0"
-    luaVersion: match[2],         // e.g., "5.4.8"
-    fullVersion: fullVersion      // e.g., "1.4.0+lua5.4.8"
+    fullVersion: fullVersion      // e.g., "1.4.0"
   };
 }
 
@@ -148,10 +147,10 @@ async function generateReleaseNotesWithClaude(commits, fileStats, testResults, p
   const totalAdditions = fileStats.reduce((sum, file) => sum + file.additions, 0);
   const totalDeletions = fileStats.reduce((sum, file) => sum + file.deletions, 0);
   
-  const prompt = `Generate comprehensive release notes for LuaKit ${versionInfo.fullVersion}, a Swift Package that provides Swift-Lua bridging functionality.
+  const prompt = `Generate comprehensive release notes for RomKit ${versionInfo.fullVersion}, a Swift Package that provides ROM management and validation functionality.
 
 Previous Version: ${previousVersion || 'unknown'}
-New Version: ${versionInfo.fullVersion} (Library: ${versionInfo.semanticVersion}, Embedded Lua: ${versionInfo.luaVersion})
+New Version: ${versionInfo.fullVersion}
 
 Recent Commits:
 ${commits.map(c => `- ${c.hash}: ${c.subject}${c.body ? '\n  ' + c.body : ''} (by ${c.author} on ${c.date})`).join('\n')}
@@ -189,7 +188,7 @@ IMPORTANT: Do NOT use triple backticks for code blocks. Use 4-space indentation 
 
 If this is a major release, emphasize the significance. If it's a patch release, focus on stability and fixes.
 
-The framework is for Swift developers who want to embed Lua scripting in their iOS/macOS apps with seamless Swift-Lua object bridging.`;
+The framework is for Swift developers who need ROM management and validation capabilities for emulation, preservation, and retro gaming projects.`;
 
   try {
     const response = await axios.post(
@@ -227,14 +226,14 @@ This release was automatically created by our CI/CD pipeline powered by Claude A
 - **Release Date**: ${new Date().toISOString().split('T')[0]}
 - **Commit Hash**: ${execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim().substring(0, 8)}
 
-> **Lua Version**: This release includes **Lua ${versionInfo.luaVersion}** embedded directly - no external dependencies required!
+> **Pure Swift**: This release is built with pure Swift - no external dependencies required!
 
 ## 🔗 Links
 
-- [📚 Documentation](https://github.com/barryw/LuaKit#readme)
-- [🐛 Report Issues](https://github.com/barryw/LuaKit/issues)
-- [💬 Discussions](https://github.com/barryw/LuaKit/discussions)
-- [📋 Changelog](https://github.com/barryw/LuaKit/releases)`;
+- [📚 Documentation](https://github.com/barryw/RomKit#readme)
+- [🐛 Report Issues](https://github.com/barryw/RomKit/issues)
+- [💬 Discussions](https://github.com/barryw/RomKit/discussions)
+- [📋 Changelog](https://github.com/barryw/RomKit/releases)`;
 
     return releaseNotes + footer;
     
@@ -259,7 +258,7 @@ function generateFallbackReleaseNotes(commits, fileStats, testResults, packageIn
     .map(f => `  - ${f.file}: +${f.additions}/-${f.deletions}`)
     .join('\n');
   
-  return `# LuaKit ${versionInfo.fullVersion}
+  return `# RomKit ${versionInfo.fullVersion}
 
 ## Release Summary
 
@@ -292,14 +291,14 @@ ${commits.length > 10 ? `\n... and ${commits.length - 10} more commits` : ''}
 Add to your Package.swift:
 
     dependencies: [
-        .package(url: "https://github.com/barryw/LuaKit", from: "${versionInfo.semanticVersion}")
+        .package(url: "https://github.com/barryw/RomKit", from: "${versionInfo.semanticVersion}")
     ]
 
 ## Requirements
 
 - Swift ${packageInfo.swiftVersion} or later
 - Platforms: ${packageInfo.platforms.join(', ')}
-- Embedded Lua ${versionInfo.luaVersion}
+- Pure Swift implementation
 
 ---
 

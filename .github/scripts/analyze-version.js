@@ -25,8 +25,8 @@ async function getLatestTag() {
       return null;
     }
     
-    // Filter only semantic version tags (with or without +lua suffix)
-    const semverTags = allTags.filter(tag => /^\d+\.\d+\.\d+(\+lua\d+\.\d+\.\d+)?$/.test(tag));
+    // Filter only semantic version tags
+    const semverTags = allTags.filter(tag => /^\d+\.\d+\.\d+$/.test(tag));
     
     if (semverTags.length === 0) {
       console.log('No semantic version tags found');
@@ -35,8 +35,8 @@ async function getLatestTag() {
     
     // Sort by semantic version (extract main version for comparison)
     semverTags.sort((a, b) => {
-      const versionA = a.replace(/\+lua[\d.]+$/, '').split('.').map(Number);
-      const versionB = b.replace(/\+lua[\d.]+$/, '').split('.').map(Number);
+      const versionA = a.split('.').map(Number);
+      const versionB = b.split('.').map(Number);
       
       for (let i = 0; i < 3; i++) {
         if (versionA[i] !== versionB[i]) {
@@ -86,8 +86,7 @@ async function getChangedFiles(tag) {
 async function getCurrentVersion(latestTag) {
   // If we have a latest tag, extract the semantic version from it
   if (latestTag) {
-    // Remove the lua suffix to get clean semantic version
-    const version = latestTag.replace(/\+lua[\d.]+$/, '');
+    const version = latestTag;
     return version;
   }
   
@@ -115,42 +114,12 @@ async function getCurrentVersion(latestTag) {
     }
   }
   
-  // Strip any existing lua suffix to get clean semantic version
-  version = version.replace(/\+lua[\d.]+$/, '');
-  
   return version;
 }
 
-function getLuaVersion() {
-  try {
-    const luaHeaderPath = 'Sources/Lua/include/lua.h';
-    if (fs.existsSync(luaHeaderPath)) {
-      const headerContent = fs.readFileSync(luaHeaderPath, 'utf8');
-      
-      // Extract version components from Lua header
-      const majorMatch = headerContent.match(/#define\s+LUA_VERSION_MAJOR\s+"(\d+)"/);
-      const minorMatch = headerContent.match(/#define\s+LUA_VERSION_MINOR\s+"(\d+)"/);
-      const releaseMatch = headerContent.match(/#define\s+LUA_VERSION_RELEASE\s+"(\d+)"/);
-      
-      if (majorMatch && minorMatch && releaseMatch) {
-        return `${majorMatch[1]}.${minorMatch[1]}.${releaseMatch[1]}`;
-      }
-    }
-  } catch (error) {
-    console.log('Could not parse Lua version from header, using fallback');
-  }
-  
-  // Fallback to known version
-  return '5.4.8';
-}
-
-function formatVersionWithLua(semanticVersion) {
-  const luaVersion = getLuaVersion();
-  return `${semanticVersion}+lua${luaVersion}`;
-}
 
 async function analyzeWithClaude(commits, changedFiles, currentVersion) {
-  const prompt = `Analyze the following changes to a Swift Package (LuaKit - Swift-Lua bridging framework) and determine if a new release should be created and what the semantic version should be.
+  const prompt = `Analyze the following changes to a Swift Package (RomKit - ROM management and validation framework) and determine if a new release should be created and what the semantic version should be.
 
 Current Version: ${currentVersion}
 
@@ -307,8 +276,8 @@ async function main() {
         const outputs = [
           `should_release=false`,
           `new_version=${currentVersion}`,
-          `full_version=${formatVersionWithLua(currentVersion)}`,
-          `lua_version=${getLuaVersion()}`,
+          `full_version=${currentVersion}`,
+          `semantic_version=${currentVersion}`,
           `release_type=none`,
           `reasoning=No commits since last tag`,
           `changelog_summary=No changes`
@@ -363,8 +332,7 @@ async function main() {
       analysis.reasoning = 'No new commits since last release';
     }
     
-    // Format version with Lua suffix
-    const formattedVersion = formatVersionWithLua(analysis.new_version);
+    const formattedVersion = analysis.new_version;
     
     // Sanitize multiline strings for GitHub Actions output
     const sanitize = (str) => str.replace(/\n/g, ' ').replace(/\r/g, '');
@@ -375,7 +343,7 @@ async function main() {
         `should_release=${analysis.should_release}`,
         `new_version=${analysis.new_version}`,
         `full_version=${formattedVersion}`,
-        `lua_version=${getLuaVersion()}`,
+        `semantic_version=${analysis.new_version}`,
         `release_type=${analysis.release_type}`,
         `reasoning=${sanitize(analysis.reasoning)}`,
         `changelog_summary=${sanitize(analysis.changelog_summary)}`

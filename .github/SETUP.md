@@ -1,6 +1,6 @@
 # CI/CD Pipeline Setup Guide
 
-This guide will help you set up the automated CI/CD pipeline for LuaKit with AI-powered release management.
+This guide will help you set up the automated CI/CD pipeline for RomKit with AI-powered release management.
 
 ## 🔑 Required Secrets
 
@@ -84,31 +84,24 @@ Claude AI analyzes:
 - **Code diff statistics** to assess impact
 - **Previous version** to calculate appropriate bump
 
-#### Version Format: `x.x.x+luax.x.x`
+#### Version Format: `x.x.x`
 
-All versions follow this strict format:
-- **Library Version**: Semantic versioning (MAJOR.MINOR.PATCH)
-  - `MAJOR`: Breaking changes, major API changes
-  - `MINOR`: New features, backward-compatible enhancements  
-  - `PATCH`: Bug fixes, documentation, minor improvements
-- **Lua Version**: Embedded Lua version (e.g., `+lua5.4.8`)
+All versions follow semantic versioning (MAJOR.MINOR.PATCH):
+- `MAJOR`: Breaking changes, major API changes
+- `MINOR`: New features, backward-compatible enhancements  
+- `PATCH`: Bug fixes, documentation, minor improvements
 
 Examples:
-- `1.4.0+lua5.4.8` - Minor feature release with Lua 5.4.8
-- `2.0.0+lua5.4.8` - Major breaking changes with Lua 5.4.8
-- `1.3.1+lua5.4.8` - Patch release with Lua 5.4.8
-
-This ensures consumers always know:
-- ✅ Which library features they're getting
-- ✅ Which Lua version is embedded
-- ✅ Compatibility expectations
+- `1.4.0` - Minor feature release
+- `2.0.0` - Major breaking changes
+- `1.3.1` - Patch release
 
 ### Release Creation
 
 When a release is warranted:
-1. **Version calculated** using semantic versioning with Lua suffix
-2. **Tag created** with format `X.Y.Z+luaX.Y.Z` (e.g., `1.4.0+lua5.4.8`)
-3. **Release notes generated** with comprehensive details including Lua version info
+1. **Version calculated** using semantic versioning
+2. **Tag created** with format `X.Y.Z` (e.g., `1.4.0`)
+3. **Release notes generated** with comprehensive details
 4. **Artifacts built** and attached to release
 5. **Package.swift compatibility** ensured for consumers
 6. **Notifications sent** (if configured)
@@ -201,12 +194,10 @@ function_body_length:
 
 To force a release regardless of AI analysis:
 ```bash
-# Create and push a tag manually (always include Lua version)
-git tag -a "1.4.0+lua5.4.8" -m "Manual release 1.4.0 with Lua 5.4.8"
-git push origin "1.4.0+lua5.4.8"
+# Create and push a tag manually
+git tag -a "1.4.0" -m "Manual release 1.4.0"
+git push origin "1.4.0"
 ```
-
-**Important**: Always use the `x.x.x+luax.x.x` format for consistency!
 
 ### Branch-Specific Behavior
 
