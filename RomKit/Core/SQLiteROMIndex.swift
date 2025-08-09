@@ -542,7 +542,9 @@ public actor SQLiteROMIndex {
             if let intParam = param as? Int {
                 sqlite3_bind_int64(statement, idx, Int64(intParam))
             } else if let stringParam = param as? String {
-                sqlite3_bind_text(statement, idx, stringParam, -1, nil)
+                // Use unsafeBitCast to create SQLITE_TRANSIENT (-1 as destructor)
+                let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+                sqlite3_bind_text(statement, idx, stringParam, -1, SQLITE_TRANSIENT)
             } else if param is NSNull {
                 sqlite3_bind_null(statement, idx)
             }
