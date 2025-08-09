@@ -39,7 +39,7 @@ public class ROMOrganizer {
 
         let renamed: [(from: String, to: String)] = []
         let skipped: [(file: String, reason: String)] = []
-        let errors: [(file: String, error: Error)] = []
+        let errors: [(file: String, error: any Error)] = []
 
         // For now, this is a simplified implementation that would need to be
         // integrated with the actual scanning infrastructure
@@ -64,7 +64,7 @@ public class ROMOrganizer {
     ) async throws -> OrganizeResult {
 
         let organized: [(file: String, folder: String)] = []
-        let errors: [(file: String, error: Error)] = []
+        let errors: [(file: String, error: any Error)] = []
 
         // For now, this is a simplified implementation that would need to be
         // integrated with the actual scanning infrastructure
@@ -88,7 +88,7 @@ public class ROMOrganizer {
 
         var renamed: [(from: String, to: String)] = []
         var skipped: [(file: String, reason: String)] = []
-        var errors: [(file: String, error: Error)] = []
+        var errors: [(file: String, error: any Error)] = []
 
         let files = try getZipFiles(in: directory)
 
@@ -124,7 +124,7 @@ public class ROMOrganizer {
     private enum ProcessResult {
         case renamed(from: String, to: String)
         case skipped(file: String, reason: String)
-        case error(file: String, error: Error)
+        case error(file: String, error: any Error)
         case unchanged
     }
 
@@ -304,7 +304,7 @@ public class ROMOrganizer {
 public struct RenameResult {
     public let renamed: [(from: String, to: String)]
     public let skipped: [(file: String, reason: String)]
-    public let errors: [(file: String, error: Error)]
+    public let errors: [(file: String, error: any Error)]
     public let dryRun: Bool
 
     public var summary: String {
@@ -312,7 +312,7 @@ public struct RenameResult {
         Rename Operation \(dryRun ? "(DRY RUN)" : "Complete"):
         ✅ Renamed: \(renamed.count) files
         ⏭️ Skipped: \(skipped.count) files
-        ❌ Errors: \(errors.count) files
+        ❌ any Errors: \(errors.count) files
         """
     }
 }
@@ -320,7 +320,7 @@ public struct RenameResult {
 /// Result of organize operation
 public struct OrganizeResult {
     public let organized: [(file: String, folder: String)]
-    public let errors: [(file: String, error: Error)]
+    public let errors: [(file: String, error: any Error)]
     public let folders: [String]
 
     public var summary: String {
@@ -328,7 +328,7 @@ public struct OrganizeResult {
         Organization Complete:
         ✅ Organized: \(organized.count) files
         📁 Folders created: \(folders.count)
-        ❌ Errors: \(errors.count) files
+        ❌ any Errors: \(errors.count) files
         """
     }
 }
