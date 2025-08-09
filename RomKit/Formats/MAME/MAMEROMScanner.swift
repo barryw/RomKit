@@ -200,9 +200,9 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
     }
 
     private func scanArchiveEntries(entries: [ArchiveEntry],
-                                     url: URL,
-                                     game: MAMEGame,
-                                     handler: any ArchiveHandler) async -> [ScannedItem] {
+                                    url: URL,
+                                    game: MAMEGame,
+                                    handler: any ArchiveHandler) async -> [ScannedItem] {
         await withTaskGroup(of: ScannedItem?.self) { group in
             for entry in entries {
                 if let rom = game.items.first(where: { $0.name == entry.path }) {
@@ -223,9 +223,9 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
     }
 
     private func scanSingleEntry(entry: ArchiveEntry,
-                                  rom: any ROMItem,
-                                  url: URL,
-                                  handler: any ArchiveHandler) async -> ScannedItem? {
+                                 rom: any ROMItem,
+                                 url: URL,
+                                 handler: any ArchiveHandler) async -> ScannedItem? {
         do {
             callbackManager?.sendEvent(.archiveExtracting(
                 fileName: entry.path,

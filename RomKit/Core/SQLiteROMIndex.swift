@@ -577,19 +577,3 @@ public actor SQLiteROMIndex {
     }
 
 }
-
-// MARK: - Error Types
-
-enum IndexError: LocalizedError {
-    case databaseError(String)
-    case invalidPath(String)
-
-    var errorDescription: String? {
-        switch self {
-        case .databaseError(let message):
-            return "Database error: \(message)"
-        case .invalidPath(let path):
-            return "Invalid path: \(path)"
-        }
-    }
-}

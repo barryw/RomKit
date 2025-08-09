@@ -482,74 +482,8 @@ public class RomKit {
     // MARK: - Conversion Helpers
 
     private func convertToLegacyScanResult(_ results: any ScanResults) -> ScanResult {
-        var foundGames: [ScannedGame] = []
-
-        for game in results.foundGames {
-            if let mameGame = game.game as? MAMEGame {
-                let legacyGame = Game(
-                    name: mameGame.name,
-                    description: mameGame.description,
-                    cloneOf: (mameGame.metadata as? MAMEGameMetadata)?.cloneOf,
-                    romOf: (mameGame.metadata as? MAMEGameMetadata)?.romOf,
-                    year: mameGame.metadata.year,
-                    manufacturer: mameGame.metadata.manufacturer,
-                    roms: mameGame.items.compactMap { item in
-                        guard let mameRom = item as? MAMEROM else { return nil }
-                        return ROM(
-                            name: mameRom.name,
-                            size: mameRom.size,
-                            crc: mameRom.checksums.crc32,
-                            sha1: mameRom.checksums.sha1,
-                            status: mameRom.status
-                        )
-                    }
-                )
-
-                let foundRoms = game.foundItems.compactMap { item -> ScannedROM? in
-                    guard let mameRom = item.item as? MAMEROM else { return nil }
-                    let rom = ROM(
-                        name: mameRom.name,
-                        size: mameRom.size,
-                        crc: mameRom.checksums.crc32,
-                        sha1: mameRom.checksums.sha1,
-                        status: mameRom.status
-                    )
-
-                    let hash = FileHash(
-                        crc32: item.validationResult.actualChecksums.crc32 ?? "",
-                        sha1: item.validationResult.actualChecksums.sha1 ?? "",
-                        md5: item.validationResult.actualChecksums.md5 ?? "",
-                        size: mameRom.size
-                    )
-
-                    let status: ROMValidationStatus = item.validationResult.isValid ? .good : .bad
-
-                    return ScannedROM(
-                        rom: rom,
-                        filePath: item.location.path,
-                        hash: hash,
-                        status: status
-                    )
-                }
-
-                let missingRoms = game.missingItems.compactMap { item -> ROM? in
-                    guard let mameRom = item as? MAMEROM else { return nil }
-                    return ROM(
-                        name: mameRom.name,
-                        size: mameRom.size,
-                        crc: mameRom.checksums.crc32,
-                        sha1: mameRom.checksums.sha1,
-                        status: mameRom.status
-                    )
-                }
-
-                let scannedGame = ScannedGame(
-                    game: legacyGame,
-                    foundRoms: foundRoms,
-                    missingRoms: missingRoms
-                )
-                foundGames.append(scannedGame)
-            }
+        let foundGames = results.foundGames.compactMap { game in
+            convertGameEntryToScannedGame(game)
         }
 
         return ScanResult(
@@ -557,6 +491,85 @@ public class RomKit {
             foundGames: foundGames,
             unknownFiles: results.unknownFiles.map { $0.path }
         )
+    }
+
+    private func convertGameEntryToScannedGame(_ game: any ScannedGameEntry) -> ScannedGame? {
+        guard let mameGame = game.game as? MAMEGame else { return nil }
+
+        let legacyGame = createLegacyGame(from: mameGame)
+        let foundRoms = convertFoundItems(game.foundItems)
+        let missingRoms = convertMissingItems(game.missingItems)
+
+        return ScannedGame(
+            game: legacyGame,
+            foundRoms: foundRoms,
+            missingRoms: missingRoms
+        )
+    }
+
+    private func createLegacyGame(from mameGame: MAMEGame) -> Game {
+        Game(
+            name: mameGame.name,
+            description: mameGame.description,
+            cloneOf: (mameGame.metadata as? MAMEGameMetadata)?.cloneOf,
+            romOf: (mameGame.metadata as? MAMEGameMetadata)?.romOf,
+            year: mameGame.metadata.year,
+            manufacturer: mameGame.metadata.manufacturer,
+            roms: mameGame.items.compactMap(convertROMItemToLegacyROM)
+        )
+    }
+
+    private func convertROMItemToLegacyROM(_ item: any ROMItem) -> ROM? {
+        guard let mameRom = item as? MAMEROM else { return nil }
+        return ROM(
+            name: mameRom.name,
+            size: mameRom.size,
+            crc: mameRom.checksums.crc32,
+            sha1: mameRom.checksums.sha1,
+            status: mameRom.status
+        )
+    }
+
+    private func convertFoundItems(_ items: [ScannedItem]) -> [ScannedROM] {
+        items.compactMap(convertFoundItemToScannedROM)
+    }
+
+    private func convertFoundItemToScannedROM(_ item: ScannedItem) -> ScannedROM? {
+        guard let mameRom = item.item as? MAMEROM else { return nil }
+
+        let rom = createLegacyROMFromMAME(mameRom)
+        let hash = createFileHash(from: item, size: mameRom.size)
+        let status: ROMValidationStatus = item.validationResult.isValid ? .good : .bad
+
+        return ScannedROM(
+            rom: rom,
+            filePath: item.location.path,
+            hash: hash,
+            status: status
+        )
+    }
+
+    private func createLegacyROMFromMAME(_ mameRom: MAMEROM) -> ROM {
+        ROM(
+            name: mameRom.name,
+            size: mameRom.size,
+            crc: mameRom.checksums.crc32,
+            sha1: mameRom.checksums.sha1,
+            status: mameRom.status
+        )
+    }
+
+    private func createFileHash(from item: ScannedItem, size: UInt64) -> FileHash {
+        FileHash(
+            crc32: item.validationResult.actualChecksums.crc32 ?? "",
+            sha1: item.validationResult.actualChecksums.sha1 ?? "",
+            md5: item.validationResult.actualChecksums.md5 ?? "",
+            size: size
+        )
+    }
+
+    private func convertMissingItems(_ items: [any ROMItem]) -> [ROM] {
+        items.compactMap(convertROMItemToLegacyROM)
     }
 
     private func convertToGenericScanResult(_ scanResult: ScanResult) -> any ScanResults {
@@ -610,61 +623,4 @@ public class RomKit {
             statistics: statistics
         )
     }
-}
-
-// MARK: - Legacy Compatibility Types
-
-/// Errors that can occur during RomKit operations
-public enum RomKitError: Error, LocalizedError {
-    /// No DAT file has been loaded
-    case datFileNotLoaded
-    /// The specified path is invalid or inaccessible
-    case invalidPath(String)
-    /// Scanning failed with the given reason
-    case scanFailed(String)
-    /// Rebuilding failed with the given reason
-    case rebuildFailed(String)
-
-    public var errorDescription: String? {
-        switch self {
-        case .datFileNotLoaded:
-            return "DAT file must be loaded before performing operations"
-        case .invalidPath(let path):
-            return "Invalid path: \(path)"
-        case .scanFailed(let reason):
-            return "Scan failed: \(reason)"
-        case .rebuildFailed(let reason):
-            return "Rebuild failed: \(reason)"
-        }
-    }
-}
-
-/// Rebuild style options for organizing ROM sets
-public enum RebuildStyle {
-    /// Split sets: Each game in its own archive, clones only contain unique ROMs
-    case split
-    /// Merged sets: Clone ROMs are merged into parent archives
-    case merged
-    /// Non-merged sets: Each game archive is self-contained with all required ROMs
-    case nonMerged
-
-    func toGenericStyle() -> RebuildOptions.Style {
-        switch self {
-        case .split: return RebuildOptions.Style.split
-        case .merged: return RebuildOptions.Style.merged
-        case .nonMerged: return RebuildOptions.Style.nonMerged
-        }
-    }
-}
-
-// MARK: - Legacy Scan Result Adapter
-
-struct LegacyScanResultAdapter: ScanResults {
-    let scanResult: ScanResult
-
-    var scannedPath: String { scanResult.scannedPath }
-    var foundGames: [any ScannedGameEntry] { [] }
-    var unknownFiles: [URL] { scanResult.unknownFiles.map { URL(fileURLWithPath: $0) } }
-    var scanDate: Date { scanResult.scanDate }
-    var errors: [ScanError] { [] }
 }

@@ -108,8 +108,8 @@ public class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder {
     }
 
     private func processGamesForRebuild(scanResults: ScanResults,
-                                         destination: URL,
-                                         options: RebuildOptions) async -> RebuildStats {
+                                        destination: URL,
+                                        options: RebuildOptions) async -> RebuildStats {
         var stats = RebuildStats()
         let totalGames = datFile.games.count
         var currentIndex = 0
@@ -153,9 +153,9 @@ public class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder {
     }
 
     private func rebuildSingleGame(game: MAMEGame,
-                                    scanResults: ScanResults,
-                                    destination: URL,
-                                    options: RebuildOptions) async -> RebuildResult {
+                                   scanResults: ScanResults,
+                                   destination: URL,
+                                   options: RebuildOptions) async -> RebuildResult {
         guard let scannedGame = findScannedGame(for: game, in: scanResults) else {
             callbackManager?.sendEvent(.warning("Game \(game.name) not found in source"))
             return .skipped
@@ -202,9 +202,9 @@ public class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder {
     }
 
     private func createRebuildArchive(game: MAMEGame,
-                                       scannedGame: any ScannedGameEntry,
-                                       outputPath: URL,
-                                       options: RebuildOptions) async throws {
+                                      scannedGame: any ScannedGameEntry,
+                                      outputPath: URL,
+                                      options: RebuildOptions) async throws {
         callbackManager?.sendEvent(.archiveCreating(url: outputPath))
 
         // Archive creation implementation would go here
