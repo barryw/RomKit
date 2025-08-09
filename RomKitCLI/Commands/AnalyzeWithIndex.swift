@@ -9,6 +9,10 @@ import ArgumentParser
 import Foundation
 import RomKit
 
+private enum IndexError: Error {
+    case noIndex
+}
+
 struct AnalyzeWithIndex: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "analyze-indexed",
@@ -30,6 +34,45 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
     @Option(name: .long, help: "Path to index database")
     var indexPath: String?
 
+    private func handleIndexing(indexManager: ROMIndexManager, romURL: URL) async throws {
+        let sources = await indexManager.listSources()
+        let isIndexed = sources.contains { $0.path == romURL.path }
+
+        if isIndexed && !forceScan {
+            handleExistingIndex(sources: sources, romURL: romURL)
+        } else if !isIndexed {
+            try await handleMissingIndex(indexManager: indexManager, romURL: romURL)
+        } else if forceScan {
+            print("🔄 Force re-scanning directory...")
+            try await indexManager.refreshSources([romURL], showProgress: true)
+        }
+    }
+
+    private func handleExistingIndex(sources: [SourceInfo], romURL: URL) {
+        print("✅ Using existing index for fast analysis")
+        if let source = sources.first(where: { $0.path == romURL.path }) {
+            let age = Date().timeIntervalSince(source.lastScan)
+            if age > 86400 { // 24 hours
+                print("⚠️  Index is \(Int(age/3600)) hours old")
+                print("   Consider refreshing with --force-scan")
+            }
+        }
+    }
+
+    private func handleMissingIndex(indexManager: ROMIndexManager, romURL: URL) async throws {
+        if autoIndex {
+            print("📂 Creating index for faster future analysis...")
+            try await indexManager.addSource(romURL, showProgress: true)
+        } else {
+            print("ℹ️  No index found for this directory")
+            print("   Create one with --auto-index for faster analysis")
+            print("   Falling back to direct scan...")
+            let scanner = ConcurrentScanner()
+            _ = try await scanner.scanDirectory(at: romURL, computeHashes: true)
+            throw IndexError.noIndex
+        }
+    }
+
     mutating func run() async throws {
         let romURL = URL(fileURLWithPath: romPath)
         let datURL = URL(fileURLWithPath: datPath)
@@ -38,43 +81,8 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
         let dbPath = indexPath.map { URL(fileURLWithPath: $0) }
         let indexManager = try await ROMIndexManager(databasePath: dbPath)
 
-        // Check if this source is already indexed
-        let sources = await indexManager.listSources()
-        let isIndexed = sources.contains { $0.path == romURL.path }
-
-        if isIndexed && !forceScan {
-            print("✅ Using existing index for fast analysis")
-
-            // Check if index is stale
-            if let source = sources.first(where: { $0.path == romURL.path }) {
-                let age = Date().timeIntervalSince(source.lastScan)
-                if age > 86400 { // 24 hours
-                    print("⚠️  Index is \(Int(age/3600)) hours old")
-                    print("   Consider refreshing with --force-scan")
-                }
-            }
-        } else if !isIndexed {
-            if autoIndex {
-                print("📂 Creating index for faster future analysis...")
-                try await indexManager.addSource(romURL, showProgress: true)
-            } else {
-                print("ℹ️  No index found for this directory")
-                print("   Create one with --auto-index for faster analysis")
-                print("   Falling back to direct scan...")
-
-                // Fall back to current behavior
-                let scanner = ConcurrentScanner()
-                _ = try await scanner.scanDirectory(
-                    at: romURL,
-                    computeHashes: true
-                )
-                // ... continue with analysis
-                return
-            }
-        } else if forceScan {
-            print("🔄 Force re-scanning directory...")
-            try await indexManager.refreshSources([romURL], showProgress: true)
-        }
+        // Handle indexing
+        try await handleIndexing(indexManager: indexManager, romURL: romURL)
 
         // Now perform analysis using the index
         print("\n📊 Analyzing using index...")

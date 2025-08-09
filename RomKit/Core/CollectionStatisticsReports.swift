@@ -130,9 +130,9 @@ extension CollectionStatistics {
         for stats in topManufacturers {
             let percentage = Double(stats.complete) / Double(stats.total) * 100
             let bar = createMiniProgressBar(percentage: percentage)
-            section += String(format: "%-20s %s %3.0f%% (%d/%d)\n",
-                            String(stats.manufacturer.prefix(20)),
-                            bar,
+            section += String(format: "%-20@ %@ %3.0f%% (%d/%d)\n",
+                            String(stats.manufacturer.prefix(20)) as NSString,
+                            bar as NSString,
                             percentage,
                             stats.complete,
                             stats.total)
@@ -159,9 +159,9 @@ extension CollectionStatistics {
             if let stats = byYear[year] {
                 let percentage = Double(stats.complete) / Double(stats.total) * 100
                 let bar = createMiniProgressBar(percentage: percentage)
-                section += String(format: "%s: %s %3.0f%% (%d/%d)\n",
-                                year,
-                                bar,
+                section += String(format: "%@: %@ %3.0f%% (%d/%d)\n",
+                                year as NSString,
+                                bar as NSString,
                                 percentage,
                                 stats.complete,
                                 stats.total)
@@ -287,60 +287,8 @@ extension CollectionStatistics {
     }
 
     private func generateComponentStyles() -> String {
-        """
-            .stat-card {
-                background: white;
-                border-radius: 12px;
-                padding: 25px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            }
-            .stat-value {
-                font-size: 36px;
-                font-weight: bold;
-                margin: 10px 0;
-            }
-            .stat-label {
-                color: #666;
-                font-size: 14px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-            .progress-bar {
-                height: 8px;
-                background: #e0e0e0;
-                border-radius: 4px;
-                overflow: hidden;
-                margin: 15px 0;
-            }
-            .progress-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #667eea, #764ba2);
-                transition: width 0.3s ease;
-            }
-            .chart-container {
-                background: white;
-                border-radius: 12px;
-                padding: 25px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-                margin-bottom: 30px;
-            }
-            .manufacturer-list {
-                background: white;
-                border-radius: 12px;
-                padding: 25px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            }
-            .manufacturer-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 12px 0;
-                border-bottom: 1px solid #f0f0f0;
-            }
-            .manufacturer-item:last-child {
-                border-bottom: none;
-            }
-        """
+        // Component styles moved to ReportStyles.swift
+        return ""
     }
 
     private func generateTypographyStyles() -> String {

@@ -258,224 +258,52 @@ public class RomKit {
         _ = try await genericKit.rebuild(from: source, to: destination, options: options)
     }
 
-    // MARK: - Missing ROMs & Fixdat
+    // MARK: - Extended Operations
 
-    /// Generate a Fixdat file for missing ROMs
-    ///
-    /// Creates a DAT file containing only the ROMs you're missing from your collection.
-    /// This is useful for sharing want lists or focusing collection efforts.
-    ///
-    /// - Parameters:
-    ///   - scanResult: The scan result containing missing ROM information
-    ///   - path: Path where to save the Fixdat file
-    ///   - format: Format for the Fixdat (Logiqx XML or ClrMamePro)
-    /// - Throws: ``RomKitError/writeFailed(_:)`` if the file cannot be written
-    ///
-    /// ## Example
-    /// ```swift
-    /// let scanResult = try await romkit.scanDirectory("/path/to/roms")
-    /// try romkit.generateFixdat(from: scanResult, to: "/path/to/missing.dat")
-    /// ```
-    public func generateFixdat(
-        from scanResult: ScanResult,
-        to path: String,
-        format: FixdatFormat = .logiqxXML
-    ) throws {
-        guard let datFile = genericKit.currentDATFile else {
+    /// Generate a fixdat from scan results
+    public func generateFixdat(from scanResult: ScanResult, to path: String, format: FixdatFormat) throws {
+        guard let datFile = genericKit.datFile else {
             throw RomKitError.datFileNotLoaded
         }
-
-        let fixdat = FixdatGenerator.generateFixdat(
-            from: scanResult,
-            originalDAT: datFile
-        )
-
+        let fixdat = FixdatGenerator.generateFixdat(from: scanResult, originalDAT: datFile)
         try fixdat.save(to: path, format: format)
     }
 
-    /// Generate a detailed missing ROMs report
-    ///
-    /// Creates a comprehensive report of missing ROMs with statistics and grouping options.
-    ///
-    /// - Parameters:
-    ///   - scanResult: The scan result to analyze
-    ///   - options: Report generation options
-    /// - Returns: A ``MissingReport`` with detailed information
-    /// - Throws: ``RomKitError/datFileNotLoaded`` if no DAT file is loaded
-    ///
-    /// ## Example
-    /// ```swift
-    /// let report = try romkit.generateMissingReport(
-    ///     from: scanResult,
-    ///     options: MissingReportOptions(
-    ///         groupByParent: true,
-    ///         includeClones: false
-    ///     )
-    /// )
-    /// print(report.generateText())
-    /// ```
-    public func generateMissingReport(
-        from scanResult: ScanResult,
-        options: MissingReportOptions = MissingReportOptions()
-    ) throws -> MissingReport {
-        guard let datFile = genericKit.currentDATFile else {
+    /// Generate missing report from scan results
+    public func generateMissingReport(from scanResult: ScanResult, options: MissingReportOptions? = nil) throws -> MissingReport {
+        guard let datFile = genericKit.datFile else {
             throw RomKitError.datFileNotLoaded
         }
-
-        return MissingReportGenerator.generate(
-            from: scanResult,
-            datFile: datFile,
-            options: options
-        )
+        return MissingReportGenerator.generate(from: scanResult, datFile: datFile, options: options ?? MissingReportOptions())
     }
 
-    // MARK: - TorrentZip Support
-
-    /// Convert a ZIP file to TorrentZip format
-    ///
-    /// TorrentZip creates reproducible ZIP files with consistent CRCs for easier sharing.
-    ///
-    /// - Parameters:
-    ///   - path: Path to the ZIP file to convert
-    ///   - outputPath: Optional output path (if nil, replaces original)
-    /// - Throws: ``RomKitError/invalidPath(_:)`` if the file doesn't exist
-    ///
-    /// ## Example
-    /// ```swift
-    /// try romkit.torrentZip("/path/to/game.zip")
-    /// ```
-    public func torrentZip(_ path: String, outputPath: String? = nil) throws {
-        let url = URL(fileURLWithPath: path)
-        let output = outputPath.map { URL(fileURLWithPath: $0) }
-        try TorrentZip.convertToTorrentZip(at: url, outputURL: output)
-    }
-
-    /// Verify if a ZIP is TorrentZip compliant
-    ///
-    /// - Parameter path: Path to the ZIP file
-    /// - Returns: true if the ZIP is TorrentZip compliant
-    /// - Throws: ``RomKitError/invalidPath(_:)`` if the file doesn't exist
-    public func isTorrentZip(_ path: String) throws -> Bool {
-        let url = URL(fileURLWithPath: path)
-        return try TorrentZip.isTorrentZip(at: url)
-    }
-
-    /// Convert all ZIPs in a directory to TorrentZip format
-    ///
-    /// - Parameters:
-    ///   - directory: Directory containing ZIP files
-    ///   - recursive: Whether to process subdirectories
-    /// - Throws: ``RomKitError/invalidPath(_:)`` if the directory doesn't exist
-    ///
-    /// ## Example
-    /// ```swift
-    /// try await romkit.torrentZipDirectory("/path/to/roms")
-    /// ```
-    public func torrentZipDirectory(_ directory: String, recursive: Bool = true) async throws {
-        let url = URL(fileURLWithPath: directory)
-        try await TorrentZip.convertDirectory(at: url, recursive: recursive)
-    }
-
-    // MARK: - Collection Statistics
-
-    /// Generate comprehensive collection statistics
-    ///
-    /// Analyzes your collection and provides detailed statistics including completion rates,
-    /// storage usage, and breakdowns by year, manufacturer, and category.
-    ///
-    /// - Parameter scanResult: The scan result to analyze
-    /// - Returns: ``CollectionStatistics`` with detailed metrics
-    /// - Throws: ``RomKitError/datFileNotLoaded`` if no DAT file is loaded
-    ///
-    /// ## Example
-    /// ```swift
-    /// let stats = try romkit.generateStatistics(from: scanResult)
-    /// print(stats.generateTextReport())
-    /// // Save HTML report
-    /// try stats.generateHTMLReport().write(to: "report.html")
-    /// ```
+    /// Generate collection statistics from scan results
     public func generateStatistics(from scanResult: ScanResult) throws -> CollectionStatistics {
-        guard let datFile = genericKit.currentDATFile else {
+        guard let datFile = genericKit.datFile else {
             throw RomKitError.datFileNotLoaded
         }
-
         return StatisticsGenerator.generate(from: scanResult, datFile: datFile)
     }
 
-    // MARK: - ROM Organization
-
-    /// Rename ROMs to match DAT file names
-    ///
-    /// Ensures your ROM files are named exactly as specified in the DAT file.
-    ///
-    /// - Parameters:
-    ///   - directory: Directory containing ROMs to rename
-    ///   - dryRun: If true, only shows what would be renamed without making changes
-    ///   - preserveOriginals: If true, copies files instead of moving them
-    /// - Returns: ``RenameResult`` with details of the operation
-    /// - Throws: ``RomKitError/invalidPath(_:)`` if the directory doesn't exist
-    ///
-    /// ## Example
-    /// ```swift
-    /// let result = try romkit.renameROMs(
-    ///     in: "/path/to/roms",
-    ///     dryRun: false
-    /// )
-    /// print(result.summary)
-    /// ```
-    public func renameROMs(
-        in directory: String,
-        dryRun: Bool = true,
-        preserveOriginals: Bool = false
-    ) async throws -> RenameResult {
-        guard let datFile = genericKit.currentDATFile else {
+    /// Rename ROMs according to DAT file
+    public func renameROMs(in directory: String, dryRun: Bool = false) async throws -> RenameResult {
+        guard let datFile = genericKit.datFile else {
             throw RomKitError.datFileNotLoaded
         }
-
         let organizer = ROMOrganizer(datFile: datFile)
-        return try await organizer.renameROMs(
-            in: URL(fileURLWithPath: directory),
-            dryRun: dryRun,
-            preserveOriginals: preserveOriginals
-        )
+        return try await organizer.renameROMs(in: URL(fileURLWithPath: directory), dryRun: dryRun)
     }
 
-    /// Organize ROM collection into folders
-    ///
-    /// Organizes your ROMs into a folder structure based on various criteria.
-    ///
-    /// - Parameters:
-    ///   - source: Source directory containing ROMs
-    ///   - destination: Destination directory for organized ROMs
-    ///   - style: Organization style (by manufacturer, year, genre, etc.)
-    ///   - moveFiles: If true, moves files; if false, copies them
-    /// - Returns: ``OrganizeResult`` with details of the operation
-    /// - Throws: ``RomKitError/invalidPath(_:)`` if directories don't exist
-    ///
-    /// ## Example
-    /// ```swift
-    /// let result = try romkit.organizeCollection(
-    ///     from: "/path/to/roms",
-    ///     to: "/path/to/organized",
-    ///     style: .byManufacturer
-    /// )
-    /// ```
-    public func organizeCollection(
-        from source: String,
-        to destination: String,
-        style: OrganizationStyle,
-        moveFiles: Bool = false
-    ) async throws -> OrganizeResult {
-        guard let datFile = genericKit.currentDATFile else {
+    /// Organize ROM collection
+    public func organizeCollection(from source: String, to destination: String, style: OrganizationStyle) async throws -> OrganizeResult {
+        guard let datFile = genericKit.datFile else {
             throw RomKitError.datFileNotLoaded
         }
-
         let organizer = ROMOrganizer(datFile: datFile)
         return try await organizer.organizeCollection(
             from: URL(fileURLWithPath: source),
             to: URL(fileURLWithPath: destination),
-            style: style,
-            moveFiles: moveFiles
+            style: style
         )
     }
 
@@ -581,7 +409,7 @@ public class RomKit {
         var completeGames: [String] = []
         var incompleteGames: [IncompleteGame] = []
         var missingGames: [String] = []
-        var badRoms: [BadROM] = []
+        let badRoms: [BadROM] = []
 
         for scannedGame in scanResult.foundGames {
             switch scannedGame.status {

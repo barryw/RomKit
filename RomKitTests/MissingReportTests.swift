@@ -135,12 +135,12 @@ struct MissingReportTests {
         ]
 
         return TestDATFile(
-            metadata: DATMetadata(
+            metadata: MAMEMetadata(
                 name: "Test DAT",
                 description: "Test DAT file for unit tests",
                 version: "1.0",
                 author: "Test Author",
-                date: Date()
+                date: Date().description
             ),
             games: games
         )
@@ -217,9 +217,9 @@ struct MissingReportTests {
         #expect(text.contains("missing.rom"))
 
         print("Generated Text Report:")
-        print("=" * 80)
+        print(String(repeating: "=", count: 80))
         print(text.prefix(2000))
-        print("=" * 80)
+        print(String(repeating: "=", count: 80))
     }
 
     @Test("Missing report with custom options")
@@ -256,6 +256,8 @@ struct MissingReportTests {
 // MARK: - Helper Types
 
 private struct TestDATFile: DATFormat {
-    let metadata: DATMetadata
-    let games: [any DATGame]
+    let formatName: String = "Test"
+    let formatVersion: String? = "1.0"
+    let metadata: any DATMetadata
+    let games: [any GameEntry]
 }

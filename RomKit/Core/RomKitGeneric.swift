@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Generic RomKit Implementation
 
 public class RomKitGeneric {
-    private var datFile: (any DATFormat)?
+    internal var datFile: (any DATFormat)?
     private var formatHandler: (any ROMFormatHandler)?
     private var scanner: (any ROMScanner)?
     private var rebuilder: (any ROMRebuilder)?

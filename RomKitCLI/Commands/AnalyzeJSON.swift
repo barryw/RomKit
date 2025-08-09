@@ -31,12 +31,12 @@ public struct AnalysisJSON: Codable {
         let foundROMs: [ROMAnalysis]?
         let missingROMs: [ROMReference]?
         let issues: [ROMIssue]?
+    }
 
-        enum GameStatus: String, Codable {
-            case complete
-            case incomplete
-            case broken
-        }
+    public enum GameStatus: String, Codable {
+        case complete
+        case incomplete
+        case broken
     }
 
     public struct ROMAnalysis: Codable {
@@ -95,7 +95,7 @@ extension Analyze {
         // Convert complete games
         for (name, game) in results.complete {
             completeGames[name] = AnalysisJSON.GameAnalysis(
-                status: .complete,
+                status: AnalysisJSON.GameStatus.complete,
                 foundROMs: game.roms.map { rom in
                     AnalysisJSON.ROMAnalysis(
                         name: rom.name,
@@ -113,7 +113,7 @@ extension Analyze {
         // Convert incomplete games
         for (name, status) in results.incomplete {
             incompleteGames[name] = AnalysisJSON.GameAnalysis(
-                status: .incomplete,
+                status: AnalysisJSON.GameStatus.incomplete,
                 foundROMs: nil, // Would need to track this
                 missingROMs: status.issues.compactMap { issue in
                     if issue.hasPrefix("Missing ROM:") {
@@ -133,7 +133,7 @@ extension Analyze {
         // Convert broken games
         for (name, status) in results.broken {
             brokenGames[name] = AnalysisJSON.GameAnalysis(
-                status: .broken,
+                status: AnalysisJSON.GameStatus.broken,
                 foundROMs: nil,
                 missingROMs: nil,
                 issues: status.issues.map { issue in

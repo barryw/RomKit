@@ -113,12 +113,7 @@ struct SimplePerfComparisonTests {
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
         // Create 10 test ROM files
-        print("Creating test ROM files...")
-        for index in 0..<10 {
-            let romData = Data(repeating: UInt8(index), count: 1024 * 500) // 500KB each
-            let romPath = tempDir.appendingPathComponent("rom\(index).dat")
-            try romData.write(to: romPath)
-        }
+        try createTestROMFiles(in: tempDir)
 
         // Sequential processing
         print("\nSequential Processing:")
@@ -159,6 +154,21 @@ struct SimplePerfComparisonTests {
         print("  Time: \(String(format: "%.3f", parTime))s")
         print("  Processed: \(parHashes.count) files")
 
+        printPerformanceResults(seqTime: seqTime, parTime: parTime)
+
+        #expect(seqHashes.count == parHashes.count, "Should process same number of files")
+    }
+
+    private func createTestROMFiles(in directory: URL) throws {
+        print("Creating test ROM files...")
+        for index in 0..<10 {
+            let romData = Data(repeating: UInt8(index), count: 1024 * 500) // 500KB each
+            let romPath = directory.appendingPathComponent("rom\(index).dat")
+            try romData.write(to: romPath)
+        }
+    }
+
+    private func printPerformanceResults(seqTime: TimeInterval, parTime: TimeInterval) {
         let speedup = seqTime / parTime
         print("\n🏆 Performance Result:")
         print("  Speedup: \(String(format: "%.2fx", speedup))")
@@ -169,7 +179,5 @@ struct SimplePerfComparisonTests {
         } else {
             print("  ℹ️ Sequential is currently faster")
         }
-
-        #expect(seqHashes.count == parHashes.count, "Should process same number of files")
     }
 }

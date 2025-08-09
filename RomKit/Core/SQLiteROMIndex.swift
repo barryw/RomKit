@@ -8,6 +8,24 @@
 import Foundation
 import SQLite3
 
+/// Errors that can occur during index operations
+public enum IndexError: Error, LocalizedError {
+    case databaseError(String)
+    case fileNotFound
+    case invalidData
+
+    public var errorDescription: String? {
+        switch self {
+        case .databaseError(let message):
+            return "Database error: \(message)"
+        case .fileNotFound:
+            return "File not found"
+        case .invalidData:
+            return "Invalid data"
+        }
+    }
+}
+
 /// SQLite-based ROM index for efficient storage and querying
 public actor SQLiteROMIndex {
 

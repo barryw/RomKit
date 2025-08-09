@@ -135,12 +135,12 @@ struct FixdatGenerationTests {
         ]
 
         return TestDATFile(
-            metadata: DATMetadata(
+            metadata: MAMEMetadata(
                 name: "Test DAT",
                 description: "Test DAT file for unit tests",
                 version: "1.0",
                 author: "Test Author",
-                date: Date()
+                date: Date().description
             ),
             games: games
         )
@@ -195,9 +195,9 @@ struct FixdatGenerationTests {
         #expect(xml.contains("</datafile>"))
 
         print("Generated Logiqx XML:")
-        print("=" * 50)
+        print(String(repeating: "=", count: 50))
         print(xml.prefix(1000))
-        print("=" * 50)
+        print(String(repeating: "=", count: 50))
     }
 
     @Test("Generate ClrMamePro format")
@@ -218,9 +218,9 @@ struct FixdatGenerationTests {
         #expect(dat.contains("size 1024"))
 
         print("Generated ClrMamePro DAT:")
-        print("=" * 50)
+        print(String(repeating: "=", count: 50))
         print(dat.prefix(1000))
-        print("=" * 50)
+        print(String(repeating: "=", count: 50))
     }
 
     @Test("Save Fixdat to file")
@@ -258,6 +258,8 @@ struct FixdatGenerationTests {
 // MARK: - Helper Types
 
 private struct TestDATFile: DATFormat {
-    let metadata: DATMetadata
-    let games: [any DATGame]
+    let formatName: String = "Test"
+    let formatVersion: String? = "1.0"
+    let metadata: any DATMetadata
+    let games: [any GameEntry]
 }

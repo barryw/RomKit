@@ -219,17 +219,7 @@ struct MAMEComplexityTests {
             }
         }
 
-        print("\nStatistics:")
-        print("  Total games: \(stats.totalGames)")
-        print("  Clones: \(stats.clones)")
-        print("  Parents: \(stats.totalGames - stats.clones)")
-        print("  BIOS-dependent: \(stats.biosDependent)")
-        print("  Device-dependent: \(stats.deviceDependent)")
-        print("  BIOS sets: \(stats.biosSets)")
-        print("  Device sets: \(stats.deviceSets)")
-        print("  Total ROMs: \(stats.totalROMs)")
-        print("  Total size: \(stats.totalSize / 1024 / 1024) MB")
-        print("  Average ROMs/game: \(stats.totalROMs / max(stats.totalGames, 1))")
+        printComprehensiveStats(stats)
 
         #expect(stats.totalGames > 20)
         #expect(stats.biosDependent > 0)
@@ -327,4 +317,20 @@ struct GameSetStats {
     var deviceSets = 0
     var totalROMs = 0
     var totalSize: UInt64 = 0
+}
+
+// MARK: - Helper Functions
+
+private func printComprehensiveStats(_ stats: GameSetStats) {
+    print("\nStatistics:")
+    print("  Total games: \(stats.totalGames)")
+    print("  Clones: \(stats.clones)")
+    print("  Parents: \(stats.totalGames - stats.clones)")
+    print("  BIOS-dependent: \(stats.biosDependent)")
+    print("  Device-dependent: \(stats.deviceDependent)")
+    print("  BIOS sets: \(stats.biosSets)")
+    print("  Device sets: \(stats.deviceSets)")
+    print("  Total ROMs: \(stats.totalROMs)")
+    print("  Total size: \(stats.totalSize / 1024 / 1024) MB")
+    print("  Average ROMs/game: \(stats.totalROMs / max(stats.totalGames, 1))")
 }

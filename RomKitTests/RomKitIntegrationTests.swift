@@ -196,8 +196,8 @@ struct RomKitIntegrationTests {
         let scanResult = createTestScanResult()
         let (fixdatPath, missingReport) = try generateTestReports(workflowDir: workflowDir, romkit: romkit, scanResult: scanResult)
         let statsResult = try generateTestStatistics(workflowDir: workflowDir, romkit: romkit, scanResult: scanResult)
-        let stats = statsResult.statistics
-        let torrentZipPath = try testTorrentZip(workflowDir: workflowDir, romkit: romkit)
+        _ = statsResult.statistics
+        _ = try testTorrentZip(workflowDir: workflowDir, romkit: romkit)
         try await testOrganization(workflowDir: workflowDir, romkit: romkit)
 
         // Verify outputs (skip torrentZipPath since TorrentZip is disabled)
@@ -316,7 +316,7 @@ struct RomKitIntegrationTests {
 
     private func printWorkflowSummary(workflowDir: URL, stats: CollectionStatistics, missingReport: MissingReport) {
         print("\n🎉 End-to-end workflow completed successfully!")
-        print("═" * 60)
+        print(String(repeating: "═", count: 60))
         print("Collection Status:")
         print("- Total Games: \(stats.totalGames)")
         print("- Complete: \(stats.completeGames) (\(String(format: "%.1f", stats.completionPercentage))%)")
@@ -329,14 +329,8 @@ struct RomKitIntegrationTests {
 // MARK: - Helper Types
 
 private struct TestDATFile: DATFormat {
-    let metadata: DATMetadata
-    let games: [any DATGame]
-}
-
-// MARK: - Test Utilities
-
-private extension String {
-    static func * (lhs: String, rhs: Int) -> String {
-        return String(repeating: lhs, count: rhs)
-    }
+    let formatName: String = "Test"
+    let formatVersion: String? = "1.0"
+    let metadata: any DATMetadata
+    let games: [any GameEntry]
 }

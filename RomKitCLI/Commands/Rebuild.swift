@@ -9,6 +9,14 @@ import ArgumentParser
 import Foundation
 import RomKit
 
+private struct RebuildOptions {
+    let style: RebuildStyle
+    let verify: Bool
+    let useGPU: Bool
+    let parallel: Int
+    let showProgress: Bool
+}
+
 struct Rebuild: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Rebuild ROM sets from multiple source directories",
@@ -75,7 +83,7 @@ struct Rebuild: AsyncParsableCommand {
         printConfiguration(datURL: inputs.datURL, outputURL: inputs.outputURL)
 
         // Load DAT and create index
-        let datFile = try await loadDATFile(from: datURL)
+        let datFile = try await loadDATFile(from: inputs.datURL)
         let indexManager = try await setupIndexManager(sourceURLs: inputs.sourceURLs)
 
         // Analyze requirements
@@ -211,35 +219,37 @@ struct Rebuild: AsyncParsableCommand {
 
         // Perform the rebuild
         RomKitCLI.printSection("Rebuilding ROM Sets")
-        let results = try await performRebuild(
-            requirements: requirements,
-            indexManager: indexManager,
-            outputDirectory: outputURL,
+        let options = RebuildOptions(
             style: style,
             verify: verify,
             useGPU: gpu,
             parallel: parallel,
             showProgress: showProgress
         )
+        let results = try await performRebuild(
+            requirements: requirements,
+            indexManager: indexManager,
+            outputDirectory: outputURL,
+            options: options
+        )
 
         // Display results
         displayRebuildResults(results)
     }
 
-    private func loadDATFile(from url: URL) async throws -> DATFile {
+    private func loadDATFile(from url: URL) async throws -> any DATFormat {
         let fileContent = try String(contentsOf: url, encoding: .utf8)
         let data = Data(fileContent.utf8)
 
         // Try MAME parser first
         let parser = MAMEFastParser()
         if let mameDatFile = try? await parser.parseXMLParallel(data: data) {
-            return convertMAMEToGeneric(mameDatFile)
+            return mameDatFile
         }
 
         // Fall back to Logiqx
         let logiqxParser = LogiqxDATParser()
-        let mameDatFile = try logiqxParser.parse(data: data)
-        return convertMAMEToGeneric(mameDatFile)
+        return try logiqxParser.parse(data: data)
     }
 
     private func convertMAMEToGeneric(_ mameDAT: MAMEDATFile) -> DATFile {
@@ -287,7 +297,7 @@ struct Rebuild: AsyncParsableCommand {
     }
 
     private func analyzeRebuildRequirements(
-        datFile: DATFile,
+        datFile: any DATFormat,
         outputDirectory: URL,
         indexManager: ROMIndexManager,
         onlyMissing: Bool
@@ -305,10 +315,29 @@ struct Rebuild: AsyncParsableCommand {
 
             var gameRequirement = GameRebuildRequirement(game: game)
 
-            for rom in game.roms {
+            let gameRoms: [any ROMItem] = {
+                if let mameGame = game as? MAMEGame {
+                    return mameGame.items
+                } else {
+                    return []
+                }
+            }()
+
+            for rom in gameRoms {
                 requirements.totalROMs += 1
 
-                if let source = await indexManager.findBestSource(for: rom) {
+                // Convert ROMItem to ROM for compatibility
+                let legacyROM = ROM(
+                    name: rom.name,
+                    size: rom.size,
+                    crc: rom.checksums.crc32,
+                    sha1: rom.checksums.sha1,
+                    md5: rom.checksums.md5,
+                    status: rom.status,
+                    merge: rom.attributes.merge
+                )
+
+                if let source = await indexManager.findBestSource(for: legacyROM) {
                     gameRequirement.availableROMs.append((rom, source))
                     requirements.availableROMs += 1
                 } else {
@@ -330,11 +359,7 @@ struct Rebuild: AsyncParsableCommand {
         requirements: RebuildRequirements,
         indexManager: ROMIndexManager,
         outputDirectory: URL,
-        style: RebuildStyle,
-        verify: Bool,
-        useGPU: Bool,
-        parallel: Int,
-        showProgress: Bool
+        options: RebuildOptions
     ) async throws -> RebuildResults {
         var results = RebuildResults()
         let totalGames = requirements.gamesToRebuild.count
@@ -347,13 +372,13 @@ struct Rebuild: AsyncParsableCommand {
 
             while let gameReq = gameIterator.next() {
                 // Wait if we've hit the parallel limit
-                if activeJobs >= parallel {
+                if activeJobs >= options.parallel {
                     if let result = await group.next() {
                         processGameResult(result, results: &results)
                         activeJobs -= 1
                         processedGames += 1
 
-                        if showProgress {
+                        if options.showProgress {
                             printProgress(processedGames, total: totalGames)
                         }
                     }
@@ -366,9 +391,9 @@ struct Rebuild: AsyncParsableCommand {
                         requirement: gameReq,
                         indexManager: indexManager,
                         outputDirectory: outputDirectory,
-                        style: style,
-                        verify: verify,
-                        useGPU: useGPU
+                        style: options.style,
+                        verify: options.verify,
+                        useGPU: options.useGPU
                     )
                 }
             }
@@ -378,13 +403,13 @@ struct Rebuild: AsyncParsableCommand {
                 processGameResult(result, results: &results)
                 processedGames += 1
 
-                if showProgress {
+                if options.showProgress {
                     printProgress(processedGames, total: totalGames)
                 }
             }
         }
 
-        if showProgress {
+        if options.showProgress {
             print("") // New line after progress
         }
 
@@ -415,7 +440,7 @@ struct Rebuild: AsyncParsableCommand {
                         ? await ParallelHashUtilities.crc32(data: data)
                         : HashUtilities.crc32(data: data)
 
-                    if let expectedCRC = rom.crc,
+                    if let expectedCRC = rom.checksums.crc32,
                        actualCRC.lowercased() != expectedCRC.lowercased() {
                         result.warnings.append("CRC mismatch for \(rom.name)")
                     }
@@ -555,9 +580,9 @@ struct RebuildRequirements {
 }
 
 struct GameRebuildRequirement {
-    let game: Game
-    var availableROMs: [(ROM, IndexedROM)] = []
-    var missingROMs: [ROM] = []
+    let game: any GameEntry
+    var availableROMs: [(any ROMItem, IndexedROM)] = []
+    var missingROMs: [any ROMItem] = []
 }
 
 struct GameRebuildResult {

@@ -135,12 +135,12 @@ struct CollectionStatisticsTests {
         ]
 
         return TestDATFile(
-            metadata: DATMetadata(
+            metadata: MAMEMetadata(
                 name: "Test DAT",
                 description: "Test DAT file for unit tests",
                 version: "1.0",
                 author: "Test Author",
-                date: Date()
+                date: Date().description
             ),
             games: games
         )
@@ -204,9 +204,9 @@ struct CollectionStatisticsTests {
         #expect(textReport.contains("TOP MANUFACTURERS"))
 
         print("Statistics Text Report:")
-        print("=" * 80)
+        print(String(repeating: "=", count: 80))
         print(textReport.prefix(1500))
-        print("=" * 80)
+        print(String(repeating: "=", count: 80))
     }
 
     @Test("Generate statistics HTML report")
@@ -261,6 +261,8 @@ struct CollectionStatisticsTests {
 // MARK: - Helper Types
 
 private struct TestDATFile: DATFormat {
-    let metadata: DATMetadata
-    let games: [any DATGame]
+    let formatName: String = "Test"
+    let formatVersion: String? = "1.0"
+    let metadata: any DATMetadata
+    let games: [any GameEntry]
 }
