@@ -209,8 +209,10 @@ public class TorrentZip {
             // Comment length is at offset 20-21 from EOCD signature
             let commentLengthOffset = range.lowerBound + 20
             if commentLengthOffset + 2 <= data.endIndex {
-                let commentLength = data[commentLengthOffset..<commentLengthOffset+2]
-                    .withUnsafeBytes { $0.load(as: UInt16.self).littleEndian }
+                // Safely read UInt16 without alignment requirements
+                let commentLengthBytes = data[commentLengthOffset..<commentLengthOffset+2]
+                let commentLength = UInt16(commentLengthBytes[commentLengthBytes.startIndex]) |
+                                   (UInt16(commentLengthBytes[commentLengthBytes.startIndex + 1]) << 8)
 
                 let commentStart = commentLengthOffset + 2
                 let commentEnd = commentStart + Int(commentLength)
