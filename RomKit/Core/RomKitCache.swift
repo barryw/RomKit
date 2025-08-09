@@ -153,14 +153,14 @@ extension MAMEDATFile: Codable {
         case formatVersion, games, metadata
     }
 
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.formatVersion = try container.decode(String.self, forKey: .formatVersion)
         self.games = try container.decode([MAMEGame].self, forKey: .games)
         self.metadata = try container.decode(MAMEMetadata.self, forKey: .metadata)
     }
 
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(formatVersion, forKey: .formatVersion)
         try container.encode(games as? [MAMEGame] ?? [], forKey: .games)
@@ -173,7 +173,7 @@ extension MAMEGame: Codable {
         case identifier, name, description, items, metadata, disks, samples
     }
 
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.identifier = try container.decodeIfPresent(String.self, forKey: .identifier) ?? ""
         self.name = try container.decode(String.self, forKey: .name)
@@ -184,7 +184,7 @@ extension MAMEGame: Codable {
         self.samples = try container.decodeIfPresent([MAMESample].self, forKey: .samples) ?? []
     }
 
-    public func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(identifier, forKey: .identifier)
         try container.encode(name, forKey: .name)

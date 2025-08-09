@@ -423,12 +423,12 @@ public enum ValidationError: RomKitErrorProtocol {
 // MARK: - Error Collection
 
 public struct ErrorCollection {
-    private var errors: [RomKitErrorProtocol] = []
+    private var errors: [any RomKitErrorProtocol] = []
 
     public var count: Int { errors.count }
     public var isEmpty: Bool { errors.isEmpty }
 
-    public var criticalErrors: [RomKitErrorProtocol] {
+    public var criticalErrors: [any RomKitErrorProtocol] {
         errors.filter { $0.severity == .critical }
     }
 
@@ -436,15 +436,15 @@ public struct ErrorCollection {
         !criticalErrors.isEmpty
     }
 
-    public mutating func append(_ error: RomKitErrorProtocol) {
+    public mutating func append(_ error: any RomKitErrorProtocol) {
         errors.append(error)
     }
 
-    public mutating func append(contentsOf newErrors: [RomKitErrorProtocol]) {
+    public mutating func append(contentsOf newErrors: [any RomKitErrorProtocol]) {
         errors.append(contentsOf: newErrors)
     }
 
-    public func grouped(by category: ErrorCategory) -> [RomKitErrorProtocol] {
+    public func grouped(by category: ErrorCategory) -> [any RomKitErrorProtocol] {
         errors.filter { $0.category == category }
     }
 

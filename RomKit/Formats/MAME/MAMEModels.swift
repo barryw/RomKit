@@ -13,7 +13,7 @@ public struct MAMEDATFile: DATFormat, Sendable {
     public let formatName = "MAME"
     public let formatVersion: String?
     public let games: [any GameEntry]
-    public let metadata: DATMetadata
+    public let metadata: any DATMetadata
 
     public init(formatVersion: String? = nil, games: [MAMEGame], metadata: MAMEMetadata) {
         self.formatVersion = formatVersion
@@ -58,7 +58,7 @@ public struct MAMEGame: GameEntry, Sendable {
     public let name: String
     public let description: String
     public let items: [any ROMItem]
-    public let metadata: GameMetadata
+    public let metadata: any GameMetadata
     public let disks: [MAMEDisk]
     public let samples: [MAMESample]
 
