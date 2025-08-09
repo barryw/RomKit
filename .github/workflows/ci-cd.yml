@@ -12,7 +12,7 @@ permissions:
   issues: write
 
 env:
-  SWIFT_VERSION: 5.9
+  SWIFT_VERSION: 6.0
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
 jobs:
