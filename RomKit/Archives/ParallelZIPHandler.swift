@@ -126,7 +126,7 @@ public final class ParallelZIPArchiveHandler: ArchiveHandler, @unchecked Sendabl
                 group.addTask {
                     async let compressed = self.deflateData(data)
                     async let crc = self.computeCRC32(data: data)
-                    
+
                     let compressedData = await compressed
                     let crc32Value = await crc
 

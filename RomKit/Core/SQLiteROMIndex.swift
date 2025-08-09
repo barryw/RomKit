@@ -148,7 +148,7 @@ public actor SQLiteROMIndex {
             try await indexDirectoryOptimized(directory, showProgress: showProgress)
             return
         }
-        
+
         // Original implementation (kept for compatibility)
         let scanner = ConcurrentScanner()
         let results = try await scanner.scanDirectory(
@@ -553,8 +553,8 @@ public actor SQLiteROMIndex {
                 sqlite3_bind_int64(statement, idx, Int64(intParam))
             } else if let stringParam = param as? String {
                 // Use unsafeBitCast to create SQLITE_TRANSIENT (-1 as destructor)
-                let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-                sqlite3_bind_text(statement, idx, stringParam, -1, SQLITE_TRANSIENT)
+                let sqliteTransient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+                sqlite3_bind_text(statement, idx, stringParam, -1, sqliteTransient)
             } else if param is NSNull {
                 sqlite3_bind_null(statement, idx)
             }

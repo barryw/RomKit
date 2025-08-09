@@ -213,7 +213,7 @@ public actor AsyncFileIO {
         public let creationDate: Date?
         public let type: FileAttributeType?
     }
-    
+
     public static func fileAttributes(at url: URL) async throws -> FileAttributes {
         try await withCheckedThrowingContinuation { continuation in
             Task.detached(priority: .userInitiated) {

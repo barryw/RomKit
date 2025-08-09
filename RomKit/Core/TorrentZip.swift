@@ -297,17 +297,17 @@ public class TorrentZip {
     ) async throws {
         let result = try verifyDirectory(at: url, recursive: recursive)
         let total = result.nonCompliant.count
-        
+
         // Use an actor to safely track progress in concurrent code
         actor ProgressTracker {
             private var completed = 0
-            
+
             func increment() -> Int {
                 completed += 1
                 return completed
             }
         }
-        
+
         let tracker = ProgressTracker()
 
         if parallel {
