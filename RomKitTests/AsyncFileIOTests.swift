@@ -52,11 +52,18 @@ struct AsyncFileIOTests {
         defer { try? FileManager.default.removeItem(at: tempFile) }
 
         // Read file with streaming
-        var chunks: [Data] = []
+        actor ChunkCollector {
+            var chunks: [Data] = []
+            func append(_ chunk: Data) {
+                chunks.append(chunk)
+            }
+        }
+        let collector = ChunkCollector()
         try await AsyncFileIO.readDataStreaming(from: tempFile) { chunk in
-            chunks.append(chunk)
+            await collector.append(chunk)
         }
 
+        let chunks = await collector.chunks
         #expect(!chunks.isEmpty)
 
         // Verify total content

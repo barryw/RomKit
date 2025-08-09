@@ -237,7 +237,7 @@ struct FixdatGenerationTests {
         try fixdat.save(to: logiqxPath, format: .logiqxXML)
         #expect(FileManager.default.fileExists(atPath: logiqxPath))
 
-        let xmlContent = try String(contentsOfFile: logiqxPath)
+        let xmlContent = try String(contentsOfFile: logiqxPath, encoding: .utf8)
         #expect(xmlContent.contains("<?xml version=\"1.0\"?>"))
         #expect(xmlContent.contains("<game name=\"incomplete_game\">"))
 
@@ -245,7 +245,10 @@ struct FixdatGenerationTests {
         try fixdat.save(to: clrmamePath, format: .clrmamepro)
         #expect(FileManager.default.fileExists(atPath: clrmamePath))
 
-        let datContent = try String(contentsOfFile: clrmamePath)
+        let datContent = try String(
+            contentsOfFile: clrmamePath,
+            encoding: .utf8
+        )
         #expect(datContent.contains("clrmamepro ("))
         #expect(datContent.contains("name \"incomplete_game\""))
 

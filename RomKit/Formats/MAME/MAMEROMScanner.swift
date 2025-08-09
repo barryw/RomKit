@@ -106,7 +106,7 @@ public final class MAMEROMScanner: ROMScanner, CallbackSupportedScanner, @unchec
                 group.addTask {
                     await semaphore.wait()
 
-                    await self.callbackManager?.sendEvent(.scanningFile(url: file, index: index + 1, total: totalCount))
+                    self.callbackManager?.sendEvent(.scanningFile(url: file, index: index + 1, total: totalCount))
 
                     let result = await self.scanFileOptimized(file)
                     await semaphore.signal()

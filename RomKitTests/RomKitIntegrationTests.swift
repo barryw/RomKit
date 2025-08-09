@@ -192,7 +192,7 @@ struct RomKitIntegrationTests {
         try FileManager.default.createDirectory(at: workflowDir, withIntermediateDirectories: true)
 
         // Execute workflow steps
-        let datPath = try setupTestDAT(in: workflowDir, romkit: romkit)
+        let datPath = try await setupTestDAT(in: workflowDir, romkit: romkit)
         let scanResult = createTestScanResult()
         let (fixdatPath, missingReport) = try generateTestReports(workflowDir: workflowDir, romkit: romkit, scanResult: scanResult)
         let statsResult = try generateTestStatistics(workflowDir: workflowDir, romkit: romkit, scanResult: scanResult)
@@ -211,7 +211,7 @@ struct RomKitIntegrationTests {
 
     // MARK: - Helper Methods
 
-    private func setupTestDAT(in workflowDir: URL, romkit: RomKit) throws -> String {
+    private func setupTestDAT(in workflowDir: URL, romkit: RomKit) async throws -> String {
         print("📋 Step 1: Creating test DAT file")
         let datPath = workflowDir.appendingPathComponent("collection.dat").path
         let testDAT = """

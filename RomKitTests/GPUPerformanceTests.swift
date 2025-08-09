@@ -255,14 +255,23 @@ struct GPUPerformanceTests {
 
         try testData.write(to: tempFile)
 
-        var readChunks = 0
-        var totalBytesRead = 0
+        actor ReadTracker {
+            var readChunks = 0
+            var totalBytesRead = 0
+
+            func trackChunk(_ chunk: Data) {
+                readChunks += 1
+                totalBytesRead += chunk.count
+            }
+        }
+        let tracker = ReadTracker()
 
         try await AsyncFileIO.readDataStreaming(from: tempFile) { chunk in
-            readChunks += 1
-            totalBytesRead += chunk.count
+            await tracker.trackChunk(chunk)
         }
 
+        let totalBytesRead = await tracker.totalBytesRead
+        let readChunks = await tracker.readChunks
         #expect(totalBytesRead == testData.count, "Should read all bytes")
         print("Read \(readChunks) chunks totaling \(totalBytesRead) bytes")
 

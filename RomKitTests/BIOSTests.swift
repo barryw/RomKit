@@ -119,7 +119,7 @@ struct BIOSTests {
         let datPath = testDataPath.appendingPathComponent("neogeo_sample.xml")
 
         let romKit = RomKitGeneric()
-        try romKit.loadDAT(from: datPath, format: "mame")
+        try await romKit.loadDAT(from: datPath, format: "mame")
 
         #expect(romKit.isLoaded == true)
 

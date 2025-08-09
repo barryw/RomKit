@@ -37,9 +37,9 @@ public class ROMOrganizer {
         progress: ((RenameProgress) -> Void)? = nil
     ) async throws -> RenameResult {
 
-        var renamed: [(from: String, to: String)] = []
-        var skipped: [(file: String, reason: String)] = []
-        var errors: [(file: String, error: Error)] = []
+        let renamed: [(from: String, to: String)] = []
+        let skipped: [(file: String, reason: String)] = []
+        let errors: [(file: String, error: Error)] = []
 
         // For now, this is a simplified implementation that would need to be
         // integrated with the actual scanning infrastructure

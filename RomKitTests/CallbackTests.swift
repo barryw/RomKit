@@ -63,26 +63,38 @@ struct CallbackTests {
     // MARK: - Closure Callback Tests
 
     @Test func testClosureCallbacks() async throws {
-        var progressCount = 0
-        var eventCount = 0
-        var scanStarted = false
-        var scanCompleted = false
+        // Use actor for thread-safe counting
+        actor TestTracker {
+            var progressCount = 0
+            var eventCount = 0
+            var scanStarted = false
+            var scanCompleted = false
+
+            func incrementProgress() { progressCount += 1 }
+            func incrementEvent() { eventCount += 1 }
+            func setScanStarted() { scanStarted = true }
+            func setScanCompleted() { scanCompleted = true }
+        }
+
+        let tracker = TestTracker()
 
         // Create callbacks
         let callbacks = RomKitCallbacks(
             onProgress: { progress in
-                progressCount += 1
+                Task { await tracker.incrementProgress() }
                 print("Progress: \(progress.current)/\(progress.total) - \(progress.message ?? "")")
             },
             onEvent: { event in
-                eventCount += 1
-                switch event {
-                case .scanStarted:
-                    scanStarted = true
-                case .scanCompleted:
-                    scanCompleted = true
-                default:
-                    break
+                Task {
+                    await tracker.incrementEvent()
+                    switch event {
+                    case .scanStarted:
+                        await tracker.setScanStarted()
+                    case .scanCompleted:
+                        await tracker.setScanCompleted()
+                    default:
+                        break
+                    }
                 }
             }
         )
@@ -108,7 +120,15 @@ struct CallbackTests {
         // Scan
         _ = try await scanner.scan(directory: tempDir)
 
+        // Give Tasks time to complete
+        try await Task.sleep(nanoseconds: 10_000_000) // 10ms
+        
         // Verify callbacks (empty dir won't have progress, but will have events)
+        let progressCount = await tracker.progressCount
+        let eventCount = await tracker.eventCount
+        let scanStarted = await tracker.scanStarted
+        let scanCompleted = await tracker.scanCompleted
+
         #expect(eventCount > 0)
         #expect(scanStarted)
         #expect(scanCompleted)
@@ -175,15 +195,31 @@ struct CallbackTests {
     // MARK: - Cancellation Tests
 
     @Test func testCancellation() async throws {
-        var cancelled = false
+        class CancellationTracker: @unchecked Sendable {
+            private let lock = NSLock()
+            private var _cancelled = false
+
+            var cancelled: Bool {
+                lock.lock()
+                defer { lock.unlock() }
+                return _cancelled
+            }
+
+            func setCancelled() {
+                lock.lock()
+                defer { lock.unlock() }
+                _cancelled = true
+            }
+        }
+        let tracker = CancellationTracker()
 
         // Create callbacks that cancel after first progress update
         let callbacks = RomKitCallbacks(
             onProgress: { _ in
-                cancelled = true
+                tracker.setCancelled()
             },
             shouldCancel: {
-                return cancelled
+                return tracker.cancelled
             }
         )
 
@@ -217,6 +253,7 @@ struct CallbackTests {
         )
 
         // Verify operation was cancelled
+        let cancelled = tracker.cancelled
         #expect(cancelled)
 
         print("Operation cancelled: \(cancelled)")
@@ -226,11 +263,17 @@ struct CallbackTests {
     // MARK: - Progress Calculation Tests
 
     @Test func testProgressCalculation() async throws {
-        var lastProgress: OperationProgress?
+        actor ProgressTracker {
+            var lastProgress: OperationProgress?
+            func setProgress(_ progress: OperationProgress) {
+                lastProgress = progress
+            }
+        }
+        let tracker = ProgressTracker()
 
         let callbacks = RomKitCallbacks(
             onProgress: { progress in
-                lastProgress = progress
+                Task { await tracker.setProgress(progress) }
 
                 // Verify progress values
                 #expect(progress.current >= 0)
@@ -265,6 +308,7 @@ struct CallbackTests {
         _ = try await scanner.scan(directory: tempDir)
 
         // Verify final progress
+        let lastProgress = await tracker.lastProgress
         if let progress = lastProgress {
             print("Final progress: \(progress.current)/\(progress.total) (\(Int(progress.percentage * 100))%)")
             if let time = progress.estimatedTimeRemaining {
@@ -276,21 +320,29 @@ struct CallbackTests {
     // MARK: - Event Types Tests
 
     @Test func testEventTypes() async throws {
-        var eventTypes = Set<String>()
+        actor EventTypeTracker {
+            var eventTypes = Set<String>()
+            func insert(_ type: String) {
+                eventTypes.insert(type)
+            }
+        }
+        let tracker = EventTypeTracker()
 
         let callbacks = RomKitCallbacks(
             onEvent: { event in
                 // Track event types
-                switch event {
-                case .scanStarted: eventTypes.insert("scanStarted")
-                case .scanningFile: eventTypes.insert("scanningFile")
-                case .scanCompleted: eventTypes.insert("scanCompleted")
-                case .validationStarted: eventTypes.insert("validationStarted")
-                case .validationCompleted: eventTypes.insert("validationCompleted")
-                case .archiveOpening: eventTypes.insert("archiveOpening")
-                case .warning: eventTypes.insert("warning")
-                case .info: eventTypes.insert("info")
-                default: break
+                Task {
+                    switch event {
+                    case .scanStarted: await tracker.insert("scanStarted")
+                    case .scanningFile: await tracker.insert("scanningFile")
+                    case .scanCompleted: await tracker.insert("scanCompleted")
+                    case .validationStarted: await tracker.insert("validationStarted")
+                    case .validationCompleted: await tracker.insert("validationCompleted")
+                    case .archiveOpening: await tracker.insert("archiveOpening")
+                    case .warning: await tracker.insert("warning")
+                    case .info: await tracker.insert("info")
+                    default: break
+                    }
                 }
             }
         )
@@ -320,6 +372,10 @@ struct CallbackTests {
         // Scan
         _ = try await scanner.scan(directory: tempDir)
 
+        // Give Tasks time to complete
+        try await Task.sleep(nanoseconds: 10_000_000) // 10ms
+        
+        let eventTypes = await tracker.eventTypes
         print("Event types received: \(eventTypes.sorted())")
 
         // Verify basic events

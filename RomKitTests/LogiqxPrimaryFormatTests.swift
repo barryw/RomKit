@@ -68,7 +68,7 @@ struct LogiqxPrimaryFormatTests {
         let romkit = RomKit()
 
         // Explicitly load as Logiqx
-        try romkit.loadLogiqxDAT(from: tempPath.path)
+        try await romkit.loadLogiqxDAT(from: tempPath.path)
 
         // Should load successfully
     }
@@ -81,7 +81,7 @@ struct LogiqxPrimaryFormatTests {
         let romkit = RomKitGeneric()
 
         // Load with auto-detection
-        try romkit.loadDAT(data: data)
+        try await romkit.loadDAT(data: data)
 
         // Check format was detected as Logiqx
         #expect(romkit.currentFormat == "Logiqx DAT")

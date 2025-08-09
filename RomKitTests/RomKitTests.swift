@@ -148,21 +148,21 @@ struct RomKitTests {
         // Test generic version
         let genericKit = RomKitGeneric()
         #expect(genericKit.isLoaded == false)
-        #expect(genericKit.availableFormats.contains("mame"))
-        #expect(genericKit.availableFormats.contains("no-intro"))
-        #expect(genericKit.availableFormats.contains("redump"))
+        await #expect(genericKit.availableFormats.contains("mame"))
+        await #expect(genericKit.availableFormats.contains("no-intro"))
+        await #expect(genericKit.availableFormats.contains("redump"))
     }
 
     @Test func testFormatRegistry() async throws {
         let registry = RomKitFormatRegistry.shared
 
-        #expect(registry.handler(for: "mame") != nil)
-        #expect(registry.handler(for: "no-intro") != nil)
-        #expect(registry.handler(for: "redump") != nil)
-        #expect(registry.handler(for: "invalid") == nil)
+        await #expect(registry.handler(for: "mame") != nil)
+        await #expect(registry.handler(for: "no-intro") != nil)
+        await #expect(registry.handler(for: "redump") != nil)
+        await #expect(registry.handler(for: "invalid") == nil)
     }
 
-    @Test func testLoadDATMethods() throws {
+    @Test func testLoadDATMethods() async throws {
         let romKit = RomKit()
         let tempDir = FileManager.default.temporaryDirectory
 
@@ -191,7 +191,7 @@ struct RomKitTests {
         try await romKit.loadDAT(from: datFile.path)
 
         // Test explicit Logiqx loading
-        try romKit.loadLogiqxDAT(from: datFile.path)
+        try await romKit.loadLogiqxDAT(from: datFile.path)
 
         // Create a MAME-style DAT file
         let mameContent = """
@@ -209,7 +209,7 @@ struct RomKitTests {
         defer { try? FileManager.default.removeItem(at: mameDatFile) }
 
         // Test MAME loading
-        try romKit.loadMAMEDAT(from: mameDatFile.path)
+        try await romKit.loadMAMEDAT(from: mameDatFile.path)
     }
 
     @Test func testScanDirectory() async throws {

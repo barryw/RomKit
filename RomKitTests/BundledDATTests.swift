@@ -43,7 +43,7 @@ struct BundledDATTests {
 
         // Use with RomKit
         let romkit = RomKitGeneric()
-        try romkit.loadDAT(data: data, format: "logiqx")
+        try await romkit.loadDAT(data: data, format: "logiqx")
 
         #expect(romkit.isLoaded == true)
         #expect(romkit.currentFormat == "Logiqx DAT")

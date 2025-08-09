@@ -17,12 +17,10 @@ public actor RomKitFormatRegistry {
     private init() {
         // Register default handlers
         // Logiqx is registered first as it's the industry standard
-        Task {
-            await register(LogiqxFormatHandler())
-            await register(MAMEFormatHandler())
-            await register(NoIntroFormatHandler())
-            await register(RedumpFormatHandler())
-        }
+        handlers["logiqx"] = LogiqxFormatHandler()
+        handlers["mame"] = MAMEFormatHandler()
+        handlers["no-intro"] = NoIntroFormatHandler()
+        handlers["redump"] = RedumpFormatHandler()
     }
 
     public func register(_ handler: any ROMFormatHandler) {
