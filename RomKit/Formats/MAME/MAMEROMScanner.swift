@@ -32,7 +32,7 @@ public final class MAMEROMScanner: ROMScanner, CallbackSupportedScanner, @unchec
     public convenience init(datFile: MAMEDATFile,
                             validator: any ROMValidator,
                             archiveHandlers: [any ArchiveHandler],
-                            delegate: RomKitDelegate? = nil,
+                            delegate: (any RomKitDelegate)? = nil,
                             callbacks: RomKitCallbacks? = nil,
                             eventStream: RomKitEventStream? = nil) {
         self.init(datFile: datFile, validator: validator, archiveHandlers: archiveHandlers)
@@ -43,7 +43,7 @@ public final class MAMEROMScanner: ROMScanner, CallbackSupportedScanner, @unchec
         )
     }
 
-    public func scan(directory: URL) async throws -> ScanResults {
+    public func scan(directory: URL) async throws -> any ScanResults {
         let files = try findScanFiles(in: directory)
 
         // Send scan started event
@@ -52,7 +52,7 @@ public final class MAMEROMScanner: ROMScanner, CallbackSupportedScanner, @unchec
         return try await scan(files: files)
     }
 
-    public func scan(files: [URL]) async throws -> ScanResults {
+    public func scan(files: [URL]) async throws -> any ScanResults {
         let startTime = Date()
         let results = try await performParallelScan(files: files)
         let duration = Date().timeIntervalSince(startTime)

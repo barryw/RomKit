@@ -25,7 +25,7 @@ public final class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder, @
     /// Convenience initializer with callback support
     public convenience init(datFile: MAMEDATFile,
                             archiveHandlers: [any ArchiveHandler],
-                            delegate: RomKitDelegate? = nil,
+                            delegate: (any RomKitDelegate)? = nil,
                             callbacks: RomKitCallbacks? = nil,
                             eventStream: RomKitEventStream? = nil) {
         self.init(datFile: datFile, archiveHandlers: archiveHandlers)
@@ -96,7 +96,7 @@ public final class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder, @
         }
     }
 
-    private func performSourceScan(source: URL) async throws -> ScanResults {
+    private func performSourceScan(source: URL) async throws -> any ScanResults {
         let scanner = MAMEROMScanner(
             datFile: datFile,
             validator: MAMEROMValidator(),
@@ -107,7 +107,7 @@ public final class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder, @
         return try await scanner.scan(directory: source)
     }
 
-    private func processGamesForRebuild(scanResults: ScanResults,
+    private func processGamesForRebuild(scanResults: any ScanResults,
                                         destination: URL,
                                         options: RebuildOptions) async -> RebuildStats {
         var stats = RebuildStats()
@@ -153,7 +153,7 @@ public final class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder, @
     }
 
     private func rebuildSingleGame(game: MAMEGame,
-                                   scanResults: ScanResults,
+                                   scanResults: any ScanResults,
                                    destination: URL,
                                    options: RebuildOptions) async -> RebuildResult {
         guard let scannedGame = findScannedGame(for: game, in: scanResults) else {
@@ -180,7 +180,7 @@ public final class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder, @
         }
     }
 
-    private func findScannedGame(for game: MAMEGame, in scanResults: ScanResults) -> (any ScannedGameEntry)? {
+    private func findScannedGame(for game: MAMEGame, in scanResults: any ScanResults) -> (any ScannedGameEntry)? {
         scanResults.foundGames.first {
             ($0.game as? MAMEGame)?.name == game.name
         }

@@ -13,13 +13,13 @@ import MetalPerformanceShaders
 @available(macOS 10.13, iOS 11.0, *)
 public class MetalHashCompute {
 
-    private let device: MTLDevice
-    private let commandQueue: MTLCommandQueue
-    private let library: MTLLibrary
+    private let device: any MTLDevice
+    private let commandQueue: any MTLCommandQueue
+    private let library: any MTLLibrary
 
-    private let crc32Pipeline: MTLComputePipelineState
-    private let sha256Pipeline: MTLComputePipelineState
-    private let multiHashPipeline: MTLComputePipelineState
+    private let crc32Pipeline: any MTLComputePipelineState
+    private let sha256Pipeline: any MTLComputePipelineState
+    private let multiHashPipeline: any MTLComputePipelineState
 
     private static let gpuThreshold = 10 * 1024 * 1024 // 10MB minimum for GPU
 

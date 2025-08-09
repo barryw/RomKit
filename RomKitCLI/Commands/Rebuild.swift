@@ -482,7 +482,7 @@ struct Rebuild: AsyncParsableCommand, Sendable {
             return try Data(contentsOf: path)
 
         case .archive(let archivePath, let entryPath):
-            let handler: ArchiveHandler
+            let handler: any ArchiveHandler
             switch archivePath.pathExtension.lowercased() {
             case "zip":
                 handler = FastZIPArchiveHandler()

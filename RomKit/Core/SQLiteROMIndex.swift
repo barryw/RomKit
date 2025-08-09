@@ -213,7 +213,7 @@ public actor SQLiteROMIndex {
         }
     }
 
-    private func getArchiveHandler(for url: URL) -> ArchiveHandler? {
+    private func getArchiveHandler(for url: URL) -> (any ArchiveHandler)? {
         switch url.pathExtension.lowercased() {
         case "zip":
             return ParallelZIPArchiveHandler()
