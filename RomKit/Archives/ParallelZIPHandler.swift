@@ -9,7 +9,7 @@ import Foundation
 import Compression
 import zlib
 
-public class ParallelZIPArchiveHandler: ArchiveHandler {
+public final class ParallelZIPArchiveHandler: ArchiveHandler, @unchecked Sendable {
     public let supportedExtensions = ["zip"]
 
     private let maxConcurrentOperations = ProcessInfo.processInfo.activeProcessorCount
@@ -124,19 +124,17 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
         let compressedEntries = try await withThrowingTaskGroup(of: CompressedEntry.self) { group in
             for (name, data) in entries {
                 group.addTask {
-                    let compressed = await Task.detached(priority: .userInitiated) {
-                        self.deflateData(data)
-                    }.value
-
-                    let crc = await Task.detached(priority: .userInitiated) {
-                        self.computeCRC32(data: data)
-                    }.value
+                    async let compressed = self.deflateData(data)
+                    async let crc = self.computeCRC32(data: data)
+                    
+                    let compressedData = await compressed
+                    let crc32Value = await crc
 
                     return CompressedEntry(
                         name: name,
                         originalData: data,
-                        compressedData: compressed,
-                        crc32: crc
+                        compressedData: compressedData,
+                        crc32: crc32Value
                     )
                 }
             }

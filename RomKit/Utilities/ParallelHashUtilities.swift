@@ -41,18 +41,21 @@ public actor ParallelHashUtilities {
             return HashUtilities.sha1(data: data)
         }
 
-        return await Task.detached(priority: .userInitiated) {
-            var hasher = Insecure.SHA1()
+        return await withCheckedContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                var hasher = Insecure.SHA1()
 
-            for offset in stride(from: 0, to: data.count, by: chunkSize) {
-                let length = min(chunkSize, data.count - offset)
-                let chunk = data.subdata(in: offset..<(offset + length))
-                hasher.update(data: chunk)
+                for offset in stride(from: 0, to: data.count, by: chunkSize) {
+                    let length = min(chunkSize, data.count - offset)
+                    let chunk = data.subdata(in: offset..<(offset + length))
+                    hasher.update(data: chunk)
+                }
+
+                let digest = hasher.finalize()
+                let result = digest.map { String(format: "%02x", $0) }.joined()
+                continuation.resume(returning: result)
             }
-
-            let digest = hasher.finalize()
-            return digest.map { String(format: "%02x", $0) }.joined()
-        }.value
+        }
     }
 
     public static func sha256(data: Data) async -> String {
@@ -60,18 +63,21 @@ public actor ParallelHashUtilities {
             return HashUtilities.sha256(data: data)
         }
 
-        return await Task.detached(priority: .userInitiated) {
-            var hasher = SHA256()
+        return await withCheckedContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                var hasher = SHA256()
 
-            for offset in stride(from: 0, to: data.count, by: chunkSize) {
-                let length = min(chunkSize, data.count - offset)
-                let chunk = data.subdata(in: offset..<(offset + length))
-                hasher.update(data: chunk)
+                for offset in stride(from: 0, to: data.count, by: chunkSize) {
+                    let length = min(chunkSize, data.count - offset)
+                    let chunk = data.subdata(in: offset..<(offset + length))
+                    hasher.update(data: chunk)
+                }
+
+                let digest = hasher.finalize()
+                let result = digest.map { String(format: "%02x", $0) }.joined()
+                continuation.resume(returning: result)
             }
-
-            let digest = hasher.finalize()
-            return digest.map { String(format: "%02x", $0) }.joined()
-        }.value
+        }
     }
 
     public static func md5(data: Data) async -> String {
@@ -79,18 +85,21 @@ public actor ParallelHashUtilities {
             return HashUtilities.md5(data: data)
         }
 
-        return await Task.detached(priority: .userInitiated) {
-            var hasher = Insecure.MD5()
+        return await withCheckedContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                var hasher = Insecure.MD5()
 
-            for offset in stride(from: 0, to: data.count, by: chunkSize) {
-                let length = min(chunkSize, data.count - offset)
-                let chunk = data.subdata(in: offset..<(offset + length))
-                hasher.update(data: chunk)
+                for offset in stride(from: 0, to: data.count, by: chunkSize) {
+                    let length = min(chunkSize, data.count - offset)
+                    let chunk = data.subdata(in: offset..<(offset + length))
+                    hasher.update(data: chunk)
+                }
+
+                let digest = hasher.finalize()
+                let result = digest.map { String(format: "%02x", $0) }.joined()
+                continuation.resume(returning: result)
             }
-
-            let digest = hasher.finalize()
-            return digest.map { String(format: "%02x", $0) }.joined()
-        }.value
+        }
     }
 
     public struct MultiHash: Sendable {

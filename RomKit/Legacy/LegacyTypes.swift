@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Legacy Types for Backward Compatibility
 
-public struct DATFile {
+public struct DATFile: Sendable {
     public let name: String
     public let description: String
     public let version: String?
@@ -25,7 +25,7 @@ public struct DATFile {
     }
 }
 
-public struct Game {
+public struct Game: Sendable {
     public let name: String
     public let description: String
     public let cloneOf: String?
@@ -67,7 +67,7 @@ public struct Game {
     }
 }
 
-public struct ROM {
+public struct ROM: Sendable {
     public let name: String
     public let size: UInt64
     public let crc: String?
@@ -95,7 +95,7 @@ public struct ROM {
     }
 }
 
-public struct Disk {
+public struct Disk: Sendable {
     public let name: String
     public let sha1: String?
     public let md5: String?
@@ -127,7 +127,7 @@ public struct Disk {
 
 // MARK: - Legacy Scan Types
 
-public struct ScanResult {
+public struct ScanResult: Sendable {
     public let scannedPath: String
     public let foundGames: [ScannedGame]
     public let unknownFiles: [String]
@@ -141,7 +141,7 @@ public struct ScanResult {
     }
 }
 
-public struct ScannedGame {
+public struct ScannedGame: Sendable {
     public let game: Game
     public let foundRoms: [ScannedROM]
     public let missingRoms: [ROM]
@@ -163,7 +163,7 @@ public struct ScannedGame {
     }
 }
 
-public struct ScannedROM {
+public struct ScannedROM: Sendable {
     public let rom: ROM
     public let filePath: String
     public let hash: FileHash?
@@ -177,19 +177,19 @@ public struct ScannedROM {
     }
 }
 
-public enum GameStatus {
+public enum GameStatus: Sendable {
     case complete
     case incomplete
     case missing
 }
 
-public enum ROMValidationStatus {
+public enum ROMValidationStatus: Sendable {
     case good
     case bad
     case unknown
 }
 
-public struct FileHash {
+public struct FileHash: Sendable {
     public let crc32: String
     public let sha1: String
     public let md5: String
@@ -218,7 +218,7 @@ public struct FileHash {
 
 // MARK: - Legacy Audit Types
 
-public struct AuditReport: Codable {
+public struct AuditReport: Codable, Sendable {
     public let scanDate: Date
     public let scannedPath: String
     public let totalGames: Int
@@ -252,7 +252,7 @@ public struct AuditReport: Codable {
     }
 }
 
-public struct IncompleteGame: Codable {
+public struct IncompleteGame: Codable, Sendable {
     public let gameName: String
     public let missingRoms: [String]
     public let badRoms: [String]
@@ -264,7 +264,7 @@ public struct IncompleteGame: Codable {
     }
 }
 
-public struct BadROM: Codable {
+public struct BadROM: Codable, Sendable {
     public let gameName: String
     public let romName: String
     public let expectedCRC: String?
@@ -289,7 +289,7 @@ public struct BadROM: Codable {
     }
 }
 
-public struct AuditStatistics: Codable {
+public struct AuditStatistics: Codable, Sendable {
     public let totalGames: Int
     public let completeGames: Int
     public let incompleteGames: Int

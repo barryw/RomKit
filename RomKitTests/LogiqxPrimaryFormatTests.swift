@@ -16,13 +16,13 @@ struct LogiqxPrimaryFormatTests {
         let registry = RomKitFormatRegistry.shared
 
         // Get available formats
-        let formats = registry.availableFormats
+        let formats = await registry.availableFormats
 
         // Logiqx should be registered
         #expect(formats.contains("logiqx"))
 
         // Get Logiqx handler
-        let logiqxHandler = registry.handler(for: "logiqx")
+        let logiqxHandler = await registry.handler(for: "logiqx")
         #expect(logiqxHandler != nil)
         #expect(logiqxHandler?.formatName == "Logiqx DAT")
     }
@@ -33,7 +33,7 @@ struct LogiqxPrimaryFormatTests {
 
         // Test auto-detection
         let registry = RomKitFormatRegistry.shared
-        let detectedHandler = registry.detectFormat(from: data)
+        let detectedHandler = try await registry.detectFormat(from: data)
 
         // Should detect as Logiqx (since it's checked first)
         #expect(detectedHandler?.formatIdentifier == "logiqx")
@@ -51,7 +51,7 @@ struct LogiqxPrimaryFormatTests {
         let romkit = RomKit()
 
         // This should auto-detect and prefer Logiqx
-        try romkit.loadDAT(from: tempPath.path)
+        try await romkit.loadDAT(from: tempPath.path)
 
         // Can't directly check format from legacy API, but it should load successfully
         // The fact it loads without error proves auto-detection works

@@ -8,7 +8,7 @@
 import Foundation
 
 /// MAME ROM Scanner
-public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
+public final class MAMEROMScanner: ROMScanner, CallbackSupportedScanner, @unchecked Sendable {
     public typealias DATType = MAMEDATFile
 
     public let datFile: MAMEDATFile
@@ -73,7 +73,7 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
 
     // MARK: - Private Methods
 
-    private struct ScanBatchResult {
+    private struct ScanBatchResult: Sendable {
         let foundGames: [MAMEScannedGame]
         let unknownFiles: [URL]
         let errors: [ScanError]
@@ -88,7 +88,7 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
         let processorCount = ProcessInfo.processInfo.activeProcessorCount
         let maxConcurrency = min(processorCount * 2, 8)
 
-        struct FileScanResult {
+        struct FileScanResult: Sendable {
             let game: MAMEScannedGame?
             let url: URL
             let index: Int
@@ -106,7 +106,7 @@ public class MAMEROMScanner: ROMScanner, CallbackSupportedScanner {
                 group.addTask {
                     await semaphore.wait()
 
-                    self.callbackManager?.sendEvent(.scanningFile(url: file, index: index + 1, total: totalCount))
+                    await self.callbackManager?.sendEvent(.scanningFile(url: file, index: index + 1, total: totalCount))
 
                     let result = await self.scanFileOptimized(file)
                     await semaphore.signal()

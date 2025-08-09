@@ -17,7 +17,7 @@ private struct RebuildOptions {
     let showProgress: Bool
 }
 
-struct Rebuild: AsyncParsableCommand {
+struct Rebuild: AsyncParsableCommand, Sendable {
     static let configuration = CommandConfiguration(
         abstract: "Rebuild ROM sets from multiple source directories",
         discussion: """
@@ -386,14 +386,20 @@ struct Rebuild: AsyncParsableCommand {
 
                 // Start new rebuild job
                 activeJobs += 1
-                group.addTask {
+                let req = gameReq
+                let manager = indexManager
+                let output = outputDirectory
+                let style = options.style
+                let verify = options.verify
+                let gpu = options.useGPU
+                group.addTask { [self] in
                     return await self.rebuildGame(
-                        requirement: gameReq,
-                        indexManager: indexManager,
-                        outputDirectory: outputDirectory,
-                        style: options.style,
-                        verify: options.verify,
-                        useGPU: options.useGPU
+                        requirement: req,
+                        indexManager: manager,
+                        outputDirectory: output,
+                        style: style,
+                        verify: verify,
+                        useGPU: gpu
                     )
                 }
             }

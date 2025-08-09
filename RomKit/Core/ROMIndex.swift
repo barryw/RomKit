@@ -8,7 +8,7 @@
 import Foundation
 
 /// Represents a single indexed ROM with its location and metadata
-public struct IndexedROM {
+public struct IndexedROM: Sendable {
     public let name: String
     public let size: UInt64
     public let crc32: String
@@ -37,7 +37,7 @@ public struct IndexedROM {
 }
 
 /// Describes where a ROM is located
-public enum ROMLocation: Codable, Hashable {
+public enum ROMLocation: Codable, Hashable, Sendable {
     case archive(path: URL, entryPath: String) // ZIP/7z file with internal path
     case file(path: URL)                       // Loose file on disk
     case remote(url: URL, credentials: String?) // Network location (NAS/SMB/HTTP)

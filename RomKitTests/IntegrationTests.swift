@@ -171,7 +171,7 @@ struct IntegrationTests {
         let datPath = testDataPath.appendingPathComponent("mame_sample.xml")
 
         let romKit = RomKitGeneric()
-        try romKit.loadDAT(from: datPath, format: "mame")
+        try await romKit.loadDAT(from: datPath, format: "mame")
 
         #expect(romKit.isLoaded == true)
         #expect(romKit.currentFormat == "MAME")

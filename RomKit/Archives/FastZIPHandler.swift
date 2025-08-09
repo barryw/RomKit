@@ -11,7 +11,7 @@ import zlib
 
 // MARK: - Fast ZIP Archive Handler using native libraries
 
-public class FastZIPArchiveHandler: ArchiveHandler {
+public final class FastZIPArchiveHandler: ArchiveHandler, @unchecked Sendable {
     public let supportedExtensions = ["zip"]
 
     public init() {}

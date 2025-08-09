@@ -9,14 +9,14 @@ import Foundation
 
 // MARK: - Core Data Protocols
 
-public protocol DATFormat {
+public protocol DATFormat: Sendable {
     var formatName: String { get }
     var formatVersion: String? { get }
     var games: [any GameEntry] { get }
-    var metadata: DATMetadata { get }
+    var metadata: any DATMetadata { get }
 }
 
-public protocol DATMetadata {
+public protocol DATMetadata: Sendable {
     var name: String { get }
     var description: String { get }
     var version: String? { get }
@@ -26,15 +26,15 @@ public protocol DATMetadata {
     var url: String? { get }
 }
 
-public protocol GameEntry {
+public protocol GameEntry: Sendable {
     var identifier: String { get }
     var name: String { get }
     var description: String { get }
     var items: [any ROMItem] { get }
-    var metadata: GameMetadata { get }
+    var metadata: any GameMetadata { get }
 }
 
-public protocol GameMetadata {
+public protocol GameMetadata: Sendable {
     var year: String? { get }
     var manufacturer: String? { get }
     var category: String? { get }
@@ -44,7 +44,7 @@ public protocol GameMetadata {
     var sourceFile: String? { get }
 }
 
-public protocol ROMItem {
+public protocol ROMItem: Sendable {
     var name: String { get }
     var size: UInt64 { get }
     var checksums: ROMChecksums { get }
@@ -52,14 +52,14 @@ public protocol ROMItem {
     var attributes: ROMAttributes { get }
 }
 
-public enum ROMStatus: String, Codable {
+public enum ROMStatus: String, Codable, Sendable {
     case good
     case baddump
     case nodump
     case verified
 }
 
-public struct ROMChecksums: Codable {
+public struct ROMChecksums: Codable, Sendable {
     public var crc32: String?
     public var sha1: String?
     public var sha256: String?
@@ -73,7 +73,7 @@ public struct ROMChecksums: Codable {
     }
 }
 
-public struct ROMAttributes: Codable {
+public struct ROMAttributes: Codable, Sendable {
     public var merge: String?
     public var date: String?
     public var optional: Bool
@@ -103,7 +103,7 @@ public protocol ROMValidator {
     func computeChecksums(for data: Data) -> ROMChecksums
 }
 
-public struct ValidationResult {
+public struct ValidationResult: Sendable {
     public let isValid: Bool
     public let actualChecksums: ROMChecksums
     public let expectedChecksums: ROMChecksums
@@ -127,7 +127,7 @@ public struct ValidationResult {
 
 // MARK: - Archive Handler Protocol
 
-public protocol ArchiveHandler {
+public protocol ArchiveHandler: Sendable {
     var supportedExtensions: [String] { get }
 
     func canHandle(url: URL) -> Bool
@@ -137,7 +137,7 @@ public protocol ArchiveHandler {
     func create(at url: URL, with entries: [(name: String, data: Data)]) throws
 }
 
-public struct ArchiveEntry {
+public struct ArchiveEntry: Sendable {
     public let path: String
     public let compressedSize: UInt64
     public let uncompressedSize: UInt64
@@ -168,11 +168,11 @@ public protocol ROMScanner {
     var validator: any ROMValidator { get }
     var archiveHandlers: [any ArchiveHandler] { get }
 
-    func scan(directory: URL) async throws -> ScanResults
-    func scan(files: [URL]) async throws -> ScanResults
+    func scan(directory: URL) async throws -> any ScanResults
+    func scan(files: [URL]) async throws -> any ScanResults
 }
 
-public protocol ScanResults {
+public protocol ScanResults: Sendable {
     var scannedPath: String { get }
     var foundGames: [any ScannedGameEntry] { get }
     var unknownFiles: [URL] { get }
@@ -180,14 +180,14 @@ public protocol ScanResults {
     var errors: [ScanError] { get }
 }
 
-public protocol ScannedGameEntry {
+public protocol ScannedGameEntry: Sendable {
     var game: any GameEntry { get }
     var foundItems: [ScannedItem] { get }
     var missingItems: [any ROMItem] { get }
     var status: GameCompletionStatus { get }
 }
 
-public struct ScannedItem {
+public struct ScannedItem: Sendable {
     public let item: any ROMItem
     public let location: URL
     public let validationResult: ValidationResult
@@ -199,14 +199,14 @@ public struct ScannedItem {
     }
 }
 
-public enum GameCompletionStatus {
+public enum GameCompletionStatus: Sendable {
     case complete
     case incomplete
     case missing
     case unknown
 }
 
-public struct ScanError: Error {
+public struct ScanError: Error, Sendable {
     public let file: URL
     public let message: String
 
@@ -227,8 +227,8 @@ public protocol ROMRebuilder {
     func rebuild(from source: URL, to destination: URL, options: RebuildOptions) async throws -> RebuildResults
 }
 
-public struct RebuildOptions {
-    public enum Style {
+public struct RebuildOptions: Sendable {
+    public enum Style: Sendable {
         case split
         case merged
         case nonMerged
@@ -269,7 +269,7 @@ public struct RebuildResults {
 
 // MARK: - Format Handler Protocol
 
-public protocol ROMFormatHandler {
+public protocol ROMFormatHandler: Sendable {
     var formatIdentifier: String { get }
     var formatName: String { get }
     var supportedExtensions: [String] { get }

@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - MAME DAT Format Implementation
 
-public struct MAMEDATFile: DATFormat {
+public struct MAMEDATFile: DATFormat, Sendable {
     public let formatName = "MAME"
     public let formatVersion: String?
     public let games: [any GameEntry]
@@ -22,7 +22,7 @@ public struct MAMEDATFile: DATFormat {
     }
 }
 
-public struct MAMEMetadata: DATMetadata, Codable {
+public struct MAMEMetadata: DATMetadata, Codable, Sendable {
     public let name: String
     public let description: String
     public let version: String?
@@ -53,7 +53,7 @@ public struct MAMEMetadata: DATMetadata, Codable {
     }
 }
 
-public struct MAMEGame: GameEntry {
+public struct MAMEGame: GameEntry, Sendable {
     public let identifier: String
     public let name: String
     public let description: String
@@ -80,7 +80,7 @@ public struct MAMEGame: GameEntry {
     }
 }
 
-public struct MAMEGameMetadata: GameMetadata, Codable {
+public struct MAMEGameMetadata: GameMetadata, Codable, Sendable {
     public let year: String?
     public let manufacturer: String?
     public let category: String?
@@ -149,7 +149,7 @@ public struct MAMEGameMetadata: GameMetadata, Codable {
     }
 }
 
-public struct MAMEROM: ROMItem, Codable {
+public struct MAMEROM: ROMItem, Codable, Sendable {
     public let name: String
     public let size: UInt64
     public let checksums: ROMChecksums
@@ -177,7 +177,7 @@ public struct MAMEROM: ROMItem, Codable {
     }
 }
 
-public struct MAMEDisk: ROMItem, Codable {
+public struct MAMEDisk: ROMItem, Codable, Sendable {
     public let name: String
     public let size: UInt64
     public let checksums: ROMChecksums
@@ -201,7 +201,7 @@ public struct MAMEDisk: ROMItem, Codable {
     }
 }
 
-public struct MAMESample: Codable {
+public struct MAMESample: Codable, Sendable {
     public let name: String
 
     public init(name: String) {
@@ -211,7 +211,7 @@ public struct MAMESample: Codable {
 
 // MARK: - Additional MAME Elements
 
-public struct MAMEChip: Codable {
+public struct MAMEChip: Codable, Sendable {
     public let type: String
     public let tag: String
     public let name: String
@@ -225,7 +225,7 @@ public struct MAMEChip: Codable {
     }
 }
 
-public struct MAMEDisplay: Codable {
+public struct MAMEDisplay: Codable, Sendable {
     public let tag: String
     public let type: String
     public let rotate: Int
@@ -260,7 +260,7 @@ public struct MAMEDisplay: Codable {
     }
 }
 
-public struct MAMESound: Codable {
+public struct MAMESound: Codable, Sendable {
     public let channels: Int
 
     public init(channels: Int) {
@@ -268,7 +268,7 @@ public struct MAMESound: Codable {
     }
 }
 
-public struct MAMEInput: Codable {
+public struct MAMEInput: Codable, Sendable {
     public let players: Int
     public let coins: Int?
     public let service: Bool
@@ -282,7 +282,7 @@ public struct MAMEInput: Codable {
     }
 }
 
-public struct MAMEControl: Codable {
+public struct MAMEControl: Codable, Sendable {
     public let type: String
     public let player: Int?
     public let buttons: Int?
@@ -296,7 +296,7 @@ public struct MAMEControl: Codable {
     }
 }
 
-public struct MAMEDipSwitch: Codable {
+public struct MAMEDipSwitch: Codable, Sendable {
     public let name: String
     public let tag: String
     public let mask: Int
@@ -312,7 +312,7 @@ public struct MAMEDipSwitch: Codable {
     }
 }
 
-public struct MAMEDipLocation: Codable {
+public struct MAMEDipLocation: Codable, Sendable {
     public let name: String
     public let number: String
 
@@ -322,7 +322,7 @@ public struct MAMEDipLocation: Codable {
     }
 }
 
-public struct MAMEDipValue: Codable {
+public struct MAMEDipValue: Codable, Sendable {
     public let name: String
     public let value: Int
     public let isDefault: Bool
@@ -334,7 +334,7 @@ public struct MAMEDipValue: Codable {
     }
 }
 
-public struct MAMEDriver: Codable {
+public struct MAMEDriver: Codable, Sendable {
     public let status: String
     public let emulation: String
     public let savestate: String
@@ -346,7 +346,7 @@ public struct MAMEDriver: Codable {
     }
 }
 
-public struct MAMEFeature: Codable {
+public struct MAMEFeature: Codable, Sendable {
     public let type: String
     public let status: String
 

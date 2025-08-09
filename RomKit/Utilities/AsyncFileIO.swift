@@ -13,12 +13,19 @@ public actor AsyncFileIO {
     private static let writeChunkSize = 1024 * 1024 * 4 // 4MB chunks
 
     public static func readData(from url: URL) async throws -> Data {
-        return try await Task.detached(priority: .userInitiated) {
-            try Data(contentsOf: url)
-        }.value
+        return try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    let data = try Data(contentsOf: url)
+                    continuation.resume(returning: data)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
-    public static func readDataStreaming(from url: URL, chunkHandler: @escaping (Data) async -> Void) async throws {
+    public static func readDataStreaming(from url: URL, chunkHandler: @escaping @Sendable (Data) async -> Void) async throws {
         let fileHandle = try FileHandle(forReadingFrom: url)
         defer { try? fileHandle.close() }
 
@@ -43,84 +50,137 @@ public actor AsyncFileIO {
     }
 
     public static func writeData(_ data: Data, to url: URL) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            try data.write(to: url)
-        }.value
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    try data.write(to: url)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public static func writeDataStreaming(_ data: Data, to url: URL) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            let fileManager = FileManager.default
+        let chunkSize = writeChunkSize
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    let fileManager = FileManager.default
 
-            try fileManager.createDirectory(
-                at: url.deletingLastPathComponent(),
-                withIntermediateDirectories: true
-            )
+                    try fileManager.createDirectory(
+                        at: url.deletingLastPathComponent(),
+                        withIntermediateDirectories: true
+                    )
 
-            guard fileManager.createFile(atPath: url.path, contents: nil) else {
-                throw CocoaError(.fileWriteFileExists)
-            }
+                    guard fileManager.createFile(atPath: url.path, contents: nil) else {
+                        throw CocoaError(.fileWriteFileExists)
+                    }
 
-            let fileHandle = try FileHandle(forWritingTo: url)
-            defer { try? fileHandle.close() }
+                    let fileHandle = try FileHandle(forWritingTo: url)
+                    defer { try? fileHandle.close() }
 
-            for offset in stride(from: 0, to: data.count, by: self.writeChunkSize) {
-                autoreleasepool {
-                    let chunkSize = min(self.writeChunkSize, data.count - offset)
-                    let chunk = data.subdata(in: offset..<(offset + chunkSize))
-                    fileHandle.write(chunk)
+                    for offset in stride(from: 0, to: data.count, by: chunkSize) {
+                        autoreleasepool {
+                            let size = min(chunkSize, data.count - offset)
+                            let chunk = data.subdata(in: offset..<(offset + size))
+                            fileHandle.write(chunk)
+                        }
+                    }
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
                 }
             }
-        }.value
+        }
     }
 
     public static func copyFile(from source: URL, to destination: URL) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            try FileManager.default.copyItem(at: source, to: destination)
-        }.value
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    try FileManager.default.copyItem(at: source, to: destination)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public static func moveFile(from source: URL, to destination: URL) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            try FileManager.default.moveItem(at: source, to: destination)
-        }.value
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    try FileManager.default.moveItem(at: source, to: destination)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public static func deleteFile(at url: URL) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            try FileManager.default.removeItem(at: url)
-        }.value
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    try FileManager.default.removeItem(at: url)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public static func fileExists(at url: URL) async -> Bool {
-        await Task.detached(priority: .userInitiated) {
-            FileManager.default.fileExists(atPath: url.path)
-        }.value
+        await withCheckedContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                let exists = FileManager.default.fileExists(atPath: url.path)
+                continuation.resume(returning: exists)
+            }
+        }
     }
 
     public static func createDirectory(at url: URL, withIntermediateDirectories: Bool = true) async throws {
-        try await Task.detached(priority: .userInitiated) {
-            try FileManager.default.createDirectory(
-                at: url,
-                withIntermediateDirectories: withIntermediateDirectories
-            )
-        }.value
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    try FileManager.default.createDirectory(
+                        at: url,
+                        withIntermediateDirectories: withIntermediateDirectories
+                    )
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public static func contentsOfDirectory(at url: URL) async throws -> [URL] {
-        try await Task.detached(priority: .userInitiated) {
-            try FileManager.default.contentsOfDirectory(
-                at: url,
-                includingPropertiesForKeys: nil
-            )
-        }.value
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    let contents = try FileManager.default.contentsOfDirectory(
+                        at: url,
+                        includingPropertiesForKeys: nil
+                    )
+                    continuation.resume(returning: contents)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public static func enumerateDirectory(
         at url: URL,
         includingPropertiesForKeys keys: [URLResourceKey]? = nil,
         options: FileManager.DirectoryEnumerationOptions = [],
-        handler: @escaping (URL) async -> Bool
+        handler: @Sendable @escaping (URL) async -> Bool
     ) async throws {
         let enumerator = FileManager.default.enumerator(
             at: url,
@@ -146,20 +206,41 @@ public actor AsyncFileIO {
         }
     }
 
-    public static func fileAttributes(at url: URL) async throws -> [FileAttributeKey: Any] {
-        try await Task.detached(priority: .userInitiated) {
-            try FileManager.default.attributesOfItem(atPath: url.path)
-        }.value
+    // Use a struct to make file attributes Sendable
+    public struct FileAttributes: Sendable {
+        public let size: UInt64?
+        public let modificationDate: Date?
+        public let creationDate: Date?
+        public let type: FileAttributeType?
+    }
+    
+    public static func fileAttributes(at url: URL) async throws -> FileAttributes {
+        try await withCheckedThrowingContinuation { continuation in
+            Task.detached(priority: .userInitiated) {
+                do {
+                    let attrs = try FileManager.default.attributesOfItem(atPath: url.path)
+                    let attributes = FileAttributes(
+                        size: attrs[.size] as? UInt64,
+                        modificationDate: attrs[.modificationDate] as? Date,
+                        creationDate: attrs[.creationDate] as? Date,
+                        type: attrs[.type] as? FileAttributeType
+                    )
+                    continuation.resume(returning: attributes)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     public static func fileSize(at url: URL) async throws -> UInt64 {
         let attributes = try await fileAttributes(at: url)
-        return attributes[.size] as? UInt64 ?? 0
+        return attributes.size ?? 0
     }
 
     public static func modificationDate(at url: URL) async throws -> Date? {
         let attributes = try await fileAttributes(at: url)
-        return attributes[.modificationDate] as? Date
+        return attributes.modificationDate
     }
 }
 

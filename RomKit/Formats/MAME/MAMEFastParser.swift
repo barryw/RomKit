@@ -9,7 +9,7 @@ import Foundation
 import SQLite3
 
 /// Optimized MAME DAT parser with multiple strategies
-public class MAMEFastParser {
+public final class MAMEFastParser: @unchecked Sendable {
 
     public init() {}
 

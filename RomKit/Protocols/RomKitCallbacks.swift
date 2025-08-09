@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Progress Reporting
 
 /// Represents the progress of an operation
-public struct OperationProgress {
+public struct OperationProgress: Sendable {
     /// Current item being processed
     public let current: Int
 
@@ -45,7 +45,7 @@ public struct OperationProgress {
 // MARK: - Event Types
 
 /// Events that can occur during ROM operations
-public enum RomKitEvent {
+public enum RomKitEvent: Sendable {
     // Scanning events
     case scanStarted(path: String, fileCount: Int)
     case scanningFile(url: URL, index: Int, total: Int)
@@ -79,14 +79,14 @@ public enum RomKitEvent {
 
 // MARK: - Error Types
 
-public enum RomKitCallbackError: Error, LocalizedError {
+public enum RomKitCallbackError: Error, LocalizedError, Sendable {
     case fileNotFound(path: String)
     case archiveCorrupted(url: URL)
     case validationFailed(item: String, reason: String)
     case rebuildFailed(game: String, reason: String)
     case insufficientSpace(required: UInt64, available: UInt64)
     case cancelled
-    case unknown(Error)
+    case unknown(any Error)
 
     public var errorDescription: String? {
         switch self {
@@ -172,24 +172,24 @@ public actor RomKitEventStream {
 // MARK: - Closure-based Callbacks
 
 /// Closure-based callback configuration
-public struct RomKitCallbacks {
+public struct RomKitCallbacks: Sendable {
     /// Called on progress updates
-    public var onProgress: ((OperationProgress) -> Void)?
+    public var onProgress: (@Sendable (OperationProgress) -> Void)?
 
     /// Called on events
-    public var onEvent: ((RomKitEvent) -> Void)?
+    public var onEvent: (@Sendable (RomKitEvent) -> Void)?
 
     /// Called to check cancellation
-    public var shouldCancel: (() -> Bool)?
+    public var shouldCancel: (@Sendable () -> Bool)?
 
     /// Called on completion
-    public var onCompletion: ((Result<Void, Error>) -> Void)?
+    public var onCompletion: (@Sendable (Result<Void, any Error>) -> Void)?
 
     public init(
-        onProgress: ((OperationProgress) -> Void)? = nil,
-        onEvent: ((RomKitEvent) -> Void)? = nil,
-        shouldCancel: (() -> Bool)? = nil,
-        onCompletion: ((Result<Void, Error>) -> Void)? = nil
+        onProgress: (@Sendable (OperationProgress) -> Void)? = nil,
+        onEvent: (@Sendable (RomKitEvent) -> Void)? = nil,
+        shouldCancel: (@Sendable () -> Bool)? = nil,
+        onCompletion: (@Sendable (Result<Void, any Error>) -> Void)? = nil
     ) {
         self.onProgress = onProgress
         self.onEvent = onEvent
@@ -201,8 +201,8 @@ public struct RomKitCallbacks {
 // MARK: - Callback Manager
 
 /// Manages callbacks for ROM operations
-public class CallbackManager {
-    private weak var delegate: RomKitDelegate?
+public final class CallbackManager {
+    private weak var delegate: (any RomKitDelegate)?
     private var callbacks: RomKitCallbacks?
     private let eventStream: RomKitEventStream?
 
@@ -213,7 +213,7 @@ public class CallbackManager {
     private var itemsProcessed = 0
     private var totalItems = 0
 
-    public init(delegate: RomKitDelegate? = nil,
+    public init(delegate: (any RomKitDelegate)? = nil,
                 callbacks: RomKitCallbacks? = nil,
                 eventStream: RomKitEventStream? = nil) {
         self.delegate = delegate
@@ -238,8 +238,10 @@ public class CallbackManager {
         delegate?.romKit(didUpdateProgress: progress)
         callbacks?.onProgress?(progress)
 
-        Task {
-            await eventStream?.send(progress: progress)
+        if let stream = eventStream {
+            Task.detached { [weak stream] in
+                await stream?.send(progress: progress)
+            }
         }
     }
 
@@ -248,8 +250,10 @@ public class CallbackManager {
         delegate?.romKit(didReceiveEvent: event)
         callbacks?.onEvent?(event)
 
-        Task {
-            await eventStream?.send(event: event)
+        if let stream = eventStream {
+            Task.detached { [weak stream] in
+                await stream?.send(event: event)
+            }
         }
     }
 
@@ -259,11 +263,13 @@ public class CallbackManager {
     }
 
     /// Send completion
-    public func sendCompletion(_ result: Result<Void, Error>) {
+    public func sendCompletion(_ result: Result<Void, any Error>) {
         callbacks?.onCompletion?(result)
 
-        Task {
-            await eventStream?.finish()
+        if let stream = eventStream {
+            Task.detached { [weak stream] in
+                await stream?.finish()
+            }
         }
     }
 }

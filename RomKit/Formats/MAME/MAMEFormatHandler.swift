@@ -8,7 +8,7 @@
 import Foundation
 
 /// MAME Format Handler
-public class MAMEFormatHandler: ROMFormatHandler {
+public final class MAMEFormatHandler: ROMFormatHandler, @unchecked Sendable {
     public let formatIdentifier = "mame"
     public let formatName = "MAME"
     public let supportedExtensions = ["xml", "dat"]

@@ -156,10 +156,10 @@ public class RomKit {
     /// let romkit = RomKit()
     /// try romkit.loadDAT(from: "/path/to/mame.dat")
     /// ```
-    public func loadDAT(from path: String) throws {
+    public func loadDAT(from path: String) async throws {
         // Auto-detect format, but prefer Logiqx as it's the industry standard
         // The registry will check Logiqx first automatically
-        try genericKit.loadDAT(from: path, format: nil)
+        try await genericKit.loadDAT(from: path, format: nil)
     }
 
     /// Explicitly load a DAT file as Logiqx format
@@ -169,9 +169,9 @@ public class RomKit {
     ///
     /// - Parameter path: Path to the Logiqx DAT file
     /// - Throws: ``RomKitError/invalidPath(_:)`` if the file cannot be read
-    public func loadLogiqxDAT(from path: String) throws {
+    public func loadLogiqxDAT(from path: String) async throws {
         // Explicitly load as Logiqx format (industry standard)
-        try genericKit.loadDAT(from: path, format: "logiqx")
+        try await genericKit.loadDAT(from: path, format: "logiqx")
     }
 
     /// Explicitly load a DAT file as MAME XML format
@@ -180,9 +180,9 @@ public class RomKit {
     ///
     /// - Parameter path: Path to the MAME XML file
     /// - Throws: ``RomKitError/invalidPath(_:)`` if the file cannot be read
-    public func loadMAMEDAT(from path: String) throws {
+    public func loadMAMEDAT(from path: String) async throws {
         // Explicitly load as MAME XML format (legacy)
-        try genericKit.loadDAT(from: path, format: "mame")
+        try await genericKit.loadDAT(from: path, format: "mame")
     }
 
     /// Scan a directory for ROM files and validate against loaded DAT

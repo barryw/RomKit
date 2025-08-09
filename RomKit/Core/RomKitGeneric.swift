@@ -20,21 +20,21 @@ public class RomKitGeneric {
 
     // MARK: - DAT Loading
 
-    public func loadDAT(from path: String, format: String? = nil) throws {
+    public func loadDAT(from path: String, format: String? = nil) async throws {
         let url = URL(fileURLWithPath: path)
-        try loadDAT(from: url, format: format)
+        try await loadDAT(from: url, format: format)
     }
 
-    public func loadDAT(from url: URL, format: String? = nil) throws {
+    public func loadDAT(from url: URL, format: String? = nil) async throws {
         let handler: any ROMFormatHandler
 
         if let formatId = format {
-            guard let hdlr = registry.handler(for: formatId) else {
+            guard let hdlr = await registry.handler(for: formatId) else {
                 throw RomKitGenericError.unsupportedFormat(formatId)
             }
             handler = hdlr
         } else {
-            guard let hdlr = try registry.detectFormat(from: url) else {
+            guard let hdlr = try await registry.detectFormat(from: url) else {
                 throw RomKitGenericError.formatDetectionFailed
             }
             handler = hdlr
@@ -49,16 +49,16 @@ public class RomKitGeneric {
         self.rebuilder = handler.createRebuilder(for: dat)
     }
 
-    public func loadDAT(data: Data, format: String? = nil) throws {
+    public func loadDAT(data: Data, format: String? = nil) async throws {
         let handler: any ROMFormatHandler
 
         if let formatId = format {
-            guard let hdlr = registry.handler(for: formatId) else {
+            guard let hdlr = await registry.handler(for: formatId) else {
                 throw RomKitGenericError.unsupportedFormat(formatId)
             }
             handler = hdlr
         } else {
-            guard let hdlr = registry.detectFormat(from: data) else {
+            guard let hdlr = await registry.detectFormat(from: data) else {
                 throw RomKitGenericError.formatDetectionFailed
             }
             handler = hdlr
@@ -170,7 +170,9 @@ public class RomKitGeneric {
     }
 
     public var availableFormats: [String] {
-        return registry.availableFormats
+        get async {
+            await registry.availableFormats
+        }
     }
 }
 

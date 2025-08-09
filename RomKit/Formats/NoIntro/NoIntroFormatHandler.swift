@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - No-Intro Format Handler
 
-public class NoIntroFormatHandler: ROMFormatHandler {
+public final class NoIntroFormatHandler: ROMFormatHandler, @unchecked Sendable {
     public let formatIdentifier = "no-intro"
     public let formatName = "No-Intro"
     public let supportedExtensions = ["dat", "xml"]
@@ -49,7 +49,7 @@ public struct NoIntroDATFile: DATFormat {
     public let formatName = "No-Intro"
     public let formatVersion: String?
     public let games: [any GameEntry]
-    public let metadata: DATMetadata
+    public let metadata: any DATMetadata
 
     public init(formatVersion: String? = nil, games: [NoIntroGame], metadata: NoIntroMetadata) {
         self.formatVersion = formatVersion
@@ -94,7 +94,7 @@ public struct NoIntroGame: GameEntry {
     public let name: String
     public let description: String
     public let items: [any ROMItem]
-    public let metadata: GameMetadata
+    public let metadata: any GameMetadata
 
     public init(name: String, description: String, roms: [NoIntroROM], metadata: NoIntroGameMetadata) {
         self.identifier = name
@@ -230,7 +230,7 @@ public class NoIntroROMScanner: ROMScanner {
         self.archiveHandlers = archiveHandlers
     }
 
-    public func scan(directory: URL) async throws -> ScanResults {
+    public func scan(directory: URL) async throws -> any ScanResults {
         // Simplified implementation
         return NoIntroScanResults(
             scannedPath: directory.path,
@@ -241,7 +241,7 @@ public class NoIntroROMScanner: ROMScanner {
         )
     }
 
-    public func scan(files: [URL]) async throws -> ScanResults {
+    public func scan(files: [URL]) async throws -> any ScanResults {
         return NoIntroScanResults(
             scannedPath: "",
             foundGames: [],

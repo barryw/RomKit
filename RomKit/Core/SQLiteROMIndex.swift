@@ -31,7 +31,7 @@ public actor SQLiteROMIndex {
 
     // MARK: - Properties
 
-    internal var db: OpaquePointer?
+    internal nonisolated(unsafe) var db: OpaquePointer?
     internal let dbPath: URL
     // Remove DispatchQueue to prevent mixing with Swift Concurrency
     // All database operations will be properly serialized through the actor

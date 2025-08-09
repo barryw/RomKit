@@ -8,7 +8,7 @@
 import Foundation
 
 /// MAME scan results
-public struct MAMEScanResults: ScanResults {
+public struct MAMEScanResults: ScanResults, Sendable {
     public let scannedPath: String
     public let foundGames: [any ScannedGameEntry]
     public let unknownFiles: [URL]
@@ -34,7 +34,7 @@ public struct MAMEScanResults: ScanResults {
 }
 
 /// MAME scanned game entry
-public struct MAMEScannedGame: ScannedGameEntry {
+public struct MAMEScannedGame: ScannedGameEntry, Sendable {
     public let game: any GameEntry
     public let foundItems: [ScannedItem]
     public let missingItems: [any ROMItem]

@@ -18,7 +18,7 @@ public actor ConcurrentScanner {
         self.fileExtensions = fileExtensions
     }
 
-    public struct ScanResult {
+    public struct ScanResult: Sendable {
         public let url: URL
         public let size: UInt64
         public let modificationDate: Date
@@ -102,8 +102,8 @@ public actor ConcurrentScanner {
         do {
             let attributes = try await AsyncFileIO.fileAttributes(at: url)
 
-            let size = attributes[.size] as? UInt64 ?? 0
-            let modDate = attributes[.modificationDate] as? Date ?? Date()
+            let size = attributes.size ?? 0
+            let modDate = attributes.modificationDate ?? Date()
             let ext = url.pathExtension.lowercased()
             let isArchive = ["zip", "7z", "rar", "chd"].contains(ext)
 
@@ -130,7 +130,7 @@ public actor ConcurrentScanner {
     public func scanDirectoryBatched(
         at url: URL,
         batchSize: Int = 100,
-        batchHandler: @escaping ([ScanResult]) async -> Void
+        batchHandler: @escaping @Sendable ([ScanResult]) async -> Void
     ) async throws {
 
         let files = try await discoverFiles(at: url)

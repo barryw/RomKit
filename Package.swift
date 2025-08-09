@@ -1,11 +1,11 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 
 import PackageDescription
 
 let package = Package(
     name: "RomKit",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v14)  // Updated for Swift 6 compatibility
     ],
     products: [
         .library(
@@ -25,6 +25,10 @@ let package = Package(
             path: "RomKit",
             resources: [
                 .process("Utilities/HashCompute.metal")
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency"),
+                .enableUpcomingFeature("ExistentialAny")
             ]
         ),
         .executableTarget(
@@ -33,7 +37,11 @@ let package = Package(
                 "RomKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ],
-            path: "RomKitCLI"
+            path: "RomKitCLI",
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency"),
+                .enableUpcomingFeature("ExistentialAny")
+            ]
         ),
         .testTarget(
             name: "RomKitTests",
@@ -41,7 +49,12 @@ let package = Package(
             path: "RomKitTests",
             resources: [
                 .copy("TestData")
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency"),
+                .enableUpcomingFeature("ExistentialAny")
             ]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

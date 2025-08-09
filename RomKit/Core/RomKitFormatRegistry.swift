@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Format Registry
 
-public class RomKitFormatRegistry {
+public actor RomKitFormatRegistry {
     public static let shared = RomKitFormatRegistry()
 
     private var handlers: [String: any ROMFormatHandler] = [:]
@@ -17,10 +17,12 @@ public class RomKitFormatRegistry {
     private init() {
         // Register default handlers
         // Logiqx is registered first as it's the industry standard
-        register(LogiqxFormatHandler())
-        register(MAMEFormatHandler())
-        register(NoIntroFormatHandler())
-        register(RedumpFormatHandler())
+        Task {
+            await register(LogiqxFormatHandler())
+            await register(MAMEFormatHandler())
+            await register(NoIntroFormatHandler())
+            await register(RedumpFormatHandler())
+        }
     }
 
     public func register(_ handler: any ROMFormatHandler) {

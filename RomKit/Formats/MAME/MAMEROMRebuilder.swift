@@ -8,7 +8,7 @@
 import Foundation
 
 /// MAME ROM Rebuilder
-public class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder {
+public final class MAMEROMRebuilder: ROMRebuilder, CallbackSupportedRebuilder, @unchecked Sendable {
     public typealias DATType = MAMEDATFile
 
     public let datFile: MAMEDATFile

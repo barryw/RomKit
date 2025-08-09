@@ -9,7 +9,7 @@ import Foundation
 import SQLite3
 
 /// Main ROM index manager that handles deduplication and source management
-public class ROMIndexManager {
+public actor ROMIndexManager {
 
     // MARK: - Properties
 
@@ -296,7 +296,7 @@ public class ROMIndexManager {
 // MARK: - Data Types
 
 /// Information about a ROM and all its locations
-public struct ROMInfo {
+public struct ROMInfo: Sendable {
     public let crc32: String
     public let name: String
     public let size: UInt64
@@ -307,7 +307,7 @@ public struct ROMInfo {
 }
 
 /// Search result for ROM queries
-public struct ROMSearchResult {
+public struct ROMSearchResult: Sendable {
     public let name: String
     public let crc32: String?
     public let size: UInt64
@@ -315,19 +315,19 @@ public struct ROMSearchResult {
 }
 
 /// Information about a ROM location
-public struct ROMLocationInfo {
+public struct ROMLocationInfo: Sendable {
     public let path: String
     public let type: LocationType
     public let lastVerified: Date
 
-    public enum LocationType {
+    public enum LocationType: Sendable {
         case local
         case remote
     }
 }
 
 /// Information about duplicate ROMs
-public struct DuplicateInfo {
+public struct DuplicateInfo: Sendable {
     public let crc32: String
     public let count: Int
     public let locations: [String]
@@ -335,7 +335,7 @@ public struct DuplicateInfo {
 }
 
 /// Source directory information
-public struct SourceInfo {
+public struct SourceInfo: Sendable {
     public let path: String
     public let lastScan: Date
     public let romCount: Int
@@ -343,7 +343,7 @@ public struct SourceInfo {
 }
 
 /// Index analysis results
-public struct IndexAnalysis: Codable {
+public struct IndexAnalysis: Codable, Sendable {
     public let totalROMs: Int
     public let uniqueROMs: Int
     public let totalSize: UInt64
@@ -363,14 +363,14 @@ public struct IndexAnalysis: Codable {
 }
 
 /// Verification results
-public struct VerificationResult {
+public struct VerificationResult: Sendable {
     public let valid: Int
     public let stale: Int
     public let removed: Int
 }
 
 /// Entry representing duplicate ROM information
-public struct DuplicateEntry {
+public struct DuplicateEntry: Sendable {
     public let crc32: String
     public let count: Int
     public let locations: [String]
@@ -490,7 +490,7 @@ extension SQLiteROMIndex {
 }
 
 // IndexStatistics structure for tracking index metrics
-public struct IndexStatistics {
+public struct IndexStatistics: Sendable {
     public let totalROMs: Int
     public let totalSize: UInt64
     public let uniqueCRCs: Int

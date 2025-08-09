@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Redump Format Handler
 
-public class RedumpFormatHandler: ROMFormatHandler {
+public final class RedumpFormatHandler: ROMFormatHandler, @unchecked Sendable {
     public let formatIdentifier = "redump"
     public let formatName = "Redump"
     public let supportedExtensions = ["dat", "xml"]
@@ -50,7 +50,7 @@ public struct RedumpDATFile: DATFormat {
     public let formatName = "Redump"
     public let formatVersion: String?
     public let games: [any GameEntry]
-    public let metadata: DATMetadata
+    public let metadata: any DATMetadata
 
     public init(formatVersion: String? = nil, games: [RedumpGame], metadata: RedumpMetadata) {
         self.formatVersion = formatVersion
@@ -95,7 +95,7 @@ public struct RedumpGame: GameEntry {
     public let name: String
     public let description: String
     public let items: [any ROMItem]
-    public let metadata: GameMetadata
+    public let metadata: any GameMetadata
     public let tracks: [RedumpTrack]
 
     public init(name: String, description: String, roms: [RedumpROM], tracks: [RedumpTrack] = [], metadata: RedumpGameMetadata) {
@@ -172,7 +172,7 @@ public struct RedumpROM: ROMItem {
     }
 }
 
-public struct RedumpTrack {
+public struct RedumpTrack: Sendable {
     public let number: Int
     public let type: String
     public let name: String
@@ -202,7 +202,7 @@ public struct RedumpTrack {
 
 // MARK: - CUE/BIN Archive Handler
 
-public class CUEBINArchiveHandler: ArchiveHandler {
+public final class CUEBINArchiveHandler: ArchiveHandler, @unchecked Sendable {
     public let supportedExtensions = ["cue", "bin", "iso", "img"]
 
     public init() {}
@@ -297,7 +297,7 @@ public class RedumpROMScanner: ROMScanner {
         self.archiveHandlers = archiveHandlers
     }
 
-    public func scan(directory: URL) async throws -> ScanResults {
+    public func scan(directory: URL) async throws -> any ScanResults {
         return RedumpScanResults(
             scannedPath: directory.path,
             foundGames: [],
@@ -307,7 +307,7 @@ public class RedumpROMScanner: ROMScanner {
         )
     }
 
-    public func scan(files: [URL]) async throws -> ScanResults {
+    public func scan(files: [URL]) async throws -> any ScanResults {
         return RedumpScanResults(
             scannedPath: "",
             foundGames: [],

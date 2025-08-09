@@ -13,7 +13,7 @@ import Foundation
 /// - 4x faster parsing
 /// - Industry standard used by all ROM managers
 /// - Stable format that hasn't changed in years
-public class LogiqxFormatHandler: ROMFormatHandler {
+public final class LogiqxFormatHandler: ROMFormatHandler, @unchecked Sendable {
     public let formatIdentifier = "logiqx"
     public let formatName = "Logiqx DAT"
     public let supportedExtensions = ["dat", "xml"]

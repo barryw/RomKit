@@ -66,7 +66,7 @@ struct Stats: AsyncParsableCommand {
             print("📋 Loading DAT file: \(datFile)")
         }
         let datURL = URL(fileURLWithPath: datFile)
-        try romkit.loadDAT(from: datURL.path)
+        try await romkit.loadDAT(from: datURL.path)
 
         // Scan ROM directory
         if verbose {

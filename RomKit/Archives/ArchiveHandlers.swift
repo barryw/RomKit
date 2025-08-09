@@ -14,7 +14,7 @@ public typealias ZIPArchiveHandler = FastZIPArchiveHandler
 
 // MARK: - 7-Zip Archive Handler (Stub)
 
-public class SevenZipArchiveHandler: ArchiveHandler {
+public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
     public let supportedExtensions = ["7z"]
 
     public init() {}
@@ -43,7 +43,7 @@ public class SevenZipArchiveHandler: ArchiveHandler {
 
 // MARK: - CHD Archive Handler (Stub)
 
-public class CHDArchiveHandler: ArchiveHandler {
+public final class CHDArchiveHandler: ArchiveHandler, @unchecked Sendable {
     public let supportedExtensions = ["chd"]
 
     public init() {}

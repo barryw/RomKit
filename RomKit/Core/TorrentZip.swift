@@ -293,7 +293,7 @@ public class TorrentZip {
         at url: URL,
         recursive: Bool = true,
         parallel: Bool = true,
-        progress: ((TorrentZipProgress) -> Void)? = nil
+        progress: (@Sendable (TorrentZipProgress) -> Void)? = nil
     ) async throws {
         let result = try verifyDirectory(at: url, recursive: recursive)
         let total = result.nonCompliant.count
@@ -317,13 +317,11 @@ public class TorrentZip {
                         do {
                             try TorrentZip.convertToTorrentZip(at: zipURL)
                             let currentCount = await tracker.increment()
-                            await MainActor.run {
-                                progress?(TorrentZipProgress(
-                                    current: currentCount,
-                                    total: total,
-                                    currentFile: zipURL.lastPathComponent
-                                ))
-                            }
+                            progress?(TorrentZipProgress(
+                                current: currentCount,
+                                total: total,
+                                currentFile: zipURL.lastPathComponent
+                            ))
                         } catch {
                             print("Failed to convert \(zipURL.lastPathComponent): \(error)")
                         }
@@ -345,7 +343,7 @@ public class TorrentZip {
 }
 
 /// Result of TorrentZip verification
-public struct TorrentZipVerificationResult {
+public struct TorrentZipVerificationResult: Sendable {
     public let compliant: [URL]
     public let nonCompliant: [URL]
     public let errors: [(URL, Error)]
@@ -362,7 +360,7 @@ public struct TorrentZipVerificationResult {
 }
 
 /// Progress tracking for TorrentZip operations
-public struct TorrentZipProgress {
+public struct TorrentZipProgress: Sendable {
     public let current: Int
     public let total: Int
     public let currentFile: String

@@ -188,7 +188,7 @@ struct RomKitTests {
         defer { try? FileManager.default.removeItem(at: datFile) }
 
         // Test auto-detect loading
-        try romKit.loadDAT(from: datFile.path)
+        try await romKit.loadDAT(from: datFile.path)
 
         // Test explicit Logiqx loading
         try romKit.loadLogiqxDAT(from: datFile.path)
@@ -247,7 +247,7 @@ struct RomKitTests {
         try datContent.write(to: datFile, atomically: true, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: datFile) }
 
-        try romKit.loadDAT(from: datFile.path)
+        try await romKit.loadDAT(from: datFile.path)
 
         // Scan directory
         let scanResult = try await romKit.scanDirectory(scanDir.path)
@@ -257,7 +257,7 @@ struct RomKitTests {
         #expect(scanResult.unknownFiles.isEmpty)
     }
 
-    @Test func testGenerateAuditReport() throws {
+    @Test func testGenerateAuditReport() async throws {
         let romKit = RomKit()
         let tempDir = FileManager.default.temporaryDirectory
 
@@ -290,7 +290,7 @@ struct RomKitTests {
         try datContent.write(to: datFile, atomically: true, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: datFile) }
 
-        try romKit.loadDAT(from: datFile.path)
+        try await romKit.loadDAT(from: datFile.path)
 
         // Create a game and scan result
         let game = Game(

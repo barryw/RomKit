@@ -11,7 +11,7 @@ import MetalPerformanceShaders
 import Compression
 
 @available(macOS 10.14, iOS 12.0, *)
-public class MetalCompressionHandler {
+public final class MetalCompressionHandler: @unchecked Sendable {
 
     private let device: MTLDevice
     private let commandQueue: MTLCommandQueue

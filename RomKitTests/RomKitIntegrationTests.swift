@@ -147,7 +147,7 @@ struct RomKitIntegrationTests {
         try testDAT.write(toFile: datPath, atomically: true, encoding: .utf8)
 
         // Load DAT file
-        try romkit.loadDAT(from: datPath)
+        try await romkit.loadDAT(from: datPath)
 
         // Note: Since we don't have actual ROM files, we'll create a mock scan result
         let mockScanResult = createTestScanResult()
@@ -239,7 +239,7 @@ struct RomKitIntegrationTests {
         try testDAT.write(toFile: datPath, atomically: true, encoding: .utf8)
 
         print("📂 Step 2: Loading DAT file")
-        try romkit.loadDAT(from: datPath)
+        try await romkit.loadDAT(from: datPath)
         return datPath
     }
 
