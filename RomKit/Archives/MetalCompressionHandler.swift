@@ -13,9 +13,9 @@ import Compression
 @available(macOS 10.14, iOS 12.0, *)
 public final class MetalCompressionHandler: @unchecked Sendable {
 
-    private let device: MTLDevice
-    private let commandQueue: MTLCommandQueue
-    private let library: MTLLibrary?
+    private let device: any MTLDevice
+    private let commandQueue: any MTLCommandQueue
+    private let library: (any MTLLibrary)?
 
     private static let gpuThreshold = 50 * 1024 * 1024 // 50MB for compression
 
@@ -87,7 +87,7 @@ public final class MetalCompressionHandler: @unchecked Sendable {
         }
     }
 
-    private func processCompressedBuffer(_ buffer: MTLBuffer, maxSize: Int) -> Int {
+    private func processCompressedBuffer(_ buffer: any MTLBuffer, maxSize: Int) -> Int {
         // Process the compressed buffer to determine actual size
         // This would be implemented based on the compression format
         return 0
@@ -133,7 +133,7 @@ public final class MetalCompressionHandler: @unchecked Sendable {
 @available(macOS 10.14, iOS 12.0, *)
 extension MetalCompressionHandler {
 
-    private func createLZ77Kernel() -> MTLComputePipelineState? {
+    private func createLZ77Kernel() -> (any MTLComputePipelineState)? {
         guard let library = library,
               let function = library.makeFunction(name: "lz77_compress") else {
             return nil
@@ -142,7 +142,7 @@ extension MetalCompressionHandler {
         return try? device.makeComputePipelineState(function: function)
     }
 
-    private func createHuffmanKernel() -> MTLComputePipelineState? {
+    private func createHuffmanKernel() -> (any MTLComputePipelineState)? {
         guard let library = library,
               let function = library.makeFunction(name: "huffman_encode") else {
             return nil

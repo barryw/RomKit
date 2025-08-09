@@ -168,7 +168,7 @@ public actor ROMIndex {
 
     /// Index contents of an archive file
     private func indexArchive(at url: URL) async throws {
-        let handler: ArchiveHandler
+        let handler: any ArchiveHandler
 
         switch url.pathExtension.lowercased() {
         case "zip":

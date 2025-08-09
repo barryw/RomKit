@@ -18,7 +18,7 @@ struct LegacyGameAdapter: GameEntry {
     var items: [any ROMItem] {
         game.roms.map { LegacyROMAdapter(rom: $0) }
     }
-    var metadata: GameMetadata {
+    var metadata: any GameMetadata {
         LegacyGameMetadataAdapter(
             year: game.year,
             manufacturer: game.manufacturer,
