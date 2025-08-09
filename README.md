@@ -4,7 +4,7 @@
   A high-performance Swift library and CLI for managing ROM collections, with comprehensive support for MAME and other ROM formats.
   
   [![CI/CD Pipeline](https://github.com/barryw/RomKit/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/barryw/RomKit/actions/workflows/ci-cd.yml)
-  [![Latest Release](https://img.shields.io/github/v/release/barryw/RomKit?include_prereleases)](https://github.com/barryw/RomKit/releases)
+  [![codecov](https://codecov.io/gh/barryw/RomKit/branch/main/graph/badge.svg)](https://codecov.io/gh/barryw/RomKit)
   [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
   [![Platforms](https://img.shields.io/badge/Platforms-macOS%2013%2B%20%7C%20iOS%2016%2B-blue)](https://developer.apple.com)
   [![SPM Compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)
