@@ -336,6 +336,7 @@ public struct MissingReport {
     }
 
     private func formatBytes(_ bytes: UInt64) -> String {
+        // Create a new formatter each time to avoid concurrency issues
         let formatter = ByteCountFormatter()
         formatter.countStyle = .binary
         return formatter.string(fromByteCount: Int64(bytes))

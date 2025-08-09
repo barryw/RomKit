@@ -16,9 +16,8 @@ extension CollectionStatistics {
 
         report += generateTextReportHeader()
 
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useMB, .useGB]
-        formatter.countStyle = .decimal
+        // Create formatter safely to avoid alignment issues
+        let formatter = createSafeByteCountFormatter()
 
         report += generateOverallSummarySection(formatter: formatter)
         report += generateSpecialCategoriesSection()
@@ -208,9 +207,8 @@ extension CollectionStatistics {
 
     /// Generate an HTML report
     public func generateHTMLReport() -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useMB, .useGB]
-        formatter.countStyle = .decimal
+        // Create formatter safely to avoid alignment issues
+        let formatter = createSafeByteCountFormatter()
 
         return """
         <!DOCTYPE html>
@@ -467,5 +465,14 @@ extension CollectionStatistics {
         default:
             return "🔴"
         }
+    }
+    
+    // Helper to create ByteCountFormatter safely
+    private func createSafeByteCountFormatter() -> ByteCountFormatter {
+        // Create a new formatter each time to avoid concurrency issues
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useMB, .useGB]
+        formatter.countStyle = .decimal
+        return formatter
     }
 }
