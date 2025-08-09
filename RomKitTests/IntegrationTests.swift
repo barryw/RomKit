@@ -186,7 +186,7 @@ struct IntegrationTests {
         let validator = MAMEROMValidator()
 
         // Test with known data
-        let testData = "Hello, MAME!".data(using: .utf8)!
+        let testData = Data("Hello, MAME!".utf8)
         let checksums = validator.computeChecksums(for: testData)
 
         #expect(checksums.crc32 != nil)

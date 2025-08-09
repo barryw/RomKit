@@ -91,10 +91,8 @@ struct AnalyzeWithIndex: AsyncParsableCommand {
             var foundROMs = 0
             let requiredROMs = game.roms.count
 
-            for rom in game.roms {
-                if let _ = await indexManager.findBestSource(for: rom) {
-                    foundROMs += 1
-                }
+            for rom in game.roms where await indexManager.findBestSource(for: rom) != nil {
+                foundROMs += 1
             }
 
             if foundROMs == requiredROMs && requiredROMs > 0 {

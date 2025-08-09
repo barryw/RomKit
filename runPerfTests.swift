@@ -18,22 +18,22 @@ print(String(repeating: "-", count: 60))
 
 for (size, label) in testSizes {
     let data = Data(repeating: 0xAB, count: size)
-    
+
     // CPU timing
     let cpuStart = Date()
     // Simulate CPU hash computation
     Thread.sleep(forTimeInterval: Double(size) / (1024 * 1024 * 100)) // Simulate ~100MB/s
     let cpuTime = Date().timeIntervalSince(cpuStart) * 1000
-    
+
     // GPU timing (simplified - would be faster for large files)
     let gpuStart = Date()
     // Simulate GPU hash with overhead but faster for large files
     Thread.sleep(forTimeInterval: 0.01 + Double(size) / (1024 * 1024 * 500)) // 10ms overhead + 500MB/s
     let gpuTime = Date().timeIntervalSince(gpuStart) * 1000
-    
+
     let winner = cpuTime < gpuTime ? "💻 CPU" : "🚀 GPU"
     let speedup = cpuTime / gpuTime
-    
+
     let cpuTimeStr = String(format: "%.2f", cpuTime)
     let gpuTimeStr = String(format: "%.2f", gpuTime)
     let speedupStr = String(format: "%.2fx", speedup)

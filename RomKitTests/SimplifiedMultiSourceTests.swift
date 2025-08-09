@@ -177,7 +177,7 @@ struct SimplifiedMultiSourceTests {
             return false
         }
 
-        return sorted.first ?? sources.first!
+        return sorted.first ?? sources.first ?? MockIndexedROM(name: "unknown", crc: crc, source: "/unknown")
     }
 }
 

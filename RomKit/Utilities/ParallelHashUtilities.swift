@@ -123,17 +123,26 @@ public actor ParallelHashUtilities {
         var sha256Hasher = SHA256()
         var md5Hasher = Insecure.MD5()
 
-        while true {
+        // Use proper loop instead of while true to prevent infinite loops
+        var isFileComplete = false
+        while !isFileComplete {
             autoreleasepool {
-                if let chunk = try? fileHandle.read(upToCount: chunkSize), !chunk.isEmpty {
-                    chunk.withUnsafeBytes { bytes in
-                        crc32Value = zlib.crc32(crc32Value, bytes.bindMemory(to: UInt8.self).baseAddress, uInt(chunk.count))
+                do {
+                    let chunk = try fileHandle.read(upToCount: chunkSize)
+                    if let chunk = chunk, !chunk.isEmpty {
+                        chunk.withUnsafeBytes { bytes in
+                            if let baseAddress = bytes.bindMemory(to: UInt8.self).baseAddress {
+                                crc32Value = zlib.crc32(crc32Value, baseAddress, uInt(chunk.count))
+                            }
+                        }
+                        sha1Hasher.update(data: chunk)
+                        sha256Hasher.update(data: chunk)
+                        md5Hasher.update(data: chunk)
+                    } else {
+                        isFileComplete = true
                     }
-                    sha1Hasher.update(data: chunk)
-                    sha256Hasher.update(data: chunk)
-                    md5Hasher.update(data: chunk)
-                } else {
-                    return
+                } catch {
+                    isFileComplete = true
                 }
             }
         }

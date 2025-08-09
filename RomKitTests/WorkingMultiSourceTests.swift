@@ -166,8 +166,9 @@ struct WorkingMultiSourceTests {
             }
 
             // Select best source (prefer source1)
-            let best = roms.min(by: { $0.sourceIndex < $1.sourceIndex })!
-            print("  ➜ Best source: \(best.name) from source\(best.sourceIndex)")
+            if let best = roms.min(by: { $0.sourceIndex < $1.sourceIndex }) {
+                print("  ➜ Best source: \(best.name) from source\(best.sourceIndex)")
+            }
         }
 
         #expect(duplicates.count == 3, "Should find 3 copies")

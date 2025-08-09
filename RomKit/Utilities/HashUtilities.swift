@@ -13,7 +13,10 @@ public struct HashUtilities {
 
     public static func crc32(data: Data) -> String {
         let crc = data.withUnsafeBytes { bytes in
-            return zlib.crc32(0, bytes.bindMemory(to: UInt8.self).baseAddress, uInt(data.count))
+            guard let baseAddress = bytes.bindMemory(to: UInt8.self).baseAddress else {
+                return uLong(0)
+            }
+            return zlib.crc32(0, baseAddress, uInt(data.count))
         }
         return String(format: "%08x", crc)
     }

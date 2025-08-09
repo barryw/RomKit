@@ -96,7 +96,7 @@ struct RomKitCacheTests {
         #expect(!cache.hasCached(for: testURL))
     }
 
-    @Test func testGetCacheSize() {
+    @Test func testGetCacheSize() throws {
         let cache = RomKitCache()
 
         // Clear cache first
@@ -107,7 +107,10 @@ struct RomKitCacheTests {
         #expect(emptySize >= 0)
 
         // Add something to cache
-        let testURL = URL(fileURLWithPath: "/test/size.dat")
+        // Create a real temp file for the test
+        let tempDir = FileManager.default.temporaryDirectory
+        let testURL = tempDir.appendingPathComponent("test_size.dat")
+        try "Test DAT content".write(to: testURL, atomically: true, encoding: .utf8)
         let metadata = MAMEMetadata(
             name: "Size Test",
             description: "Test",
@@ -144,6 +147,7 @@ struct RomKitCacheTests {
 
         // Clean up
         cache.clearCache()
+        try? FileManager.default.removeItem(at: testURL)
     }
 
     @Test func testCacheKeyGeneration() throws {
@@ -187,7 +191,7 @@ struct RomKitCacheTests {
         cache.clearCache()
 
         // Test passes if no exceptions were thrown
-        #expect(true)
+        #expect(Bool(true))
     }
 
     @Test func testOldCacheCleanup() {

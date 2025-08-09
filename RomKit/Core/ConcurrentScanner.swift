@@ -77,7 +77,8 @@ public actor ConcurrentScanner {
             throw CocoaError(.fileReadUnknown)
         }
 
-        for case let fileURL as URL in enumerator {
+        // Use a safer enumeration approach to avoid Swift 6 concurrency warnings
+        while let fileURL = enumerator.nextObject() as? URL {
             autoreleasepool {
                 do {
                     let resourceValues = try fileURL.resourceValues(forKeys: Set(resourceKeys))
@@ -206,8 +207,8 @@ private actor AsyncSemaphore {
     }
 
     func signal() {
-        if let waiter = waiters.first {
-            waiters.removeFirst()
+        if !waiters.isEmpty {
+            let waiter = waiters.removeFirst()
             waiter.resume()
         } else {
             availablePermits += 1

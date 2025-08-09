@@ -255,7 +255,7 @@ struct NoIntroHandlerTests {
         let parser = NoIntroDATParser()
 
         // Test canParse with valid No-Intro XML
-        let validXML = """
+        let validXML = Data("""
         <?xml version="1.0"?>
         <!DOCTYPE datafile PUBLIC "-//Logiqx//DTD ROM Management Datafile//EN" "http://www.logiqx.com/Dats/datafile.dtd">
         <datafile>
@@ -264,7 +264,7 @@ struct NoIntroHandlerTests {
                 <description>Test DAT</description>
             </header>
         </datafile>
-        """.data(using: .utf8)!
+        """.utf8)
 
         #expect(parser.canParse(data: validXML) == true)
     }
@@ -273,7 +273,7 @@ struct NoIntroHandlerTests {
         let parser = NoIntroDATParser()
 
         // Test canParse with clrmamepro format
-        let clrmameXML = """
+        let clrmameXML = Data("""
         <?xml version="1.0"?>
         <!DOCTYPE datafile PUBLIC "-//clrmamepro//DTD">
         <datafile>
@@ -281,7 +281,7 @@ struct NoIntroHandlerTests {
                 <name>Collection</name>
             </header>
         </datafile>
-        """.data(using: .utf8)!
+        """.utf8)
 
         #expect(parser.canParse(data: clrmameXML) == true)
     }
@@ -290,7 +290,7 @@ struct NoIntroHandlerTests {
         let parser = NoIntroDATParser()
 
         // Test with non-XML data
-        let invalidData = "This is not XML".data(using: .utf8)!
+        let invalidData = Data("This is not XML".utf8)
         #expect(parser.canParse(data: invalidData) == false)
 
         // Test with empty data
@@ -298,19 +298,19 @@ struct NoIntroHandlerTests {
         #expect(parser.canParse(data: emptyData) == false)
 
         // Test with wrong XML format
-        let wrongXML = """
+        let wrongXML = Data("""
         <?xml version="1.0"?>
         <root>
             <item>Not a DAT file</item>
         </root>
-        """.data(using: .utf8)!
+        """.utf8)
         #expect(parser.canParse(data: wrongXML) == false)
     }
 
     @Test func testNoIntroDATParserParse() throws {
         let parser = NoIntroDATParser()
 
-        let xmlData = """
+        let xmlData = Data("""
         <?xml version="1.0"?>
         <!DOCTYPE datafile>
         <datafile>
@@ -318,7 +318,7 @@ struct NoIntroHandlerTests {
                 <name>Test</name>
             </header>
         </datafile>
-        """.data(using: .utf8)!
+        """.utf8)
 
         let datFile = try parser.parse(data: xmlData)
         #expect(datFile.formatVersion == "1.0")
@@ -332,7 +332,7 @@ struct NoIntroHandlerTests {
 
         // Create a temporary file
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test.dat")
-        let xmlData = """
+        let xmlData = Data("""
         <?xml version="1.0"?>
         <!DOCTYPE datafile>
         <datafile>
@@ -340,7 +340,7 @@ struct NoIntroHandlerTests {
                 <name>Test</name>
             </header>
         </datafile>
-        """.data(using: .utf8)!
+        """.utf8)
 
         try xmlData.write(to: tempURL)
         defer { try? FileManager.default.removeItem(at: tempURL) }
@@ -356,7 +356,7 @@ struct NoIntroHandlerTests {
         let validator = NoIntroROMValidator()
 
         // Test computeChecksums
-        let testData = "Hello, World!".data(using: .utf8)!
+        let testData = Data("Hello, World!".utf8)
         let checksums = validator.computeChecksums(for: testData)
 
         #expect(checksums.crc32 != nil)
@@ -367,7 +367,7 @@ struct NoIntroHandlerTests {
     @Test func testNoIntroROMValidatorValidateData() {
         let validator = NoIntroROMValidator()
 
-        let testData = "Test ROM Data".data(using: .utf8)!
+        let testData = Data("Test ROM Data".utf8)
         let checksums = validator.computeChecksums(for: testData)
 
         let rom = NoIntroROM(
@@ -384,8 +384,8 @@ struct NoIntroHandlerTests {
     @Test func testNoIntroROMValidatorValidateMismatch() {
         let validator = NoIntroROMValidator()
 
-        let testData = "Test ROM Data".data(using: .utf8)!
-        let wrongData = "Wrong Data".data(using: .utf8)!
+        let testData = Data("Test ROM Data".utf8)
+        let wrongData = Data("Wrong Data".utf8)
 
         let checksums = validator.computeChecksums(for: testData)
 
@@ -405,7 +405,7 @@ struct NoIntroHandlerTests {
 
         // Create a temporary file
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test.rom")
-        let testData = "Test ROM Content".data(using: .utf8)!
+        let testData = Data("Test ROM Content".utf8)
         try testData.write(to: tempURL)
         defer { try? FileManager.default.removeItem(at: tempURL) }
 
@@ -482,8 +482,8 @@ struct NoIntroHandlerTests {
         let tempFile1 = FileManager.default.temporaryDirectory.appendingPathComponent("file1.rom")
         let tempFile2 = FileManager.default.temporaryDirectory.appendingPathComponent("file2.rom")
 
-        try "data1".data(using: .utf8)!.write(to: tempFile1)
-        try "data2".data(using: .utf8)!.write(to: tempFile2)
+        try Data("data1".utf8).write(to: tempFile1)
+        try Data("data2".utf8).write(to: tempFile2)
         defer {
             try? FileManager.default.removeItem(at: tempFile1)
             try? FileManager.default.removeItem(at: tempFile2)

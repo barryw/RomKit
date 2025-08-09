@@ -65,11 +65,11 @@ struct IncompleteZIPTests {
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
         // Create test ROM with known CRC
-        let testData = "Hello World".data(using: .utf8)!
+        let testData = Data("Hello World".utf8)
         let expectedCRC = HashUtilities.crc32(data: testData)
 
         // Create ROM with different data (wrong CRC)
-        let wrongData = "Wrong Data!".data(using: .utf8)!
+        let wrongData = Data("Wrong Data!".utf8)
 
         // Create ZIP
         let zipPath = tempDir.appendingPathComponent("testgame.zip")

@@ -140,10 +140,8 @@ public actor AsyncFileIO {
                 }
             }
 
-            for await shouldContinue in group {
-                if !shouldContinue {
-                    enumerator?.skipDescendants()
-                }
+            for await shouldContinue in group where !shouldContinue {
+                enumerator?.skipDescendants()
             }
         }
     }
@@ -185,8 +183,8 @@ private actor AsyncSemaphore {
     }
 
     func signal() {
-        if let waiter = waiters.first {
-            waiters.removeFirst()
+        if !waiters.isEmpty {
+            let waiter = waiters.removeFirst()
             waiter.resume()
         } else {
             availablePermits += 1

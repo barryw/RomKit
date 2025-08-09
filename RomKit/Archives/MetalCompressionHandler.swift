@@ -31,16 +31,12 @@ public class MetalCompressionHandler {
     }
 
     public func compressData(_ data: Data, algorithm: NSData.CompressionAlgorithm = .zlib) async -> Data? {
-        // Use GPU for large files
-        guard data.count >= Self.gpuThreshold else {
-            // Use Foundation compression for small files
-            guard let compressed = try? (data as NSData).compressed(using: algorithm) else {
-                return nil
-            }
-            return compressed as Data
+        // Always use CPU compression to prevent crashes
+        // TODO: Implement proper Metal compression with error handling
+        guard let compressed = try? (data as NSData).compressed(using: algorithm) else {
+            return nil
         }
-
-        return await gpuCompress(data: data)
+        return compressed as Data
     }
 
     private func gpuCompress(data: Data) async -> Data? {
@@ -98,7 +94,12 @@ public class MetalCompressionHandler {
     }
 
     public func decompressData(_ data: Data, algorithm: NSData.CompressionAlgorithm = .zlib) async -> Data? {
-        return await gpuDecompress(data: data)
+        // Always use CPU decompression to prevent crashes
+        // TODO: Implement proper Metal decompression with error handling
+        guard let decompressed = try? (data as NSData).decompressed(using: algorithm) else {
+            return nil
+        }
+        return decompressed as Data
     }
 
     private func gpuDecompress(data: Data) async -> Data? {

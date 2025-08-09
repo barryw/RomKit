@@ -70,7 +70,37 @@ struct Rebuild: AsyncParsableCommand {
     mutating func run() async throws {
         RomKitCLI.printHeader("🔨 RomKit ROM Rebuild")
 
-        // Validate inputs
+        // Validate and prepare
+        let inputs = try validateAndPrepareInputs()
+        printConfiguration(datURL: inputs.datURL, outputURL: inputs.outputURL)
+
+        // Load DAT and create index
+        let datFile = try await loadDATFile(from: datURL)
+        let indexManager = try await setupIndexManager(sourceURLs: inputs.sourceURLs)
+
+        // Analyze requirements
+        let requirements = try await analyzeRequirements(
+            datFile: datFile,
+            outputURL: inputs.outputURL,
+            indexManager: indexManager
+        )
+
+        // Perform rebuild
+        try await performRebuild(
+            requirements: requirements,
+            datFile: datFile,
+            outputURL: inputs.outputURL,
+            indexManager: indexManager
+        )
+    }
+
+    private struct ValidatedInputs {
+        let datURL: URL
+        let outputURL: URL
+        let sourceURLs: [URL]
+    }
+
+    private func validateAndPrepareInputs() throws -> ValidatedInputs {
         let datURL = URL(fileURLWithPath: datPath)
         let outputURL = URL(fileURLWithPath: outputPath)
 
@@ -89,7 +119,6 @@ struct Rebuild: AsyncParsableCommand {
             }
         }
 
-        // Create output directory if needed
         if !dryRun {
             try FileManager.default.createDirectory(
                 at: outputURL,
@@ -98,6 +127,10 @@ struct Rebuild: AsyncParsableCommand {
             )
         }
 
+        return ValidatedInputs(datURL: datURL, outputURL: outputURL, sourceURLs: sourceURLs)
+    }
+
+    private func printConfiguration(datURL: URL, outputURL: URL) {
         print("📄 DAT File: \(datURL.lastPathComponent)")
         print("📂 Output: \(outputURL.path)")
         print("🗂️ Sources: \(sources.count) directories")
@@ -107,25 +140,24 @@ struct Rebuild: AsyncParsableCommand {
         if dryRun {
             print("🚫 DRY RUN MODE - No files will be modified")
         }
+    }
 
-        // Load DAT file
-        RomKitCLI.printSection("Loading DAT File")
-        let datFile = try await loadDATFile(from: datURL)
-        print("✅ Loaded \(datFile.games.count) games from DAT")
-
-        // Create and populate ROM index using the manager
+    private func setupIndexManager(sourceURLs: [URL]) async throws -> ROMIndexManager {
         RomKitCLI.printSection("Indexing Source Directories")
         let cacheURL = cacheFile.map { URL(fileURLWithPath: $0) }
         let indexManager = try await ROMIndexManager(databasePath: cacheURL)
 
-        // Add sources
         for source in sourceURLs {
             try await indexManager.addSource(source, showProgress: showProgress)
         }
 
-        // Get analysis
         let analysis = await indexManager.analyzeIndex()
+        printIndexAnalysis(analysis)
 
+        return indexManager
+    }
+
+    private func printIndexAnalysis(_ analysis: IndexAnalysis) {
         print("✅ Indexed \(analysis.totalROMs) ROMs from \(analysis.sources.count) sources")
         print("   Unique CRCs: \(analysis.uniqueROMs)")
         print("   Duplicates: \(analysis.totalDuplicates)")
@@ -136,8 +168,13 @@ struct Rebuild: AsyncParsableCommand {
                 print("   • \(recommendation)")
             }
         }
+    }
 
-        // Analyze what needs to be rebuilt
+    private func analyzeRequirements(
+        datFile: any DATFormat,
+        outputURL: URL,
+        indexManager: ROMIndexManager
+    ) async throws -> RebuildRequirements {
         RomKitCLI.printSection("Analyzing Rebuild Requirements")
         let requirements = try await analyzeRebuildRequirements(
             datFile: datFile,
@@ -151,6 +188,16 @@ struct Rebuild: AsyncParsableCommand {
         print("   ROMs needed: \(requirements.totalROMs)")
         print("   ROMs available: \(requirements.availableROMs)")
         print("   ROMs missing: \(requirements.missingROMs)")
+
+        return requirements
+    }
+
+    private func performRebuild(
+        requirements: RebuildRequirements,
+        datFile: any DATFormat,
+        outputURL: URL,
+        indexManager: ROMIndexManager
+    ) async throws {
 
         if requirements.missingROMs > 0 {
             print("\n⚠️ Warning: \(requirements.missingROMs) ROMs are not available in source directories")

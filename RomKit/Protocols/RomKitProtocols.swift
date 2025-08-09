@@ -53,10 +53,10 @@ public protocol ROMItem {
 }
 
 public enum ROMStatus: String, Codable {
-    case good = "good"
-    case baddump = "baddump"
-    case nodump = "nodump"
-    case verified = "verified"
+    case good
+    case baddump
+    case nodump
+    case verified
 }
 
 public struct ROMChecksums: Codable {

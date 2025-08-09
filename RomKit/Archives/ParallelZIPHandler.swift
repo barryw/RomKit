@@ -210,31 +210,12 @@ public class ParallelZIPArchiveHandler: ArchiveHandler {
     }
 
     private func deflateData(_ data: Data) -> Data {
-        return data.withUnsafeBytes { bytes in
-            guard let pointer = bytes.bindMemory(to: UInt8.self).baseAddress else {
-                return Data()
-            }
-
-            let bufferSize = data.count + 1024
-            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
-            defer { buffer.deallocate() }
-
-            var stream = z_stream()
-            stream.next_in = UnsafeMutablePointer(mutating: pointer)
-            stream.avail_in = uInt(data.count)
-            stream.next_out = buffer
-            stream.avail_out = uInt(bufferSize)
-
-            deflateInit2_(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size))
-            defer { deflateEnd(&stream) }
-
-            let result = deflate(&stream, Z_FINISH)
-            guard result == Z_STREAM_END else {
-                return Data()
-            }
-
-            return Data(bytes: buffer, count: bufferSize - Int(stream.avail_out))
+        // Use Foundation's built-in compression to avoid manual zlib management
+        guard let compressed = try? (data as NSData).compressed(using: .zlib) else {
+            print("Warning: Failed to compress data using Foundation compression")
+            return data  // Return original data as fallback
         }
+        return compressed as Data
     }
 
     private func createFile(at url: URL) -> FileHandle? {
@@ -336,8 +317,8 @@ private actor AsyncSemaphore {
     }
 
     func signal() {
-        if let waiter = waiters.first {
-            waiters.removeFirst()
+        if !waiters.isEmpty {
+            let waiter = waiters.removeFirst()
             waiter.resume()
         } else {
             availablePermits += 1

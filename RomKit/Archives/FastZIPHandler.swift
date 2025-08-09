@@ -212,7 +212,10 @@ public class FastZIPArchiveHandler: ArchiveHandler {
 
     private func computeCRC32(data: Data) -> UInt32 {
         return data.withUnsafeBytes { bytes in
-            return UInt32(crc32(0, bytes.bindMemory(to: UInt8.self).baseAddress, uInt(data.count)))
+            guard let baseAddress = bytes.bindMemory(to: UInt8.self).baseAddress else {
+                return 0
+            }
+            return UInt32(crc32(0, baseAddress, uInt(data.count)))
         }
     }
 

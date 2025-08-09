@@ -389,33 +389,35 @@ extension SQLiteROMIndex {
         let query = "SELECT path, last_scan, rom_count, total_size FROM sources ORDER BY path"
 
         return await withCheckedContinuation { continuation in
-            queue.async {
-                var statement: OpaquePointer?
-                var sources: [SourceInfo] = []
+            var statement: OpaquePointer?
+            var sources: [SourceInfo] = []
 
-                guard sqlite3_prepare_v2(self.db, query, -1, &statement, nil) == SQLITE_OK else {
-                    continuation.resume(returning: sources)
-                    return
-                }
-
-                defer { sqlite3_finalize(statement) }
-
-                while sqlite3_step(statement) == SQLITE_ROW {
-                    let path = String(cString: sqlite3_column_text(statement, 0))
-                    let lastScan = Date(timeIntervalSince1970: Double(sqlite3_column_int64(statement, 1)))
-                    let romCount = Int(sqlite3_column_int(statement, 2))
-                    let totalSize = UInt64(sqlite3_column_int64(statement, 3))
-
-                    sources.append(SourceInfo(
-                        path: path,
-                        lastScan: lastScan,
-                        romCount: romCount,
-                        totalSize: totalSize
-                    ))
-                }
-
+            guard sqlite3_prepare_v2(self.db, query, -1, &statement, nil) == SQLITE_OK else {
                 continuation.resume(returning: sources)
+                return
             }
+
+            defer { sqlite3_finalize(statement) }
+
+            while sqlite3_step(statement) == SQLITE_ROW {
+                guard let pathPtr = sqlite3_column_text(statement, 0) else {
+                    continue
+                }
+
+                let path = String(cString: pathPtr)
+                let lastScan = Date(timeIntervalSince1970: Double(sqlite3_column_int64(statement, 1)))
+                let romCount = Int(sqlite3_column_int(statement, 2))
+                let totalSize = UInt64(sqlite3_column_int64(statement, 3))
+
+                sources.append(SourceInfo(
+                    path: path,
+                    lastScan: lastScan,
+                    romCount: romCount,
+                    totalSize: totalSize
+                ))
+            }
+
+            continuation.resume(returning: sources)
         }
     }
 
@@ -426,21 +428,19 @@ extension SQLiteROMIndex {
         // Get count before deletion
         let countQuery = "SELECT COUNT(*) FROM roms WHERE location_path LIKE ? || '%'"
         let count = await withCheckedContinuation { continuation in
-            queue.async {
-                var statement: OpaquePointer?
-                guard sqlite3_prepare_v2(self.db, countQuery, -1, &statement, nil) == SQLITE_OK else {
-                    continuation.resume(returning: 0)
-                    return
-                }
-                defer { sqlite3_finalize(statement) }
+            var statement: OpaquePointer?
+            guard sqlite3_prepare_v2(self.db, countQuery, -1, &statement, nil) == SQLITE_OK else {
+                continuation.resume(returning: 0)
+                return
+            }
+            defer { sqlite3_finalize(statement) }
 
-                sqlite3_bind_text(statement, 1, path, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+            sqlite3_bind_text(statement, 1, path, -1, nil)
 
-                if sqlite3_step(statement) == SQLITE_ROW {
-                    continuation.resume(returning: Int(sqlite3_column_int(statement, 0)))
-                } else {
-                    continuation.resume(returning: 0)
-                }
+            if sqlite3_step(statement) == SQLITE_ROW {
+                continuation.resume(returning: Int(sqlite3_column_int(statement, 0)))
+            } else {
+                continuation.resume(returning: 0)
             }
         }
 
@@ -473,19 +473,17 @@ extension SQLiteROMIndex {
         let query = "SELECT COUNT(DISTINCT crc32) FROM roms WHERE crc32 IS NOT NULL AND crc32 != ''"
 
         return await withCheckedContinuation { continuation in
-            queue.async {
-                var statement: OpaquePointer?
-                guard sqlite3_prepare_v2(self.db, query, -1, &statement, nil) == SQLITE_OK else {
-                    continuation.resume(returning: 0)
-                    return
-                }
-                defer { sqlite3_finalize(statement) }
+            var statement: OpaquePointer?
+            guard sqlite3_prepare_v2(self.db, query, -1, &statement, nil) == SQLITE_OK else {
+                continuation.resume(returning: 0)
+                return
+            }
+            defer { sqlite3_finalize(statement) }
 
-                if sqlite3_step(statement) == SQLITE_ROW {
-                    continuation.resume(returning: Int(sqlite3_column_int(statement, 0)))
-                } else {
-                    continuation.resume(returning: 0)
-                }
+            if sqlite3_step(statement) == SQLITE_ROW {
+                continuation.resume(returning: Int(sqlite3_column_int(statement, 0)))
+            } else {
+                continuation.resume(returning: 0)
             }
         }
     }

@@ -110,79 +110,144 @@ extension MAMEDATParser: XMLParserDelegate {
         currentElement = elementName
         currentElementText = ""
 
+        handleStartElement(elementName: elementName, attributes: attributeDict)
+    }
+
+    private func handleStartElement(elementName: String, attributes: [String: String]) {
+        // Group related elements to reduce complexity
+        if handleHeaderElements(elementName: elementName, attributes: attributes) {
+            return
+        }
+
+        if handleGameElements(elementName: elementName, attributes: attributes) {
+            return
+        }
+
+        if handleHardwareElements(elementName: elementName, attributes: attributes) {
+            return
+        }
+
+        if handleInputElements(elementName: elementName, attributes: attributes) {
+            return
+        }
+    }
+
+    private func handleHeaderElements(elementName: String, attributes: [String: String]) -> Bool {
         switch elementName {
         case "datafile", "mame":
-            parseDatafileHeader(attributes: attributeDict)
+            parseDatafileHeader(attributes: attributes)
+            return true
         case "header":
             inHeader = true
-            parseHeader(attributes: attributeDict)
+            parseHeader(attributes: attributes)
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func handleGameElements(elementName: String, attributes: [String: String]) -> Bool {
+        switch elementName {
         case "game", "machine":
-            parseGame(attributes: attributeDict)
+            parseGame(attributes: attributes)
+            return true
         case "rom":
-            parseROM(attributes: attributeDict)
+            parseROM(attributes: attributes)
+            return true
         case "disk":
-            parseDisk(attributes: attributeDict)
+            parseDisk(attributes: attributes)
+            return true
         case "sample":
-            parseSample(attributes: attributeDict)
+            parseSample(attributes: attributes)
+            return true
         case "device_ref":
-            parseDeviceRef(attributes: attributeDict)
+            parseDeviceRef(attributes: attributes)
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func handleHardwareElements(elementName: String, attributes: [String: String]) -> Bool {
+        switch elementName {
         case "chip":
-            parseChip(attributes: attributeDict)
+            parseChip(attributes: attributes)
+            return true
         case "display":
-            parseDisplay(attributes: attributeDict)
+            parseDisplay(attributes: attributes)
+            return true
         case "sound":
-            parseSound(attributes: attributeDict)
-        case "input":
-            parseInput(attributes: attributeDict)
-        case "control":
-            parseControl(attributes: attributeDict)
-        case "dipswitch":
-            parseDipSwitch(attributes: attributeDict)
-        case "diplocation":
-            parseDipLocation(attributes: attributeDict)
-        case "dipvalue":
-            parseDipValue(attributes: attributeDict)
+            parseSound(attributes: attributes)
+            return true
         case "driver":
-            parseDriver(attributes: attributeDict)
+            parseDriver(attributes: attributes)
+            return true
         case "feature":
-            parseFeature(attributes: attributeDict)
+            parseFeature(attributes: attributes)
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func handleInputElements(elementName: String, attributes: [String: String]) -> Bool {
+        switch elementName {
+        case "input":
+            parseInput(attributes: attributes)
+            return true
+        case "control":
+            parseControl(attributes: attributes)
+            return true
+        case "dipswitch":
+            parseDipSwitch(attributes: attributes)
+            return true
+        case "diplocation":
+            parseDipLocation(attributes: attributes)
+            return true
+        case "dipvalue":
+            parseDipValue(attributes: attributes)
+            return true
+        default:
+            return false
+        }
+    }
+
+    public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+        handleEndElement(elementName: elementName)
+        currentElementText = ""
+    }
+
+    private func handleEndElement(elementName: String) {
+        if inHeader {
+            handleHeaderEndElement(elementName: elementName)
+        } else if currentGame != nil {
+            handleGameEndElement(elementName: elementName)
+        }
+
+        handleFinalizationElements(elementName: elementName)
+    }
+
+    private func handleHeaderEndElement(elementName: String) {
+        switch elementName {
+        case "name", "description", "version", "author", "date", "comment", "url":
+            headerData[elementName] = currentElementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        case "header":
+            finalizeHeader()
         default:
             break
         }
     }
 
-    public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if inHeader {
-            switch elementName {
-            case "name", "description", "version", "author", "date", "comment", "url":
-                headerData[elementName] = currentElementText.trimmingCharacters(in: .whitespacesAndNewlines)
-            case "header":
-                // Finalize header metadata
-                metadata = MAMEMetadata(
-                    name: headerData["name"] ?? metadata?.name ?? "Unknown",
-                    description: headerData["description"] ?? metadata?.description ?? "",
-                    version: headerData["version"] ?? metadata?.version,
-                    author: headerData["author"],
-                    date: headerData["date"],
-                    comment: headerData["comment"],
-                    url: headerData["url"],
-                    build: metadata?.build
-                )
-                inHeader = false
-                headerData = [:]
-            default:
-                break
-            }
-        } else if currentGame != nil {
-            // Handle game child elements
-            switch elementName {
-            case "description", "year", "manufacturer":
-                currentGameData[elementName] = currentElementText.trimmingCharacters(in: .whitespacesAndNewlines)
-            default:
-                break
-            }
+    private func handleGameEndElement(elementName: String) {
+        switch elementName {
+        case "description", "year", "manufacturer":
+            currentGameData[elementName] = currentElementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        default:
+            break
         }
+    }
 
+    private func handleFinalizationElements(elementName: String) {
         switch elementName {
         case "game", "machine":
             finalizeCurrentGame()
@@ -193,8 +258,21 @@ extension MAMEDATParser: XMLParserDelegate {
         default:
             break
         }
+    }
 
-        currentElementText = ""
+    private func finalizeHeader() {
+        metadata = MAMEMetadata(
+            name: headerData["name"] ?? metadata?.name ?? "Unknown",
+            description: headerData["description"] ?? metadata?.description ?? "",
+            version: headerData["version"] ?? metadata?.version,
+            author: headerData["author"],
+            date: headerData["date"],
+            comment: headerData["comment"],
+            url: headerData["url"],
+            build: metadata?.build
+        )
+        inHeader = false
+        headerData = [:]
     }
 
     public func parser(_ parser: XMLParser, foundCharacters string: String) {
@@ -246,10 +324,8 @@ extension MAMEDATParser: XMLParserDelegate {
 
         // Parse device references from deviceref_N attributes
         var deviceRefs: [String] = []
-        for (key, value) in attributes {
-            if key.hasPrefix("deviceref_") {
-                deviceRefs.append(value)
-            }
+        for (key, value) in attributes where key.hasPrefix("deviceref_") {
+            deviceRefs.append(value)
         }
 
         // Store other attributes temporarily
