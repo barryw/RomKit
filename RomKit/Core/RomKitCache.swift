@@ -11,8 +11,7 @@ import Foundation
 public class RomKitCache {
 
     private let cacheDirectory: URL
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
+    private let queue = DispatchQueue(label: "com.romkit.cache", attributes: .concurrent)
 
     public init() {
         // Use app support directory for cache
@@ -40,54 +39,25 @@ public class RomKitCache {
 
     /// Check if cached version exists and is valid
     public func hasCached(for datURL: URL) -> Bool {
-        let key = cacheKey(for: datURL)
-        let cachePath = cacheDirectory.appendingPathComponent(key)
-        return FileManager.default.fileExists(atPath: cachePath.path)
+        // DISABLED: Caching is currently disabled
+        return false
     }
 
     /// Save parsed DAT to cache
     public func save(_ datFile: MAMEDATFile, for datURL: URL) {
-        let key = cacheKey(for: datURL)
-        let cachePath = cacheDirectory.appendingPathComponent(key)
-
-        // Convert to cacheable format
-        let cacheData = CachedDAT(
-            version: 1,
-            sourceURL: datURL.path,
-            parseDate: Date(),
-            datFile: datFile
-        )
-
-        do {
-            // For now, use JSON (could use binary later)
-            let data = try encoder.encode(cacheData)
-            try data.write(to: cachePath)
-
-            print("Cached DAT file: \(cachePath.lastPathComponent)")
-            print("  Size: \(data.count / 1024 / 1024) MB")
-
-            // Clean old cache files
-            cleanOldCaches(except: key)
-        } catch {
-            print("Failed to cache DAT: \(error)")
-        }
+        // DISABLED: Caching is currently disabled due to issues with encoding type-erased properties
+        // The MAMEGame struct contains `items: [any ROMItem]` and `metadata: any GameMetadata`
+        // which cannot be properly encoded/decoded without losing type information.
+        // This was causing "Fatal error: load from misaligned raw pointer" crashes.
+        // TODO: Implement proper caching with concrete types or custom encoding/decoding
+        return
     }
 
     /// Load cached DAT
     public func load(for datURL: URL) -> MAMEDATFile? {
-        let key = cacheKey(for: datURL)
-        let cachePath = cacheDirectory.appendingPathComponent(key)
-
-        do {
-            let data = try Data(contentsOf: cachePath)
-            let cacheData = try decoder.decode(CachedDAT.self, from: data)
-
-            print("Loaded cached DAT from: \(cachePath.lastPathComponent)")
-            return cacheData.datFile
-        } catch {
-            print("Failed to load cache: \(error)")
-            return nil
-        }
+        // DISABLED: Caching is currently disabled due to issues with decoding type-erased properties
+        // See comment in save() method for details
+        return nil
     }
 
     /// Clean old cache files for the same source
@@ -178,8 +148,15 @@ extension MAMEGame: Codable {
         self.identifier = try container.decodeIfPresent(String.self, forKey: .identifier) ?? ""
         self.name = try container.decode(String.self, forKey: .name)
         self.description = try container.decode(String.self, forKey: .description)
-        self.items = try container.decode([MAMEROM].self, forKey: .items)
-        self.metadata = try container.decode(MAMEGameMetadata.self, forKey: .metadata)
+
+        // Decode ROMs safely
+        let roms = try container.decode([MAMEROM].self, forKey: .items)
+        self.items = roms
+
+        // Decode metadata safely
+        let gameMetadata = try container.decode(MAMEGameMetadata.self, forKey: .metadata)
+        self.metadata = gameMetadata
+
         self.disks = try container.decodeIfPresent([MAMEDisk].self, forKey: .disks) ?? []
         self.samples = try container.decodeIfPresent([MAMESample].self, forKey: .samples) ?? []
     }
@@ -189,8 +166,23 @@ extension MAMEGame: Codable {
         try container.encode(identifier, forKey: .identifier)
         try container.encode(name, forKey: .name)
         try container.encode(description, forKey: .description)
-        try container.encode(items as? [MAMEROM] ?? [], forKey: .items)
-        try container.encode(metadata as? MAMEGameMetadata, forKey: .metadata)
+
+        // Only encode MAMEROM items, skip others
+        let mameROMs = items.compactMap { $0 as? MAMEROM }
+        try container.encode(mameROMs, forKey: .items)
+
+        // Only encode MAMEGameMetadata, throw error for others
+        guard let mameMetadata = metadata as? MAMEGameMetadata else {
+            throw EncodingError.invalidValue(
+                metadata,
+                EncodingError.Context(
+                    codingPath: encoder.codingPath + [CodingKeys.metadata],
+                    debugDescription: "Expected MAMEGameMetadata but got \(type(of: metadata))"
+                )
+            )
+        }
+        try container.encode(mameMetadata, forKey: .metadata)
+
         try container.encode(disks, forKey: .disks)
         try container.encode(samples, forKey: .samples)
     }

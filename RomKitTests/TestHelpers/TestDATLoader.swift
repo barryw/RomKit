@@ -13,8 +13,13 @@ import Compression
 /// Helper for loading test DAT files, including compressed ones
 struct TestDATLoader {
 
+    // Synchronization queue to prevent concurrent decompression issues
+    fileprivate static let decompressionQueue = DispatchQueue(label: "com.romkit.test.decompression")
+
     /// Load the bundled full MAME DAT for testing
     static func loadFullMAMEDAT() throws -> Data {
+        // Synchronize access to prevent concurrent decompression issues
+        return try decompressionQueue.sync {
         // Get path to test data directory relative to current file
         let currentFilePath = #file
         let currentURL = URL(fileURLWithPath: currentFilePath)
@@ -33,7 +38,8 @@ struct TestDATLoader {
             throw TestError.decompressionFailed
         }
 
-        return decompressed
+            return decompressed
+        }
     }
 
     /// Load a test DAT file from TestData directory
@@ -95,6 +101,8 @@ struct TestDATLoader {
 extension Data {
     /// Decompress gzipped data using Foundation's Compression framework
     func gunzipped() -> Data? {
+        // Wrap entire decompression in synchronization to prevent concurrent access issues
+        return TestDATLoader.decompressionQueue.sync {
         // Check for gzip magic number
         guard self.count > 2,
               self[0] == 0x1f,
@@ -157,26 +165,28 @@ extension Data {
             let compressedSize = self.count - headerSize - 8
             let compressedData = self.subdata(in: headerSize..<(headerSize + compressedSize))
 
-            // Perform decompression
-            return compressedData.withUnsafeBytes { compressedBytes in
-                guard let compressedPointer = compressedBytes.baseAddress else { return nil }
+            // Perform decompression using Array to ensure proper alignment
+            let compressedBytes = [UInt8](compressedData)
 
-                let destinationSize = 100 * 1024 * 1024 // 100MB should be enough
-                let destinationBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: destinationSize)
-                defer { destinationBuffer.deallocate() }
+            let destinationSize = 100 * 1024 * 1024 // 100MB should be enough
+            let destinationBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: destinationSize)
+            defer { destinationBuffer.deallocate() }
 
-                let decompressedSize = compression_decode_buffer(
+            let decompressedSize = compressedBytes.withUnsafeBufferPointer { buffer in
+                guard let baseAddress = buffer.baseAddress else { return 0 }
+                return compression_decode_buffer(
                     destinationBuffer, destinationSize,
-                    compressedPointer.bindMemory(to: UInt8.self, capacity: compressedSize),
+                    baseAddress,
                     compressedSize,
                     nil,
                     COMPRESSION_ZLIB
                 )
-
-                guard decompressedSize > 0 else { return nil }
-
-                return Data(bytes: destinationBuffer, count: decompressedSize)
             }
+
+            guard decompressedSize > 0 else { return nil }
+
+            return Data(bytes: destinationBuffer, count: decompressedSize)
         }
+        } // End of sync block
     }
 }
