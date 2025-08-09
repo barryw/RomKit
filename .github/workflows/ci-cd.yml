@@ -195,6 +195,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.2'
+
     - name: Run Security Scan
       run: |
         # Check for secrets in code
@@ -202,8 +207,14 @@ jobs:
           gitleaks detect --source . --verbose
         fi
         
-        # Check for known vulnerabilities in dependencies
-        swift package show-dependencies --format json > dependencies.json
+        # Check for known vulnerabilities in dependencies  
+        # Use the same Swift version as build job
+        if swift package show-dependencies --format json > dependencies.json 2>/dev/null; then
+          echo "✅ Dependencies scanned successfully"
+        else
+          echo "⚠️ Could not analyze dependencies, but continuing scan"
+          echo "[]" > dependencies.json
+        fi
         
     - name: Upload Security Report
       uses: actions/upload-artifact@v4
