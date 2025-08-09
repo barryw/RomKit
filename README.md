@@ -4,12 +4,11 @@
   A high-performance Swift library and CLI for managing ROM collections, with comprehensive support for MAME and other ROM formats.
   
   [![CI/CD Pipeline](https://github.com/barryw/RomKit/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/barryw/RomKit/actions/workflows/ci-cd.yml)
-  [![Latest Release](https://img.shields.io/github/v/release/barryw/RomKit?include_prereleases)](https://github.com/barryw/RomKit/releases/latest)
-  [![Code Coverage](https://img.shields.io/codecov/c/github/barryw/RomKit)](https://codecov.io/gh/barryw/RomKit)
+  [![Latest Release](https://img.shields.io/github/v/release/barryw/RomKit?include_prereleases)](https://github.com/barryw/RomKit/releases)
   [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
   [![Platforms](https://img.shields.io/badge/Platforms-macOS%2013%2B%20%7C%20iOS%2016%2B-blue)](https://developer.apple.com)
   [![SPM Compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)
-  [![License](https://img.shields.io/github/license/barryw/RomKit)](LICENSE)
+  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
   [![Documentation](https://img.shields.io/badge/docs-DocC-blue)](https://github.com/barryw/RomKit/wiki)
 </div>
 

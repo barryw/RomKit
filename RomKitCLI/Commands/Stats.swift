@@ -209,7 +209,6 @@ struct Stats: AsyncParsableCommand {
                 case .critical: "🔴"
                 case .warning: "🟡"
                 case .info: "🔵"
-                default: "⚪"
                 }
                 print("   \(icon) \(issue.description)")
             }

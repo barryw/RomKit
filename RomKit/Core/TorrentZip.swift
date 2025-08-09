@@ -297,7 +297,18 @@ public class TorrentZip {
     ) async throws {
         let result = try verifyDirectory(at: url, recursive: recursive)
         let total = result.nonCompliant.count
-        var completed = 0
+        
+        // Use an actor to safely track progress in concurrent code
+        actor ProgressTracker {
+            private var completed = 0
+            
+            func increment() -> Int {
+                completed += 1
+                return completed
+            }
+        }
+        
+        let tracker = ProgressTracker()
 
         if parallel {
             await withTaskGroup(of: Void.self) { group in
@@ -305,10 +316,10 @@ public class TorrentZip {
                     group.addTask {
                         do {
                             try TorrentZip.convertToTorrentZip(at: zipURL)
+                            let currentCount = await tracker.increment()
                             await MainActor.run {
-                                completed += 1
                                 progress?(TorrentZipProgress(
-                                    current: completed,
+                                    current: currentCount,
                                     total: total,
                                     currentFile: zipURL.lastPathComponent
                                 ))
@@ -322,9 +333,9 @@ public class TorrentZip {
         } else {
             for zipURL in result.nonCompliant {
                 try convertToTorrentZip(at: zipURL)
-                completed += 1
+                let currentCount = await tracker.increment()
                 progress?(TorrentZipProgress(
-                    current: completed,
+                    current: currentCount,
                     total: total,
                     currentFile: zipURL.lastPathComponent
                 ))

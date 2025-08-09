@@ -63,8 +63,8 @@ public class ROMOrganizer {
         progress: ((OrganizeProgress) -> Void)? = nil
     ) async throws -> OrganizeResult {
 
-        var organized: [(file: String, folder: String)] = []
-        var errors: [(file: String, error: Error)] = []
+        let organized: [(file: String, folder: String)] = []
+        let errors: [(file: String, error: Error)] = []
 
         // For now, this is a simplified implementation that would need to be
         // integrated with the actual scanning infrastructure

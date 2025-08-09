@@ -38,7 +38,7 @@ public class FastZIPArchiveHandler: ArchiveHandler {
 
         let fileManager = FileManager.default
 
-        while let (header, data) = try readNextZipEntryWithData(from: fileHandle) {
+        while let (header, data) = readNextZipEntryWithData(from: fileHandle) {
             let destinationFile = destination.appendingPathComponent(header.path)
 
             try fileManager.createDirectory(
