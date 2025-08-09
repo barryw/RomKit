@@ -21,7 +21,11 @@ struct RomKitCLI: AsyncParsableCommand {
             Verify.self,
             Export.self,
             Rebuild.self,
-            Index.self
+            Index.self,
+            Fixdat.self,
+            Missing.self,
+            Stats.self,
+            Organize.self
         ],
         defaultSubcommand: nil
     )

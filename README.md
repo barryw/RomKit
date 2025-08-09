@@ -24,12 +24,22 @@
 - Comprehensive MAME inheritance handling (BIOS, devices, parent/clone)
 - Native zlib compression support
 - Optimized parsing with caching
+- **ROM Collector Features**:
+  - Fixdat generation for missing ROMs
+  - HTML/Text missing ROM reports
+  - Collection statistics and health scoring
+  - ROM renaming and organization
+  - TorrentZip support (experimental)
 
 ### CLI Tool
 - 🔍 **Analyze** - Verify ROM collections against DAT files
 - 🔨 **Rebuild** - Reconstruct ROM sets from multiple sources
 - 🗄️ **Index Management** - SQLite-based ROM indexing for fast multi-source lookups
 - 🔎 **Smart Search** - Find ROMs by name or CRC32 with fuzzy matching
+- 📊 **Stats** - Collection statistics and health scoring
+- 📋 **Missing Reports** - HTML/text reports of missing ROMs
+- 🔧 **Fixdat Generation** - Create DAT files for missing ROMs
+- 🗂️ **Organize** - Rename and organize ROMs by manufacturer, year, etc.
 - 📊 **JSON Pipeline** - Unix-style composability for automation
 - ⚡ **GPU Acceleration** - Metal acceleration for hash computation
 - 📈 **Progress Tracking** - Real-time progress and ETA
@@ -150,6 +160,41 @@ print("Loaded format: \(romkit.currentFormat ?? "Unknown")")
 let results = try await romkit.scan(directory: "/path/to/roms")
 ```
 
+## ROM Collector Features
+
+RomKit includes powerful features for ROM collectors. See the [ROM Collector Features Guide](RomKit/Documentation/ROMCollectorFeatures.md) for complete documentation.
+
+### Quick Examples
+
+```swift
+// Generate fixdat for missing ROMs
+try romkit.generateFixdat(
+    from: scanResult,
+    to: "/path/to/missing.xml",
+    format: .logiqxXML
+)
+
+// Generate missing ROM report
+let report = try romkit.generateMissingReport(from: scanResult)
+try report.generateHTML().write(
+    toFile: "/path/to/report.html",
+    atomically: true,
+    encoding: .utf8
+)
+
+// Generate collection statistics
+let stats = try romkit.generateStatistics(from: scanResult)
+print("Health Score: \(stats.healthScore)%")
+print("Completion: \(stats.completionPercentage)%")
+
+// Organize ROM collection
+let result = try await romkit.organizeCollection(
+    from: "/path/to/roms",
+    to: "/path/to/organized",
+    style: .byManufacturer
+)
+```
+
 ## Performance
 
 ### Parsing Performance Comparison
@@ -189,7 +234,7 @@ The bundled DAT achieves 7.6:1 compression ratio, making it practical to include
 
 ```bash
 # Clone and build
-git clone https://github.com/yourusername/RomKit.git
+git clone https://github.com/barryw/RomKit.git
 cd RomKit
 swift build -c release --product romkit
 
@@ -204,7 +249,7 @@ sudo cp .build/release/romkit /usr/local/bin/
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/RomKit.git", from: "1.0.0")
+    .package(url: "https://github.com/barryw/RomKit.git", from: "1.0.0")
 ]
 ```
 
@@ -237,6 +282,17 @@ romkit rebuild ~/mame/mame0256.xml ~/mame/output \
 romkit analyze ~/mame/roms ~/mame/mame0256.xml --json | \
   jq '.incomplete + .broken' | \
   romkit rebuild ~/mame/mame0256.xml ~/mame/fixed --from-analysis -
+
+# Generate missing ROM reports and fixdat
+romkit missing ~/mame/roms ~/mame/mame0256.xml -o missing_report
+romkit fixdat ~/mame/roms ~/mame/mame0256.xml ~/missing.xml
+
+# View collection statistics
+romkit stats ~/mame/roms ~/mame/mame0256.xml --by-manufacturer
+
+# Organize ROM collection
+romkit organize ~/mame/roms ~/mame/mame0256.xml \
+  -d ~/mame/organized -s manufacturer --show-progress
 ```
 
 ## Contributing

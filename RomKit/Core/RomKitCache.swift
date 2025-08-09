@@ -31,7 +31,7 @@ public class RomKitCache {
     private func cacheKey(for url: URL) -> String {
         // Use file path and modification date as key
         let attributes = try? FileManager.default.attributesOfItem(atPath: url.path)
-        let modDate = attributes?[.modificationDate] as? Date ?? Date()
+        let modDate = attributes?[.modificationDate] as? Date ?? Date(timeIntervalSince1970: 0)
         let timestamp = Int(modDate.timeIntervalSince1970)
 
         let path = url.path.replacingOccurrences(of: "/", with: "_")

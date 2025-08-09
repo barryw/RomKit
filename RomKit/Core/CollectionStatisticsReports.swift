@@ -57,14 +57,14 @@ extension CollectionStatistics {
         📊 OVERALL SUMMARY
         ═══════════════════════════════════════════════════════════════════
 
-        Games:      \(String(format: "%,d", totalGames)) total
-                    ✅ \(String(format: "%,d", completeGames)) complete
-                    ⚠️  \(String(format: "%,d", partialGames)) partial
-                    ❌ \(String(format: "%,d", missingGames)) missing
+        Games:      \(String(format: "%d", totalGames)) total
+                    ✅ \(String(format: "%d", completeGames)) complete
+                    ⚠️  \(String(format: "%d", partialGames)) partial
+                    ❌ \(String(format: "%d", missingGames)) missing
 
-        ROMs:       \(String(format: "%,d", totalROMs)) total
-                    ✅ \(String(format: "%,d", foundROMs)) found
-                    ❌ \(String(format: "%,d", missingROMs)) missing
+        ROMs:       \(String(format: "%d", totalROMs)) total
+                    ✅ \(String(format: "%d", foundROMs)) found
+                    ❌ \(String(format: "%d", missingROMs)) missing
 
         Size:       \(formatter.string(fromByteCount: Int64(totalSize))) total
                     \(formatter.string(fromByteCount: Int64(collectionSize))) in collection
@@ -84,10 +84,10 @@ extension CollectionStatistics {
         🎮 SPECIAL CATEGORIES
         ═══════════════════════════════════════════════════════════════════
 
-        Parent Games:  \(String(format: "%,d", parentStats.total)) (\(parentStats.complete) complete)
-        Clone Games:   \(String(format: "%,d", cloneStats.total)) (\(cloneStats.complete) complete)
-        BIOS Sets:     \(String(format: "%,d", biosStats.total)) (\(biosStats.complete) complete)
-        Device ROMs:   \(String(format: "%,d", deviceStats.total)) (\(deviceStats.complete) complete)
+        Parent Games:  \(String(format: "%d", parentStats.total)) (\(parentStats.complete) complete)
+        Clone Games:   \(String(format: "%d", cloneStats.total)) (\(cloneStats.complete) complete)
+        BIOS Sets:     \(String(format: "%d", biosStats.total)) (\(biosStats.complete) complete)
+        Device ROMs:   \(String(format: "%d", deviceStats.total)) (\(deviceStats.complete) complete)
 
 
         """
@@ -100,9 +100,9 @@ extension CollectionStatistics {
         💿 CHD FILES
         ═══════════════════════════════════════════════════════════════════
 
-        Total CHDs:    \(String(format: "%,d", chd.totalCHDs))
-        Found:         \(String(format: "%,d", chd.foundCHDs))
-        Missing:       \(String(format: "%,d", chd.missingCHDs))
+        Total CHDs:    \(String(format: "%d", chd.totalCHDs))
+        Found:         \(String(format: "%d", chd.foundCHDs))
+        Missing:       \(String(format: "%d", chd.missingCHDs))
 
         Size:          \(formatter.string(fromByteCount: Int64(chd.totalSize))) total
                        \(formatter.string(fromByteCount: Int64(chd.foundSize))) found

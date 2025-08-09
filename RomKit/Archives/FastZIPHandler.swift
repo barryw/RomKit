@@ -26,34 +26,8 @@ public class FastZIPArchiveHandler: ArchiveHandler {
     }
 
     public func extract(entry: ArchiveEntry, from url: URL) throws -> Data {
-        // Use unzip command as a temporary solution
-        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: tempDir) }
-
-        // Extract specific file using unzip
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
-        process.arguments = ["-qq", "-j", "-o", url.path, entry.path, "-d", tempDir.path]
-
-        // Don't capture stderr unless we need it - this saves file descriptors
-        process.standardError = FileHandle.nullDevice
-        process.standardOutput = FileHandle.nullDevice
-
-        try process.run()
-        process.waitUntilExit()
-
-        if process.terminationStatus != 0 {
-            throw ArchiveError.entryNotFound(entry.path)
-        }
-
-        // Read the extracted file
-        let extractedFile = tempDir.appendingPathComponent(URL(fileURLWithPath: entry.path).lastPathComponent)
-        guard FileManager.default.fileExists(atPath: extractedFile.path) else {
-            throw ArchiveError.entryNotFound(entry.path)
-        }
-
-        return try Data(contentsOf: extractedFile)
+        // Use our own ZIP reader - no external dependencies!
+        return try ZIPReader.extractData(from: url, fileName: entry.path)
     }
 
     public func extractAll(from url: URL, to destination: URL) throws {

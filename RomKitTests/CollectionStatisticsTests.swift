@@ -196,11 +196,11 @@ struct CollectionStatisticsTests {
         // Verify report structure
         #expect(textReport.contains("COLLECTION STATISTICS REPORT"))
         #expect(textReport.contains("OVERALL SUMMARY"))
-        #expect(textReport.contains("Total Games:"))
-        #expect(textReport.contains("Complete:"))
-        #expect(textReport.contains("Health Score:"))
-        #expect(textReport.contains("ROM STATISTICS"))
-        #expect(textReport.contains("STORAGE USAGE"))
+        #expect(textReport.contains("Games:"))
+        #expect(textReport.contains("complete"))
+        #expect(textReport.contains("Health:"))
+        #expect(textReport.contains("ROMs:"))
+        #expect(textReport.contains("Size:"))
         #expect(textReport.contains("TOP MANUFACTURERS"))
 
         print("Statistics Text Report:")
@@ -219,9 +219,9 @@ struct CollectionStatisticsTests {
 
         // Verify HTML structure
         #expect(htmlReport.contains("<!DOCTYPE html>"))
-        #expect(htmlReport.contains("<title>Collection Statistics</title>"))
-        #expect(htmlReport.contains("Collection Statistics"))
-        #expect(htmlReport.contains("Collection Completion"))
+        #expect(htmlReport.contains("<title>Collection Statistics Report</title>"))
+        #expect(htmlReport.contains("Collection Statistics Report"))
+        #expect(htmlReport.contains("Game Completion"))
         #expect(htmlReport.contains("Health Score"))
         #expect(htmlReport.contains("canvas id=\"yearChart\""))
         #expect(htmlReport.contains("Top Manufacturers"))

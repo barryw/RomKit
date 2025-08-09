@@ -46,14 +46,69 @@ let report = romkit.generateAuditReport(from: scanResult)
 print("Missing ROMs: \(report.missingROMs.count)")
 ```
 
-##### `rebuildSet(from:to:style:)`
+##### `rebuild(from:to:style:)`
 Rebuilds ROM sets in specified format.
 
 ```swift
-try await romkit.rebuildSet(
-    from: sourceURL,
-    to: destinationURL,
+try await romkit.rebuild(
+    from: "/path/to/source",
+    to: "/path/to/destination",
     style: .split  // or .merged, .nonMerged
+)
+```
+
+##### `generateFixdat(from:to:format:)`
+Generates a fixdat containing only missing ROMs.
+
+```swift
+try romkit.generateFixdat(
+    from: scanResult,
+    to: "/path/to/missing.xml",
+    format: .logiqxXML  // or .clrmamepro
+)
+```
+
+##### `generateMissingReport(from:options:)`
+Creates a detailed report of missing ROMs.
+
+```swift
+let report = try romkit.generateMissingReport(
+    from: scanResult,
+    options: MissingReportOptions(
+        groupByParent: true,
+        includeClones: true
+    )
+)
+let html = report.generateHTML()
+```
+
+##### `generateStatistics(from:)`
+Generates collection statistics and health score.
+
+```swift
+let stats = try romkit.generateStatistics(from: scanResult)
+print("Health Score: \(stats.healthScore)%")
+print("Completion: \(stats.completionPercentage)%")
+```
+
+##### `renameROMs(in:dryRun:)`
+Renames ROM files according to DAT file.
+
+```swift
+let result = try await romkit.renameROMs(
+    in: "/path/to/roms",
+    dryRun: true  // Preview changes first
+)
+```
+
+##### `organizeCollection(from:to:style:)`
+Organizes ROMs into folder structures.
+
+```swift
+let result = try await romkit.organizeCollection(
+    from: "/path/to/source",
+    to: "/path/to/organized",
+    style: .byManufacturer  // or .byYear, .byGenre, etc.
 )
 ```
 

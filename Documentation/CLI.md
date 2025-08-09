@@ -125,7 +125,143 @@ romkit verify ~/mame/roms ~/mame/mame0256.xml --stop-on-error
 
 ---
 
-### `index` - Manage ROM Index (Coming Soon)
+### `fixdat` - Generate Fixdat Files
+
+Creates DAT files containing only the ROMs missing from your collection.
+
+```bash
+romkit fixdat <rom-directory> <dat-file> <output-path> [options]
+```
+
+#### Options:
+- `-f, --format <format>` - Output format: `logiqx` or `clrmamepro` (default: logiqx)
+- `--include-devices` - Include device ROMs in fixdat
+- `--include-bios` - Include BIOS ROMs in fixdat
+- `--include-clones` - Include clone games in fixdat
+- `--show-progress` - Display progress during analysis
+- `-v, --verbose` - Show detailed information
+
+#### Examples:
+
+```bash
+# Generate Logiqx XML fixdat
+romkit fixdat ~/roms ~/mame.dat ~/missing.xml
+
+# Generate ClrMamePro format
+romkit fixdat ~/roms ~/mame.dat ~/missing.dat --format clrmamepro
+
+# Include all ROM types
+romkit fixdat ~/roms ~/mame.dat ~/missing.xml \
+  --include-devices --include-bios --include-clones
+```
+
+---
+
+### `missing` - Generate Missing ROM Reports
+
+Creates detailed HTML or text reports showing missing ROMs.
+
+```bash
+romkit missing <rom-directory> <dat-file> [options]
+```
+
+#### Options:
+- `-o, --output <file>` - Output file path (without extension)
+- `-f, --format <format>` - Report format: `html`, `text`, or `both` (default: both)
+- `--group-by-parent` - Group clone games with parents
+- `--include-devices` - Include device ROMs
+- `--include-bios` - Include BIOS ROMs
+- `--include-clones` - Include clone games
+- `--show-alternatives` - Show alternative ROM sources
+- `--sort-by <field>` - Sort by: `name`, `missing`, `manufacturer`, `year`
+- `--show-progress` - Display progress
+- `-v, --verbose` - Verbose output
+
+#### Examples:
+
+```bash
+# Generate both HTML and text reports
+romkit missing ~/roms ~/mame.dat -o missing_report
+
+# HTML only, grouped by parent
+romkit missing ~/roms ~/mame.dat -o report -f html --group-by-parent
+
+# Sort by most missing ROMs
+romkit missing ~/roms ~/mame.dat --sort-by missing
+```
+
+---
+
+### `stats` - Collection Statistics
+
+Generates comprehensive statistics and health reports for your collection.
+
+```bash
+romkit stats <rom-directory> <dat-file> [options]
+```
+
+#### Options:
+- `-o, --output <file>` - Output file path (without extension)
+- `-f, --format <format>` - Format: `html`, `text`, `console`, or `all` (default: console)
+- `--by-year` - Show breakdown by year
+- `--by-manufacturer` - Show breakdown by manufacturer
+- `--show-chd` - Show CHD statistics
+- `--show-issues` - Show detected issues
+- `--show-progress` - Display progress
+- `-v, --verbose` - Verbose output
+
+#### Examples:
+
+```bash
+# Display statistics in console
+romkit stats ~/roms ~/mame.dat
+
+# Generate HTML report with full details
+romkit stats ~/roms ~/mame.dat -o stats -f html \
+  --by-year --by-manufacturer --show-issues
+
+# Quick health check
+romkit stats ~/roms ~/mame.dat | grep "Health Score"
+```
+
+---
+
+### `organize` - Organize ROM Collection
+
+Organizes and renames ROM files according to various schemes.
+
+```bash
+romkit organize <source> <dat-file> [options]
+```
+
+#### Options:
+- `-d, --destination <dir>` - Destination directory for organized ROMs
+- `-s, --style <style>` - Organization style: `flat`, `manufacturer`, `year`, `genre`, `alphabet`, `parent-clone`, `status`
+- `--rename` - Rename ROMs according to DAT file
+- `--move` - Move files instead of copying
+- `--clean-names` - Remove region codes and version numbers
+- `-n, --dry-run` - Preview changes without applying
+- `--preserve-originals` - Keep original files when renaming
+- `--show-progress` - Display progress
+- `-v, --verbose` - Verbose output
+
+#### Examples:
+
+```bash
+# Organize by manufacturer
+romkit organize ~/roms ~/mame.dat -d ~/organized -s manufacturer
+
+# Rename ROMs in place
+romkit organize ~/roms ~/mame.dat --rename --dry-run
+
+# Full organization with renaming
+romkit organize ~/roms ~/mame.dat -d ~/organized \
+  -s year --rename --clean-names --show-progress
+```
+
+---
+
+### `index` - Manage ROM Index
 
 Manages the SQLite index used for fast ROM lookups across multiple directories.
 

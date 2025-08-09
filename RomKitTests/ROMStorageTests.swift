@@ -175,9 +175,9 @@ struct ROMStorageTests {
     // MARK: - Rebuild Tests
 
     @Test func testRebuildFromLooseROMs() async throws {
-        // Create a directory with loose, randomly named ROM files
-        let sourceDir = FileManager.default.temporaryDirectory.appendingPathComponent("loose_roms")
-        let targetDir = FileManager.default.temporaryDirectory.appendingPathComponent("rebuilt_roms")
+        // Create a directory with ZIP files containing ROM files
+        let sourceDir = FileManager.default.temporaryDirectory.appendingPathComponent("loose_roms_\(UUID())")
+        let targetDir = FileManager.default.temporaryDirectory.appendingPathComponent("rebuilt_roms_\(UUID())")
 
         try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: targetDir, withIntermediateDirectories: true)
@@ -187,13 +187,13 @@ struct ROMStorageTests {
             try? FileManager.default.removeItem(at: targetDir)
         }
 
-        // Create loose ROM files with random names
+        // Create ZIP files with test ROMs
         let testSet = Self.createTestROMSet()
-        for (name, rom) in testSet.allROMs {
-            // Save with scrambled names to simulate found ROMs
-            let scrambledName = "found_\(UUID().uuidString)_\(name)"
-            let path = sourceDir.appendingPathComponent(scrambledName)
-            try rom.write(to: path)
+
+        // Create a ZIP for each game
+        for game in ["testbios", "parentgame", "clonegame"] {
+            let zipPath = sourceDir.appendingPathComponent("\(game).zip")
+            try testSet.createZIP(for: game, at: zipPath, style: .split)
         }
 
         // Load DAT file
