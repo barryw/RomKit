@@ -244,7 +244,7 @@ struct RomKitErrorsTests {
 
         // Test batch append
         var newCollection = ErrorCollection()
-        let errors: [RomKitErrorProtocol] = [
+        let errors: [any RomKitErrorProtocol] = [
             FileSystemError.diskFull,
             ScanningError.noResultsFound
         ]
