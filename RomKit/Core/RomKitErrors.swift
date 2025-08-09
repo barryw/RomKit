@@ -92,7 +92,7 @@ public enum FileSystemError: RomKitErrorProtocol {
     case insufficientPermissions(URL)
     case diskFull
     case fileCorrupted(URL, reason: String?)
-    case writeFailed(URL, underlyingError: Error?)
+    case writeFailed(URL, underlyingError: (any Error)?)
 
     public var category: ErrorCategory { .fileSystem }
 
@@ -307,7 +307,7 @@ public enum ArchiveHandlingError: RomKitErrorProtocol {
 
 public enum DatabaseError: RomKitErrorProtocol {
     case connectionFailed(String)
-    case queryFailed(String, underlyingError: Error?)
+    case queryFailed(String, underlyingError: (any Error)?)
     case corruptedDatabase
     case migrationFailed(from: Int, to: Int, reason: String)
     case transactionFailed(String)

@@ -259,7 +259,7 @@ public class TorrentZip {
     ) throws -> TorrentZipVerificationResult {
         var compliant: [URL] = []
         var nonCompliant: [URL] = []
-        var errors: [(URL, Error)] = []
+        var errors: [(URL, any Error)] = []
 
         let enumerator = FileManager.default.enumerator(
             at: url,
@@ -346,7 +346,7 @@ public class TorrentZip {
 public struct TorrentZipVerificationResult: Sendable {
     public let compliant: [URL]
     public let nonCompliant: [URL]
-    public let errors: [(URL, Error)]
+    public let errors: [(URL, any Error)]
 
     public var summary: String {
         """
