@@ -74,12 +74,15 @@ public actor SQLiteROMIndex {
             throw IndexError.databaseError(lastErrorMessage())
         }
 
-        // Use safer settings for testing
+        // Optimized settings for better performance
         try await execute("PRAGMA journal_mode = WAL")
         try await execute("PRAGMA synchronous = NORMAL")
-        try await execute("PRAGMA cache_size = 1000")  // Reduced cache size
+        try await execute("PRAGMA cache_size = 10000")  // Larger cache for better performance
         try await execute("PRAGMA temp_store = MEMORY")
         try await execute("PRAGMA busy_timeout = 5000")  // 5 second timeout
+        try await execute("PRAGMA mmap_size = 268435456")  // 256MB memory map
+        try await execute("PRAGMA page_size = 4096")  // Optimal page size
+        try await execute("PRAGMA wal_autocheckpoint = 10000")  // Less frequent checkpoints
     }
 
     private func createTables() async throws {
@@ -139,7 +142,14 @@ public actor SQLiteROMIndex {
     }
 
     /// Index a single directory
-    public func indexDirectory(_ directory: URL, showProgress: Bool = false) async throws {
+    public func indexDirectory(_ directory: URL, showProgress: Bool = false, useOptimized: Bool = true) async throws {
+        // Use optimized version by default for better performance
+        if useOptimized {
+            try await indexDirectoryOptimized(directory, showProgress: showProgress)
+            return
+        }
+        
+        // Original implementation (kept for compatibility)
         let scanner = ConcurrentScanner()
         let results = try await scanner.scanDirectory(
             at: directory,
@@ -213,7 +223,7 @@ public actor SQLiteROMIndex {
         }
     }
 
-    private func getArchiveHandler(for url: URL) -> (any ArchiveHandler)? {
+    internal nonisolated func getArchiveHandler(for url: URL) -> (any ArchiveHandler)? {
         switch url.pathExtension.lowercased() {
         case "zip":
             return ParallelZIPArchiveHandler()
@@ -224,7 +234,7 @@ public actor SQLiteROMIndex {
         }
     }
 
-    private func shouldIndexEntry(_ entry: ArchiveEntry) -> Bool {
+    internal nonisolated func shouldIndexEntry(_ entry: ArchiveEntry) -> Bool {
         let filename = URL(fileURLWithPath: entry.path).lastPathComponent
         return !filename.hasPrefix(".") && filename.lowercased() != "readme.txt"
     }
@@ -589,7 +599,7 @@ public actor SQLiteROMIndex {
         )
     }
 
-    private func lastErrorMessage() -> String {
+    internal func lastErrorMessage() -> String {
         if let errorMessage = sqlite3_errmsg(db) {
             return String(cString: errorMessage)
         }
