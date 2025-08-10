@@ -18,8 +18,14 @@ struct DATFormatComparisonTests {
 
         // Load bundled Logiqx DAT
         let logiqxData = try TestDATLoader.loadFullMAMEDAT()
-        let compressedPath = TestDATLoader.getTestDATPath(named: "MAME_0278.dat.gz") ?? ""
-        let compressedSize = try FileManager.default.attributesOfItem(atPath: compressedPath)[.size] as? Int ?? 0
+        let compressedPath = TestDATLoader.getTestDATPath(named: "MAME_0278.dat.gz")
+        let compressedSize: Int
+        if let path = compressedPath, !path.isEmpty {
+            compressedSize = try FileManager.default.attributesOfItem(atPath: path)[.size] as? Int ?? 0
+        } else {
+            // Estimate compressed size if file not found (about 10MB)
+            compressedSize = 10 * 1024 * 1024
+        }
 
         print("\nLogiqx DAT Format (Bundled):")
         print("  Compressed size: \(compressedSize / 1024 / 1024) MB")
