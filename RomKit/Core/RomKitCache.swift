@@ -33,31 +33,77 @@ public class RomKitCache {
         let modDate = attributes?[.modificationDate] as? Date ?? Date(timeIntervalSince1970: 0)
         let timestamp = Int(modDate.timeIntervalSince1970)
 
-        let path = url.path.replacingOccurrences(of: "/", with: "_")
-        return "\(path)_\(timestamp).cache"
+        // Sanitize path for use as filename
+        let path = url.path
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: ":", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+        
+        // Ensure reasonable filename length
+        let truncatedPath = String(path.prefix(200))
+        return "\(truncatedPath)_\(timestamp).cache"
     }
 
     /// Check if cached version exists and is valid
     public func hasCached(for datURL: URL) -> Bool {
-        // DISABLED: Caching is currently disabled
-        return false
+        let key = cacheKey(for: datURL)
+        let cacheFile = cacheDirectory.appendingPathComponent(key)
+        return FileManager.default.fileExists(atPath: cacheFile.path)
     }
 
-    /// Save parsed DAT to cache
+    /// Save parsed DAT to cache (synchronous for testing)
     public func save(_ datFile: MAMEDATFile, for datURL: URL) {
-        // DISABLED: Caching is currently disabled due to issues with encoding type-erased properties
-        // The MAMEGame struct contains `items: [any ROMItem]` and `metadata: any GameMetadata`
-        // which cannot be properly encoded/decoded without losing type information.
-        // This was causing "Fatal error: load from misaligned raw pointer" crashes.
-        // TODO: Implement proper caching with concrete types or custom encoding/decoding
-        return
+        queue.sync(flags: .barrier) {
+            let key = self.cacheKey(for: datURL)
+            let cacheFile = self.cacheDirectory.appendingPathComponent(key)
+            
+            let cached = CachedDAT(
+                version: 1,
+                sourceURL: datURL.path,
+                parseDate: Date(),
+                datFile: datFile
+            )
+            
+            do {
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = .sortedKeys
+                let data = try encoder.encode(cached)
+                try data.write(to: cacheFile)
+                
+                // Clean old cache files
+                self.cleanOldCaches(except: key)
+            } catch {
+                // Silently fail - caching is optional
+                print("Cache save failed: \(error)")
+            }
+        }
     }
 
     /// Load cached DAT
     public func load(for datURL: URL) -> MAMEDATFile? {
-        // DISABLED: Caching is currently disabled due to issues with decoding type-erased properties
-        // See comment in save() method for details
-        return nil
+        var result: MAMEDATFile?
+        
+        queue.sync {
+            let key = cacheKey(for: datURL)
+            let cacheFile = cacheDirectory.appendingPathComponent(key)
+            
+            guard FileManager.default.fileExists(atPath: cacheFile.path) else {
+                return
+            }
+            
+            do {
+                let data = try Data(contentsOf: cacheFile)
+                let decoder = JSONDecoder()
+                let cached = try decoder.decode(CachedDAT.self, from: data)
+                result = cached.datFile
+            } catch {
+                // Cache load failed - delete corrupt cache
+                try? FileManager.default.removeItem(at: cacheFile)
+                print("Cache load failed: \(error)")
+            }
+        }
+        
+        return result
     }
 
     /// Clean old cache files for the same source

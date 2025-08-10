@@ -186,6 +186,14 @@ struct ROMIndexManagerSimpleTests {
 
         // Verify ROMs from source1 are gone
         let roms = await manager.findByName(pattern: "%s1%")
+        if !roms.isEmpty {
+            print("DEBUG: Found ROMs after removal:")
+            for rom in roms {
+                print("  - \(rom.name) at \(rom.location)")
+            }
+            print("Expected path prefix: \(source1.path)")
+            print("Resolved path: \(source1.resolvingSymlinksInPath().path)")
+        }
         #expect(roms.isEmpty)
 
         // Verify ROMs from source2 still exist

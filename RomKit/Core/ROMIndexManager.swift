@@ -423,10 +423,37 @@ extension SQLiteROMIndex {
 
     /// Remove a source and return count of removed entries
     public func removeSource(_ source: URL) async throws -> Int {
-        let path = source.path
+        // Resolve symlinks to get the actual path
+        let resolvedPath = source.resolvingSymlinksInPath().path
+        let originalPath = source.path
+        
+        // On macOS, /var is symlinked to /private/var
+        // We need to check for both variations
+        var pathsToCheck = [originalPath, resolvedPath]
+        
+        // Add /private prefix variant if path starts with /var
+        if originalPath.hasPrefix("/var/") {
+            pathsToCheck.append("/private" + originalPath)
+        }
+        if resolvedPath.hasPrefix("/var/") {
+            pathsToCheck.append("/private" + resolvedPath)
+        }
+        
+        // Remove /private prefix variant if path starts with /private/var
+        if originalPath.hasPrefix("/private/var/") {
+            pathsToCheck.append(String(originalPath.dropFirst(8))) // Remove "/private"
+        }
+        if resolvedPath.hasPrefix("/private/var/") {
+            pathsToCheck.append(String(resolvedPath.dropFirst(8))) // Remove "/private"
+        }
+        
+        // Remove duplicates
+        pathsToCheck = Array(Set(pathsToCheck))
 
-        // Get count before deletion
-        let countQuery = "SELECT COUNT(*) FROM roms WHERE location_path LIKE ? || '%'"
+        // Build WHERE clause for all path variants
+        let whereConditions = pathsToCheck.map { _ in "location_path LIKE ? || '%'" }.joined(separator: " OR ")
+        let countQuery = "SELECT COUNT(*) FROM roms WHERE " + whereConditions
+        
         let count = await withCheckedContinuation { continuation in
             var statement: OpaquePointer?
             guard sqlite3_prepare_v2(self.db, countQuery, -1, &statement, nil) == SQLITE_OK else {
@@ -435,7 +462,10 @@ extension SQLiteROMIndex {
             }
             defer { sqlite3_finalize(statement) }
 
-            sqlite3_bind_text(statement, 1, path, -1, nil)
+            // Bind all path variants
+            for (index, path) in pathsToCheck.enumerated() {
+                sqlite3_bind_text(statement, Int32(index + 1), path, -1, nil)
+            }
 
             if sqlite3_step(statement) == SQLITE_ROW {
                 continuation.resume(returning: Int(sqlite3_column_int(statement, 0)))
@@ -444,9 +474,13 @@ extension SQLiteROMIndex {
             }
         }
 
-        // Delete entries
-        try await execute("DELETE FROM roms WHERE location_path LIKE ? || '%'", parameters: [path])
-        try await execute("DELETE FROM sources WHERE path = ?", parameters: [path])
+        // Delete entries - check all path variants
+        let deleteRomsQuery = "DELETE FROM roms WHERE " + whereConditions
+        try await execute(deleteRomsQuery, parameters: pathsToCheck)
+
+        let sourceConditions = pathsToCheck.map { _ in "path = ?" }.joined(separator: " OR ")
+        let deleteSourcesQuery = "DELETE FROM sources WHERE " + sourceConditions
+        try await execute(deleteSourcesQuery, parameters: pathsToCheck)
         await updateStatistics()
 
         return count
