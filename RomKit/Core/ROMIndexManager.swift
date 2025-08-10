@@ -181,6 +181,52 @@ public actor ROMIndexManager {
 
         return sorted.first
     }
+    
+    /// Load all indexed ROMs into memory for fast batch lookups
+    public func loadIndexIntoMemory() async -> [String: [IndexedROM]] {
+        // Get all ROMs from the index
+        let allROMs = await index.getAllROMs()
+        
+        // Group by CRC32 for fast lookups
+        var romsByCRC: [String: [IndexedROM]] = [:]
+        for rom in allROMs {
+            let crc = rom.crc32.lowercased()
+            if romsByCRC[crc] == nil {
+                romsByCRC[crc] = []
+            }
+            romsByCRC[crc]?.append(rom)
+        }
+        
+        return romsByCRC
+    }
+    
+    /// Find best sources for multiple ROMs using in-memory index
+    public nonisolated func findBestSourcesBatch(for roms: [ROM], using memoryIndex: [String: [IndexedROM]]) -> [IndexedROM?] {
+        var results: [IndexedROM?] = []
+        
+        for rom in roms {
+            if let crc = rom.crc?.lowercased(),
+               let locations = memoryIndex[crc] {
+                // Sort by preference: local files > local archives > remote
+                let sorted = locations.sorted { lhs, rhs in
+                    switch (lhs.location, rhs.location) {
+                    case (.file, _): return true
+                    case (_, .file): return false
+                    case (.archive, .remote): return true
+                    case (.remote, .archive): return false
+                    default:
+                        // Same type, prefer newer
+                        return lhs.lastModified > rhs.lastModified
+                    }
+                }
+                results.append(sorted.first)
+            } else {
+                results.append(nil)
+            }
+        }
+        
+        return results
+    }
 
     /// Find all duplicate ROMs across sources
     public func findDuplicates(minCopies: Int = 2) async -> [DuplicateInfo] {
@@ -426,11 +472,11 @@ extension SQLiteROMIndex {
         // Resolve symlinks to get the actual path
         let resolvedPath = source.resolvingSymlinksInPath().path
         let originalPath = source.path
-        
+
         // On macOS, /var is symlinked to /private/var
         // We need to check for both variations
         var pathsToCheck = [originalPath, resolvedPath]
-        
+
         // Add /private prefix variant if path starts with /var
         if originalPath.hasPrefix("/var/") {
             pathsToCheck.append("/private" + originalPath)
@@ -438,7 +484,7 @@ extension SQLiteROMIndex {
         if resolvedPath.hasPrefix("/var/") {
             pathsToCheck.append("/private" + resolvedPath)
         }
-        
+
         // Remove /private prefix variant if path starts with /private/var
         if originalPath.hasPrefix("/private/var/") {
             pathsToCheck.append(String(originalPath.dropFirst(8))) // Remove "/private"
@@ -446,14 +492,14 @@ extension SQLiteROMIndex {
         if resolvedPath.hasPrefix("/private/var/") {
             pathsToCheck.append(String(resolvedPath.dropFirst(8))) // Remove "/private"
         }
-        
+
         // Remove duplicates
         pathsToCheck = Array(Set(pathsToCheck))
 
         // Build WHERE clause for all path variants
         let whereConditions = pathsToCheck.map { _ in "location_path LIKE ? || '%'" }.joined(separator: " OR ")
         let countQuery = "SELECT COUNT(*) FROM roms WHERE " + whereConditions
-        
+
         let count = await withCheckedContinuation { continuation in
             var statement: OpaquePointer?
             guard sqlite3_prepare_v2(self.db, countQuery, -1, &statement, nil) == SQLITE_OK else {

@@ -192,7 +192,7 @@ extension Index {
                 print("\n\(index + 1). \(source.path)")
 
                 if verbose {
-                    print("   Last scan: \(formatDate(source.lastScan))")
+                    print("   Last scan: \(formatIndexDate(source.lastScan))")
                     print("   ROM count: \(source.romCount)")
                     print("   Total size: \(formatBytes(source.totalSize))")
 
@@ -432,7 +432,7 @@ extension Index {
                     for (index, location) in romInfo.locations.enumerated() {
                         print("  \(index + 1). \(location.path)")
                         print("     Type: \(location.type)")
-                        print("     Verified: \(formatDate(location.lastVerified))")
+                        print("     Verified: \(formatIndexDate(location.lastVerified))")
                     }
                 } else {
                     print("\n📍 Locations (showing first 3 of \(romInfo.locations.count)):")
@@ -526,7 +526,7 @@ private func formatBytes(_ bytes: UInt64) -> String {
     return String(format: "%.2f %@", size, units[unitIndex])
 }
 
-private func formatDate(_ date: Date) -> String {
+private func formatIndexDate(_ date: Date) -> String {
     let formatter = DateFormatter()
     formatter.dateStyle = .medium
     formatter.timeStyle = .short

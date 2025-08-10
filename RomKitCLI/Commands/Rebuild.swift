@@ -54,8 +54,17 @@ struct Rebuild: AsyncParsableCommand, Sendable {
     @Option(name: [.customShort("s"), .customLong("style")], help: "Rebuild style: split, merged, or non-merged")
     var style: RebuildStyle = .split
 
-    @Flag(name: .shortAndLong, help: "Only rebuild missing or incomplete sets")
-    var missing = false
+    @Flag(name: .shortAndLong, help: "Update mode: Only rebuild missing or incomplete sets")
+    var update = false
+
+    @Flag(name: .long, help: "Allow building incomplete ROM sets (default: complete sets only)")
+    var allowIncomplete = false
+
+    @Flag(name: .long, help: "Include non-working games (default: working games only)")
+    var includeNonWorking = false
+
+    @Flag(name: .long, help: "Include games with bad dumps (default: good dumps only)")
+    var includeBadDumps = false
 
     @Flag(name: .shortAndLong, inversion: .prefixedNo, help: "Verify CRC32 checksums during rebuild")
     var verify = true
@@ -73,7 +82,7 @@ struct Rebuild: AsyncParsableCommand, Sendable {
     var dryRun = false
 
     @Option(name: .shortAndLong, help: "Number of parallel operations")
-    var parallel: Int = 4
+    var parallel: Int = 10
 
     mutating func run() async throws {
         RomKitCLI.printHeader("🔨 RomKit ROM Rebuild")
@@ -84,7 +93,7 @@ struct Rebuild: AsyncParsableCommand, Sendable {
 
         // Load DAT and create index
         let datFile = try await loadDATFile(from: inputs.datURL)
-        let indexManager = try await setupIndexManager(sourceURLs: inputs.sourceURLs)
+        let indexManager = try await setupIndexManager(sourceURLs: inputs.sourceURLs, outputURL: inputs.outputURL)
 
         // Analyze requirements
         let requirements = try await analyzeRequirements(
@@ -162,21 +171,24 @@ struct Rebuild: AsyncParsableCommand, Sendable {
         print("📄 DAT File: \(datURL.lastPathComponent)")
         print("📂 Output: \(outputURL.path)")
         if sources.isEmpty {
-            print("🗂️ Sources: Using indexed directories")
+            print("🗂️ Sources: Using all indexed ROM sources")
         } else {
-            print("🗂️ Sources: \(sources.count) directories")
+            print("🗂️ Sources: \(sources.count) new director\(sources.count == 1 ? "y" : "ies") to index")
         }
         print("🎯 Style: \(style)")
+        print("🔄 Mode: \(update ? "Update existing sets" : "Full rebuild")")
+        print("📦 Sets: \(allowIncomplete ? "Allow incomplete" : "Complete only")")
+        print("🎮 Games: \(includeNonWorking ? "All" : "Working only")")
+        print("💾 ROMs: \(includeBadDumps ? "All dumps" : "Good dumps only")")
         print("✅ Verify: \(verify)")
         print("⚡ GPU: \(gpu)")
+        print("🔄 Parallel: \(parallel) workers")
         if dryRun {
             print("🚫 DRY RUN MODE - No files will be modified")
         }
     }
 
-    private func setupIndexManager(sourceURLs: [URL]) async throws -> ROMIndexManager {
-        RomKitCLI.printSection("Indexing Source Directories")
-
+    private func setupIndexManager(sourceURLs: [URL], outputURL: URL) async throws -> ROMIndexManager {
         // Use cache file if specified, otherwise let ROMIndexManager use its default
         let indexPath: URL?
         if let cacheFile = cacheFile {
@@ -189,18 +201,60 @@ struct Rebuild: AsyncParsableCommand, Sendable {
         let indexManager = try await ROMIndexManager(databasePath: indexPath)
 
         if sourceURLs.isEmpty {
-            // No sources specified, use existing indexed sources
+            // No sources specified, use ALL existing indexed sources
+            RomKitCLI.printSection("ROM Sources")
+
             let existingSources = await indexManager.listSources()
             if existingSources.isEmpty {
                 throw ValidationError("No indexed sources found. Use 'romkit index add' to index directories first.")
             }
-            print("📂 Using \(existingSources.count) indexed source(s):")
-            for source in existingSources {
-                print("   • \(source.path)")
+
+            // Filter out the output directory from sources to avoid circular dependency
+            let outputPathStandardized = outputURL.standardizedFileURL.path
+            let filteredSources = existingSources.filter { source in
+                let sourcePath = URL(fileURLWithPath: source.path).standardizedFileURL.path
+                return sourcePath != outputPathStandardized
+            }
+
+            if filteredSources.isEmpty {
+                throw ValidationError("No valid source directories found. The output directory cannot be used as a source.")
+            }
+
+            // Check if output directory is indexed
+            let outputIsIndexed = existingSources.contains { source in
+                let sourcePath = URL(fileURLWithPath: source.path).standardizedFileURL.path
+                return sourcePath == outputPathStandardized
+            }
+
+            print("📂 Using \(filteredSources.count) indexed source\(filteredSources.count == 1 ? "" : "s")")
+            for source in filteredSources {
+                print("   • \(source.path) (\(source.romCount.formatted()) ROMs)")
+            }
+
+            if outputIsIndexed {
+                print("   ⚠️ Excluding output directory from sources")
             }
         } else {
             // Add specified sources to the index
-            for source in sourceURLs {
+            RomKitCLI.printSection("Indexing New Source Directories")
+
+            // Check if any source matches the output directory
+            let outputPathStandardized = outputURL.standardizedFileURL.path
+            let filteredNewSources = sourceURLs.filter { sourceURL in
+                let sourcePath = sourceURL.standardizedFileURL.path
+                if sourcePath == outputPathStandardized {
+                    print("⚠️  Skipping source \(sourceURL.path) - matches output directory")
+                    return false
+                }
+                return true
+            }
+
+            if filteredNewSources.isEmpty {
+                throw ValidationError("No valid source directories. The output directory cannot be used as a source.")
+            }
+
+            print("📦 Adding \(filteredNewSources.count) source\(filteredNewSources.count == 1 ? "" : "s") to index...")
+            for source in filteredNewSources {
                 try await indexManager.addSource(source, showProgress: showProgress)
             }
         }
@@ -212,15 +266,11 @@ struct Rebuild: AsyncParsableCommand, Sendable {
     }
 
     private func printIndexAnalysis(_ analysis: IndexAnalysis) {
-        print("✅ Indexed \(analysis.totalROMs) ROMs from \(analysis.sources.count) sources")
-        print("   Unique CRCs: \(analysis.uniqueROMs)")
-        print("   Duplicates: \(analysis.totalDuplicates)")
-
-        if !analysis.recommendations.isEmpty {
-            print("\n💡 Recommendations:")
-            for recommendation in analysis.recommendations {
-                print("   • \(recommendation)")
-            }
+        print("\n📊 Index Summary:")
+        print("   • Total ROMs: \(analysis.totalROMs.formatted())")
+        print("   • Unique CRCs: \(analysis.uniqueROMs.formatted())")
+        if analysis.totalDuplicates > 0 {
+            print("   • Duplicates: \(analysis.totalDuplicates.formatted())")
         }
     }
 
@@ -229,19 +279,34 @@ struct Rebuild: AsyncParsableCommand, Sendable {
         outputURL: URL,
         indexManager: ROMIndexManager
     ) async throws -> RebuildRequirements {
-        RomKitCLI.printSection("Analyzing Rebuild Requirements")
         let requirements = try await analyzeRebuildRequirements(
             datFile: datFile,
             outputDirectory: outputURL,
             indexManager: indexManager,
-            onlyMissing: missing
+            updateMode: update,
+            allowIncomplete: allowIncomplete,
+            includeNonWorking: includeNonWorking,
+            includeBadDumps: includeBadDumps,
+            showProgress: showProgress
         )
 
-        print("📊 Rebuild Requirements:")
-        print("   Games to rebuild: \(requirements.gamesToRebuild.count)")
-        print("   ROMs needed: \(requirements.totalROMs)")
-        print("   ROMs available: \(requirements.availableROMs)")
-        print("   ROMs missing: \(requirements.missingROMs)")
+        print("\n📊 Build Summary:")
+        print("   • Games to rebuild: \(requirements.gamesToRebuild.count.formatted())")
+        if !requirements.gamesToRebuild.isEmpty {
+            let completeGames = requirements.gamesToRebuild.filter { $0.missingROMs.isEmpty }.count
+            let incompleteGames = requirements.gamesToRebuild.count - completeGames
+            if completeGames > 0 {
+                print("     - Complete: \(completeGames.formatted())")
+            }
+            if incompleteGames > 0 {
+                print("     - Partial: \(incompleteGames.formatted())")
+            }
+        }
+        print("   • Total ROMs: \(requirements.totalROMs.formatted())")
+        print("     - Available: \(requirements.availableROMs.formatted())")
+        if requirements.missingROMs > 0 {
+            print("     - Missing: \(requirements.missingROMs.formatted())")
+        }
 
         return requirements
     }
@@ -254,7 +319,7 @@ struct Rebuild: AsyncParsableCommand, Sendable {
     ) async throws {
 
         if requirements.missingROMs > 0 {
-            print("\n⚠️ Warning: \(requirements.missingROMs) ROMs are not available in source directories")
+            print("\n⚠️  Some ROMs are not available in source directories")
         }
 
         if dryRun {
@@ -284,121 +349,17 @@ struct Rebuild: AsyncParsableCommand, Sendable {
     }
 
     private func loadDATFile(from url: URL) async throws -> any DATFormat {
-        let fileContent = try String(contentsOf: url, encoding: .utf8)
-        let data = Data(fileContent.utf8)
+        RomKitCLI.printSection("Loading DAT File")
 
-        // Try MAME parser first
-        let parser = MAMEFastParser()
-        if let mameDatFile = try? await parser.parseXMLParallel(data: data) {
-            return mameDatFile
-        }
+        let data = try Data(contentsOf: url)
+        let sizeInMB = Double(data.count) / 1_048_576
+        print("📄 File size: \(String(format: "%.1f", sizeInMB)) MB")
 
-        // Fall back to Logiqx
         let logiqxParser = LogiqxDATParser()
-        return try logiqxParser.parse(data: data)
-    }
+        let datFile = try logiqxParser.parse(data: data)
+        print("✅ Loaded \(datFile.games.count) games")
 
-    private func convertMAMEToGeneric(_ mameDAT: MAMEDATFile) -> DATFile {
-        let games = mameDAT.games.compactMap { gameEntry -> Game? in
-            let roms = gameEntry.items.map { item in
-                ROM(
-                    name: item.name,
-                    size: item.size,
-                    crc: item.checksums.crc32,
-                    sha1: item.checksums.sha1,
-                    md5: item.checksums.md5,
-                    status: item.status,
-                    merge: item.attributes.merge
-                )
-            }
-
-            var cloneOf: String?
-            var romOf: String?
-
-            if let mameMetadata = gameEntry.metadata as? MAMEGameMetadata {
-                cloneOf = mameMetadata.cloneOf
-                romOf = mameMetadata.romOf
-            }
-
-            return Game(
-                name: gameEntry.name,
-                description: gameEntry.description,
-                cloneOf: cloneOf,
-                romOf: romOf,
-                sampleOf: nil,
-                year: gameEntry.metadata.year,
-                manufacturer: gameEntry.metadata.manufacturer,
-                roms: roms,
-                disks: []
-            )
-        }
-
-        return DATFile(
-            name: mameDAT.metadata.name,
-            description: mameDAT.metadata.description,
-            version: mameDAT.formatVersion,
-            author: nil,
-            games: games
-        )
-    }
-
-    private func analyzeRebuildRequirements(
-        datFile: any DATFormat,
-        outputDirectory: URL,
-        indexManager: ROMIndexManager,
-        onlyMissing: Bool
-    ) async throws -> RebuildRequirements {
-        var requirements = RebuildRequirements()
-
-        for game in datFile.games {
-            let gameOutputPath = outputDirectory.appendingPathComponent("\(game.name).zip")
-
-            // Check if we need to rebuild this game
-            if onlyMissing && FileManager.default.fileExists(atPath: gameOutputPath.path) {
-                // TODO: Could verify the existing ZIP is complete
-                continue
-            }
-
-            var gameRequirement = GameRebuildRequirement(game: game)
-
-            let gameRoms: [any ROMItem] = {
-                if let mameGame = game as? MAMEGame {
-                    return mameGame.items
-                } else {
-                    return []
-                }
-            }()
-
-            for rom in gameRoms {
-                requirements.totalROMs += 1
-
-                // Convert ROMItem to ROM for compatibility
-                let legacyROM = ROM(
-                    name: rom.name,
-                    size: rom.size,
-                    crc: rom.checksums.crc32,
-                    sha1: rom.checksums.sha1,
-                    md5: rom.checksums.md5,
-                    status: rom.status,
-                    merge: rom.attributes.merge
-                )
-
-                if let source = await indexManager.findBestSource(for: legacyROM) {
-                    gameRequirement.availableROMs.append((rom, source))
-                    requirements.availableROMs += 1
-                } else {
-                    gameRequirement.missingROMs.append(rom)
-                    requirements.missingROMs += 1
-                }
-            }
-
-            // Only add games that can be at least partially rebuilt
-            if !gameRequirement.availableROMs.isEmpty {
-                requirements.gamesToRebuild.append(gameRequirement)
-            }
-        }
-
-        return requirements
+        return datFile
     }
 
     private func performRebuild(
@@ -468,152 +429,6 @@ struct Rebuild: AsyncParsableCommand, Sendable {
         return results
     }
 
-    private func rebuildGame(
-        requirement: GameRebuildRequirement,
-        indexManager: ROMIndexManager,
-        outputDirectory: URL,
-        style: RebuildStyle,
-        verify: Bool,
-        useGPU: Bool
-    ) async -> GameRebuildResult {
-        let outputPath = outputDirectory.appendingPathComponent("\(requirement.game.name).zip")
-        var result = GameRebuildResult(gameName: requirement.game.name)
-
-        do {
-            var rebuiltROMs: [(name: String, data: Data)] = []
-
-            // Extract/copy each available ROM
-            for (rom, source) in requirement.availableROMs {
-                let data = try await extractROM(from: source, verify: verify, useGPU: useGPU)
-
-                if verify {
-                    // Verify CRC if requested
-                    let actualCRC = useGPU
-                        ? await ParallelHashUtilities.crc32(data: data)
-                        : HashUtilities.crc32(data: data)
-
-                    if let expectedCRC = rom.checksums.crc32,
-                       actualCRC.lowercased() != expectedCRC.lowercased() {
-                        result.warnings.append("CRC mismatch for \(rom.name)")
-                    }
-                }
-
-                rebuiltROMs.append((rom.name, data))
-                result.romsRebuilt += 1
-            }
-
-            // Create output ZIP
-            if !rebuiltROMs.isEmpty {
-                let handler = ParallelZIPArchiveHandler()
-                try await handler.createAsync(at: outputPath, with: rebuiltROMs)
-                result.success = true
-            }
-
-            // Note missing ROMs
-            for rom in requirement.missingROMs {
-                result.warnings.append("Missing ROM: \(rom.name)")
-            }
-
-        } catch {
-            result.success = false
-            result.error = error.localizedDescription
-        }
-
-        return result
-    }
-
-    private func extractROM(from source: IndexedROM, verify: Bool, useGPU: Bool) async throws -> Data {
-        switch source.location {
-        case .file(let path):
-            return try Data(contentsOf: path)
-
-        case .archive(let archivePath, let entryPath):
-            let handler: any ArchiveHandler
-            switch archivePath.pathExtension.lowercased() {
-            case "zip":
-                handler = FastZIPArchiveHandler()
-            case "7z":
-                handler = SevenZipArchiveHandler()
-            default:
-                throw ArchiveError.unsupportedFormat("Unknown archive type")
-            }
-
-            let entries = try handler.listContents(of: archivePath)
-            guard let entry = entries.first(where: { $0.path == entryPath }) else {
-                throw ArchiveError.entryNotFound(entryPath)
-            }
-
-            return try handler.extract(entry: entry, from: archivePath)
-
-        case .remote:
-            // TODO: Implement network fetching
-            throw ArchiveError.unsupportedFormat("Remote sources not yet implemented")
-        }
-    }
-
-    private func processGameResult(_ result: GameRebuildResult, results: inout RebuildResults) {
-        if result.success {
-            results.successful += 1
-        } else {
-            results.failed += 1
-        }
-
-        results.totalROMs += result.romsRebuilt
-
-        if !result.warnings.isEmpty {
-            results.warnings[result.gameName] = result.warnings
-        }
-
-        if let error = result.error {
-            results.errors[result.gameName] = error
-        }
-    }
-
-    private func printProgress(_ current: Int, total: Int) {
-        let percentage = Double(current) / Double(total) * 100
-        print("\rProgress: \(current)/\(total) (\(String(format: "%.1f%%", percentage)))", terminator: "")
-        fflush(stdout)
-    }
-
-    private func printDryRunSummary(_ requirements: RebuildRequirements) {
-        print("\n🎯 Games that would be rebuilt:")
-        for (index, req) in requirements.gamesToRebuild.prefix(10).enumerated() {
-            print("  \(index + 1). \(req.game.name)")
-            print("     - Available: \(req.availableROMs.count) ROMs")
-            if !req.missingROMs.isEmpty {
-                print("     - Missing: \(req.missingROMs.count) ROMs")
-            }
-        }
-
-        if requirements.gamesToRebuild.count > 10 {
-            print("  ... and \(requirements.gamesToRebuild.count - 10) more")
-        }
-    }
-
-    private func displayRebuildResults(_ results: RebuildResults) {
-        RomKitCLI.printHeader("📊 Rebuild Results")
-
-        print("\n✅ Successful: \(results.successful) games")
-        print("❌ Failed: \(results.failed) games")
-        print("📦 Total ROMs: \(results.totalROMs)")
-
-        if !results.warnings.isEmpty {
-            print("\n⚠️ Warnings:")
-            for (game, warnings) in results.warnings.prefix(5) {
-                print("  \(game):")
-                for warning in warnings.prefix(3) {
-                    print("    - \(warning)")
-                }
-            }
-        }
-
-        if !results.errors.isEmpty {
-            print("\n❌ Errors:")
-            for (game, error) in results.errors.prefix(5) {
-                print("  \(game): \(error)")
-            }
-        }
-    }
 }
 
 // MARK: - Supporting Types

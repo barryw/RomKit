@@ -38,7 +38,7 @@ public class RomKitCache {
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: ":", with: "_")
             .replacingOccurrences(of: " ", with: "_")
-        
+
         // Ensure reasonable filename length
         let truncatedPath = String(path.prefix(200))
         return "\(truncatedPath)_\(timestamp).cache"
@@ -56,20 +56,20 @@ public class RomKitCache {
         queue.sync(flags: .barrier) {
             let key = self.cacheKey(for: datURL)
             let cacheFile = self.cacheDirectory.appendingPathComponent(key)
-            
+
             let cached = CachedDAT(
                 version: 1,
                 sourceURL: datURL.path,
                 parseDate: Date(),
                 datFile: datFile
             )
-            
+
             do {
                 let encoder = JSONEncoder()
                 encoder.outputFormatting = .sortedKeys
                 let data = try encoder.encode(cached)
                 try data.write(to: cacheFile)
-                
+
                 // Clean old cache files
                 self.cleanOldCaches(except: key)
             } catch {
@@ -82,15 +82,15 @@ public class RomKitCache {
     /// Load cached DAT
     public func load(for datURL: URL) -> MAMEDATFile? {
         var result: MAMEDATFile?
-        
+
         queue.sync {
             let key = cacheKey(for: datURL)
             let cacheFile = cacheDirectory.appendingPathComponent(key)
-            
+
             guard FileManager.default.fileExists(atPath: cacheFile.path) else {
                 return
             }
-            
+
             do {
                 let data = try Data(contentsOf: cacheFile)
                 let decoder = JSONDecoder()
@@ -102,7 +102,7 @@ public class RomKitCache {
                 print("Cache load failed: \(error)")
             }
         }
-        
+
         return result
     }
 

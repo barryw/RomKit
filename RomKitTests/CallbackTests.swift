@@ -122,7 +122,7 @@ struct CallbackTests {
 
         // Give Tasks time to complete
         try await Task.sleep(nanoseconds: 10_000_000) // 10ms
-        
+
         // Verify callbacks (empty dir won't have progress, but will have events)
         let progressCount = await tracker.progressCount
         let eventCount = await tracker.eventCount
@@ -374,7 +374,7 @@ struct CallbackTests {
 
         // Give Tasks time to complete
         try await Task.sleep(nanoseconds: 10_000_000) // 10ms
-        
+
         let eventTypes = await tracker.eventTypes
         print("Event types received: \(eventTypes.sorted())")
 

@@ -196,76 +196,76 @@ public struct ZIPReader {
     }
 
     // MARK: - Data Extraction
-    
+
     /// Extract data for a specific file from the ZIP archive
     public static func extractData(from url: URL, fileName: String) throws -> Data {
         guard let data = try? Data(contentsOf: url) else {
             throw ArchiveError.cannotOpenArchive(url.path)
         }
-        
+
         // Find end of central directory record
         guard let eocdOffset = findEndOfCentralDirectory(in: data) else {
             throw ArchiveError.cannotOpenArchive("Not a valid ZIP file")
         }
-        
+
         // Read EOCD
         let eocd = try readEndOfCentralDirectory(data: data, offset: eocdOffset)
-        
+
         // Search central directory for the file
         var offset = Int(eocd.centralDirectoryOffset)
-        
+
         for _ in 0..<eocd.totalEntries {
             let entry = try readCentralDirectoryEntry(data: data, offset: &offset)
-            
+
             if entry.fileName == fileName {
                 // Found the file, now read from local file header
                 return try extractFileData(from: data, centralEntry: entry)
             }
         }
-        
+
         throw ArchiveError.entryNotFound(fileName)
     }
-    
+
     private static func extractFileData(from data: Data, centralEntry: CentralDirectoryEntry) throws -> Data {
         let localHeaderOffset = Int(centralEntry.localHeaderOffset)
-        
+
         // Read local file header
         guard localHeaderOffset + 30 <= data.count else {
             throw ArchiveError.cannotOpenArchive("Invalid local header offset")
         }
-        
+
         // Verify local file header signature
         let signature = data.withUnsafeBytes { bytes in
             bytes.loadLittleEndian(fromByteOffset: localHeaderOffset, as: UInt32.self)
         }
-        
+
         guard signature == localFileHeaderSignature else {
             throw ArchiveError.cannotOpenArchive("Invalid local file header signature")
         }
-        
+
         // Read local header fields
         let compressionMethod = data.withUnsafeBytes { bytes in
             bytes.loadLittleEndian(fromByteOffset: localHeaderOffset + 8, as: UInt16.self)
         }
-        
+
         let fileNameLength = data.withUnsafeBytes { bytes in
             bytes.loadLittleEndian(fromByteOffset: localHeaderOffset + 26, as: UInt16.self)
         }
-        
+
         let extraFieldLength = data.withUnsafeBytes { bytes in
             bytes.loadLittleEndian(fromByteOffset: localHeaderOffset + 28, as: UInt16.self)
         }
-        
+
         // Calculate data offset
         let dataOffset = localHeaderOffset + 30 + Int(fileNameLength) + Int(extraFieldLength)
         let dataEnd = dataOffset + Int(centralEntry.compressedSize)
-        
+
         guard dataEnd <= data.count else {
             throw ArchiveError.cannotOpenArchive("Invalid data range")
         }
-        
+
         let compressedData = data[dataOffset..<dataEnd]
-        
+
         // Decompress if needed
         switch compressionMethod {
         case 0: // Stored (no compression)
@@ -276,17 +276,17 @@ public struct ZIPReader {
             throw ArchiveError.unsupportedFormat("Unsupported compression method: \(compressionMethod)")
         }
     }
-    
+
     private static func inflateData(_ compressedData: Data) throws -> Data {
         guard !compressedData.isEmpty else {
             return Data()
         }
-        
+
         return try compressedData.withUnsafeBytes { bytes in
             guard let pointer = bytes.bindMemory(to: UInt8.self).baseAddress else {
                 throw ArchiveError.extractionFailed("Failed to access compressed data")
             }
-            
+
             // Initialize zlib stream
             var stream = z_stream()
             stream.next_in = UnsafeMutablePointer(mutating: pointer)
@@ -294,45 +294,45 @@ public struct ZIPReader {
             stream.zalloc = nil
             stream.zfree = nil
             stream.opaque = nil
-            
+
             // Use -MAX_WBITS for raw deflate data (no zlib header)
             let initResult = inflateInit2_(&stream, -MAX_WBITS, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size))
             guard initResult == Z_OK else {
                 throw ArchiveError.extractionFailed("Failed to initialize inflate: \(initResult)")
             }
             defer { inflateEnd(&stream) }
-            
+
             // Start with a reasonable buffer size, will grow if needed
             var outputData = Data()
             let chunkSize = 16384 // 16KB chunks
             let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: chunkSize)
             defer { buffer.deallocate() }
-            
+
             // Decompress in chunks
             repeat {
                 stream.next_out = buffer
                 stream.avail_out = uInt(chunkSize)
-                
+
                 let result = inflate(&stream, Z_NO_FLUSH)
-                
+
                 if result == Z_STREAM_ERROR {
                     throw ArchiveError.extractionFailed("Stream error during decompression")
                 }
-                
+
                 if result == Z_NEED_DICT || result == Z_DATA_ERROR || result == Z_MEM_ERROR {
                     throw ArchiveError.extractionFailed("Decompression failed with error: \(result)")
                 }
-                
+
                 let outputSize = chunkSize - Int(stream.avail_out)
                 if outputSize > 0 {
                     outputData.append(buffer, count: outputSize)
                 }
-                
+
                 if result == Z_STREAM_END {
                     break
                 }
             } while stream.avail_out == 0
-            
+
             return outputData
         }
     }

@@ -291,7 +291,7 @@ class OptimizedXMLParser: NSObject, XMLParserDelegate {
         super.init()
     }
 
-    func parse(data: Data) throws -> MAMEDATFile {
+    public func parse(data: Data) throws -> MAMEDATFile {
         // Reset state
         games = []
         games.reserveCapacity(50000)  // Pre-allocate for typical MAME size
@@ -338,6 +338,8 @@ class OptimizedXMLParser: NSObject, XMLParserDelegate {
                 sourceFile: attributeDict["sourcefile"],
                 isBios: attributeDict["isbios"] == "yes",
                 isDevice: attributeDict["isdevice"] == "yes",
+                isMechanical: attributeDict["ismechanical"] == "yes",
+                runnable: attributeDict["runnable"] != "no",  // Default is yes if not specified
                 biosSet: attributeDict["bios"]
             )
 

@@ -9,7 +9,7 @@ import Foundation
 
 /// Helper for loading test DAT files from various sources
 public struct TestDATLoader {
-    
+
     /// Load the full MAME 0.278 DAT file for testing
     /// This is a large compressed file used for performance and parsing tests
     public static func loadFullMAMEDAT() throws -> Data {
@@ -20,21 +20,21 @@ public struct TestDATLoader {
             "../RomKitTests/TestData/Full/MAME_0278.dat",
             "../../RomKitTests/TestData/Full/MAME_0278.dat"
         ]
-        
+
         // Also try using #file as a fallback
         let currentFilePath = #file
         let currentURL = URL(fileURLWithPath: currentFilePath)
         let testsDir = currentURL.deletingLastPathComponent().deletingLastPathComponent()
         let fileDerivedPath = testsDir.appendingPathComponent("TestData/Full/MAME_0278.dat").path
-        
+
         let allPaths = possiblePaths + [fileDerivedPath]
-        
+
         for path in allPaths {
             if FileManager.default.fileExists(atPath: path) {
                 return try Data(contentsOf: URL(fileURLWithPath: path))
             }
         }
-        
+
         // Try compressed version as fallback
         let compressedPaths = allPaths.map { $0 + ".gz" }
         for path in compressedPaths {
@@ -43,22 +43,22 @@ public struct TestDATLoader {
                 return try Data(contentsOf: URL(fileURLWithPath: path))
             }
         }
-        
+
         throw TestError.datNotFound("MAME_0278.dat")
     }
-    
+
     /// Load a test DAT file by name from TestData directory
     public static func loadTestDAT(named filename: String) throws -> Data {
         let currentFilePath = #file
         let currentURL = URL(fileURLWithPath: currentFilePath)
         let testsDir = currentURL.deletingLastPathComponent().deletingLastPathComponent()
-        
+
         // Check different possible locations
         let possiblePaths = [
             testsDir.appendingPathComponent("TestData/Full").appendingPathComponent(filename),
             testsDir.appendingPathComponent("TestData").appendingPathComponent(filename)
         ]
-        
+
         for datPath in possiblePaths {
             if FileManager.default.fileExists(atPath: datPath.path) {
                 // Check if it's compressed
@@ -66,11 +66,11 @@ public struct TestDATLoader {
                     // Try to find uncompressed version first
                     let uncompressedName = String(filename.dropLast(3))
                     let uncompressedPath = datPath.deletingLastPathComponent().appendingPathComponent(uncompressedName)
-                    
+
                     if FileManager.default.fileExists(atPath: uncompressedPath.path) {
                         return try Data(contentsOf: uncompressedPath)
                     }
-                    
+
                     // For compressed files without uncompressed version
                     // Read the compressed file and return it as-is
                     // Tests that need decompressed data should handle this
@@ -81,10 +81,10 @@ public struct TestDATLoader {
                 }
             }
         }
-        
+
         throw TestError.datNotFound(filename)
     }
-    
+
     /// Get path to test DAT for file-based loading
     static func getTestDATPath(named filename: String) -> String? {
         // Use absolute path for reliability
@@ -97,13 +97,12 @@ public struct TestDATLoader {
             return FileManager.default.fileExists(atPath: path) ? path : nil
         }
     }
-    
-    
+
     enum TestError: Error, LocalizedError {
         case datNotFound(String)
         case decompressionFailed
         case invalidGzipFormat
-        
+
         var errorDescription: String? {
             switch self {
             case .datNotFound(let name):
@@ -116,5 +115,3 @@ public struct TestDATLoader {
         }
     }
 }
-
-

@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!DOCTYPE mame [
+<!ELEMENT mame (machine+)>
+<!ATTLIST mame build CDATA #IMPLIED>
+<!ATTLIST mame debug (yes|no) "no">
+<!ATTLIST mame mameconfig CDATA #REQUIRED>
+<!ELEMENT machine (description, year?, manufacturer?, biosset*, rom*, disk*, device_ref*, sample*, chip*, display*, sound?, input?, dipswitch*, configuration*, port*, adjuster*, driver?, feature*, device*, slot*, software*, ramoption*)>
+<!ATTLIST machine name CDATA #REQUIRED>
+<!ATTLIST machine sourcefile CDATA #IMPLIED>
+<!ATTLIST machine isbios (yes|no) "no">
+<!ATTLIST machine isdevice (yes|no) "no">
+<!ATTLIST machine ismechanical (yes|no) "no">
+<!ATTLIST machine runnable (yes|no) "yes">
+<!ATTLIST machine cloneof CDATA #IMPLIED>
+<!ATTLIST machine romof CDATA #IMPLIED>
+<!ATTLIST machine sampleof CDATA #IMPLIED>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT year (#PCDATA)>
+<!ELEMENT manufacturer (#PCDATA)>
+<!ELEMENT rom EMPTY>
+<!ATTLIST rom name CDATA #REQUIRED>
+<!ATTLIST rom bios CDATA #IMPLIED>
+<!ATTLIST rom size CDATA #REQUIRED>
+<!ATTLIST rom crc CDATA #IMPLIED>
+<!ATTLIST rom sha1 CDATA #IMPLIED>
+<!ATTLIST rom merge CDATA #IMPLIED>
+<!ATTLIST rom region CDATA #IMPLIED>
+<!ATTLIST rom offset CDATA #IMPLIED>
+<!ATTLIST rom status (baddump|nodump|good) "good">
+<!ATTLIST rom optional (yes|no) "no">
+<!ELEMENT driver EMPTY>
+<!ATTLIST driver status (good|imperfect|preliminary) #REQUIRED>
+<!ATTLIST driver emulation (good|imperfect|preliminary) #REQUIRED>
+<!ATTLIST driver color (good|imperfect|preliminary) #IMPLIED>
+<!ATTLIST driver sound (good|imperfect|preliminary) #IMPLIED>
+<!ATTLIST driver graphic (good|imperfect|preliminary) #IMPLIED>
+<!ATTLIST driver cocktail (good|imperfect|preliminary) #IMPLIED>
+<!ATTLIST driver protection (good|imperfect|preliminary) #IMPLIED>
+<!ATTLIST driver savestate (supported|unsupported) #IMPLIED>
+<!ATTLIST driver palettesize CDATA #IMPLIED>
+]>
+<mame build="0.256 (test)" debug="no" mameconfig="10">
+    <!-- Working game with good dumps -->
+    <machine name="working_good" runnable="yes">
+        <description>Working Game with Good Dumps</description>
+        <year>2020</year>
+        <manufacturer>Test Corp</manufacturer>
+        <rom name="test1.rom" size="1024" crc="12345678" status="good"/>
+        <rom name="test2.rom" size="2048" crc="87654321" status="good"/>
+        <driver status="good" emulation="good"/>
+    </machine>
+    
+    <!-- Working game with bad dumps -->
+    <machine name="working_bad" runnable="yes">
+        <description>Working Game with Bad Dumps</description>
+        <year>2021</year>
+        <manufacturer>Test Corp</manufacturer>
+        <rom name="bad1.rom" size="1024" crc="aaaa1111" status="baddump"/>
+        <rom name="bad2.rom" size="2048" crc="bbbb2222" status="good"/>
+        <driver status="good" emulation="good"/>
+    </machine>
+    
+    <!-- Non-working game with good dumps -->
+    <machine name="nonworking_good" runnable="no">
+        <description>Non-Working Game with Good Dumps</description>
+        <year>2022</year>
+        <manufacturer>Test Corp</manufacturer>
+        <rom name="nw1.rom" size="1024" crc="cccc3333" status="good"/>
+        <rom name="nw2.rom" size="2048" crc="dddd4444" status="good"/>
+        <driver status="preliminary" emulation="preliminary"/>
+    </machine>
+    
+    <!-- Non-working game with bad dumps -->
+    <machine name="nonworking_bad" runnable="no">
+        <description>Non-Working Game with Bad Dumps</description>
+        <year>2023</year>
+        <manufacturer>Test Corp</manufacturer>
+        <rom name="nwb1.rom" size="1024" crc="eeee5555" status="nodump"/>
+        <rom name="nwb2.rom" size="2048" crc="ffff6666" status="good"/>
+        <driver status="preliminary" emulation="preliminary"/>
+    </machine>
+    
+    <!-- Working game with no dump -->
+    <machine name="working_nodump" runnable="yes">
+        <description>Working Game with No Dump</description>
+        <year>2024</year>
+        <manufacturer>Test Corp</manufacturer>
+        <rom name="nd1.rom" size="1024" crc="00000000" status="nodump"/>
+        <rom name="nd2.rom" size="2048" crc="11111111" status="good"/>
+        <driver status="good" emulation="good"/>
+    </machine>
+</mame>

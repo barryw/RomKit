@@ -466,7 +466,7 @@ extension CollectionStatistics {
             return "🔴"
         }
     }
-    
+
     // Helper to create ByteCountFormatter safely
     private func createSafeByteCountFormatter() -> ByteCountFormatter {
         // Create a new formatter each time to avoid concurrency issues

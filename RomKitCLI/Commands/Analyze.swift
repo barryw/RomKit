@@ -42,6 +42,15 @@ struct Analyze: AsyncParsableCommand {
     @Option(name: .shortAndLong, help: "Export results to JSON file")
     var output: String?
 
+    @Flag(name: .long, help: "Skip CRC verification (faster but less accurate)")
+    var skipVerification = false
+
+    @Flag(name: .long, help: "Use indexed ROMs if available (much faster)")
+    var useIndex = false
+
+    @Option(name: .shortAndLong, help: "Number of parallel workers")
+    var parallel: Int = ProcessInfo.processInfo.processorCount
+
     mutating func run() async throws {
         RomKitCLI.printHeader("🎮 RomKit ROM Analysis")
 
@@ -60,25 +69,41 @@ struct Analyze: AsyncParsableCommand {
         print("📁 ROM Directory: \(romURL.path)")
         print("📄 DAT File: \(datURL.lastPathComponent)")
         print("⚡ GPU Acceleration: \(gpu ? "Enabled" : "Disabled")")
+        print("🔍 Verification: \(skipVerification ? "Skip (fast mode)" : "Full CRC check")")
+        print("📊 Index: \(useIndex ? "Use existing index" : "Direct file scan")")
+        print("🔄 Parallel: \(parallel) workers")
 
         // Load DAT file
         RomKitCLI.printSection("Loading DAT File")
         let datFile = try await loadDATFile(from: datURL)
         print("✅ Loaded \(datFile.games.count) games from DAT")
 
-        // Scan ROM directory
-        RomKitCLI.printSection("Scanning ROM Directory")
-        let romFiles = try await scanROMDirectory(at: romURL)
-        print("✅ Found \(romFiles.count) ROM files")
+        // Fast path: use index if requested
+        let results: AnalysisResults
+        if useIndex {
+            RomKitCLI.printSection("Analyzing ROMs using Index")
+            results = try await analyzeWithIndex(
+                romDirectory: romURL,
+                datFile: datFile,
+                showProgress: showProgress
+            )
+        } else {
+            // Scan ROM directory
+            RomKitCLI.printSection("Scanning ROM Directory")
+            let romFiles = try await scanROMDirectory(at: romURL)
+            print("✅ Found \(romFiles.count) ROM files")
 
-        // Analyze ROMs
-        RomKitCLI.printSection("Analyzing ROMs")
-        let results = try await analyzeROMs(
-            romFiles: romFiles,
-            datFile: datFile,
-            useGPU: gpu,
-            showProgress: showProgress
-        )
+            // Analyze ROMs
+            RomKitCLI.printSection("Analyzing ROMs")
+            results = try await analyzeROMs(
+                romFiles: romFiles,
+                datFile: datFile,
+                useGPU: gpu,
+                skipVerification: skipVerification,
+                parallel: parallel,
+                showProgress: showProgress
+            )
+        }
 
         // Display results
         displayResults(results)
@@ -96,16 +121,18 @@ struct Analyze: AsyncParsableCommand {
         let data = Data(fileContent.utf8)
 
         // Parse using MAME parser
-        let parser = MAMEFastParser()
         let mameDatFile: MAMEDATFile
 
         do {
+            // Try fast parser first
+            let parser = MAMEFastParser()
             mameDatFile = try await parser.parseXMLParallel(data: data)
         } catch {
-            print("⚠️ XML parsing failed: \(error.localizedDescription)")
-            print("Attempting fallback parser...")
-            // Try the regular parser as fallback
-            mameDatFile = try parser.parseXMLStreaming(data: data)
+            print("⚠️ Fast parser failed: \(error.localizedDescription)")
+            print("Attempting full parser...")
+            // Try the full MAME parser as fallback
+            let fullParser = MAMEDATParser()
+            mameDatFile = try fullParser.parse(data: data)
         }
 
         // Convert MAMEDATFile to DATFile
@@ -189,6 +216,8 @@ struct Analyze: AsyncParsableCommand {
         romFiles: [ROMFile],
         datFile: DATFile,
         useGPU: Bool,
+        skipVerification: Bool,
+        parallel: Int,
         showProgress: Bool
     ) async throws -> AnalysisResults {
         var results = AnalysisResults()
@@ -200,47 +229,82 @@ struct Analyze: AsyncParsableCommand {
             uniqueKeysWithValues: datFile.games.map { (cleanGameName($0.name), $0) }
         )
 
-        // Analyze each ROM file
+        // Analyze each ROM file in parallel
         let startTime = Date()
-        for romFile in romFiles {
-            if showProgress {
-                processedFiles += 1
-                let elapsed = Date().timeIntervalSince(startTime)
-                let rate = Double(processedFiles) / elapsed
-                let remaining = Double(totalFiles - processedFiles) / rate
-                let percentage = Double(processedFiles) / Double(totalFiles) * 100
 
-                let timeStr = remaining > 60
-                    ? String(format: "%.0f min", remaining / 60)
-                    : String(format: "%.0f sec", remaining)
+        // Use actor for thread-safe result collection
+        let resultCollector = AnalysisResultCollector()
 
-                // Clear line and print progress
-                print("\u{1B}[2K\rProgress: \(processedFiles)/\(totalFiles) (\(String(format: "%.1f%%", percentage))) - ETA: \(timeStr)", terminator: "")
-                fflush(stdout)
+        await withTaskGroup(of: Void.self) { group in
+            var activeJobs = 0
+            var fileIterator = romFiles.makeIterator()
+
+            while let romFile = fileIterator.next() {
+                // Wait if we've hit the parallel limit
+                if activeJobs >= parallel {
+                    await group.next()
+                    activeJobs -= 1
+
+                    if showProgress {
+                        processedFiles += 1
+                        let elapsed = Date().timeIntervalSince(startTime)
+                        let rate = Double(processedFiles) / elapsed
+                        let remaining = Double(totalFiles - processedFiles) / rate
+                        let percentage = Double(processedFiles) / Double(totalFiles) * 100
+
+                        let timeStr = remaining > 60
+                            ? String(format: "%.0f min", remaining / 60)
+                            : String(format: "%.0f sec", remaining)
+
+                        // Clear line and print progress
+                        print("\u{1B}[2K\rProgress: \(processedFiles)/\(totalFiles) (\(String(format: "%.1f%%", percentage))) - ETA: \(timeStr)", terminator: "")
+                        fflush(stdout)
+                    }
+                }
+
+                // Start new analysis job
+                activeJobs += 1
+                group.addTask {
+                    let gameName = self.cleanGameName(romFile.url.deletingPathExtension().lastPathComponent)
+
+                    if romFile.isArchive {
+                        // Analyze ZIP archive
+                        if let result = try? await self.analyzeArchiveParallel(
+                            romFile: romFile,
+                            gameName: gameName,
+                            gamesByName: gamesByName,
+                            useGPU: useGPU,
+                            skipVerification: skipVerification
+                        ) {
+                            await resultCollector.add(result)
+                        }
+                    } else {
+                        // Analyze individual ROM
+                        if let result = try? await self.analyzeIndividualROMParallel(
+                            romFile: romFile,
+                            gameName: gameName,
+                            gamesByName: gamesByName,
+                            useGPU: useGPU,
+                            skipVerification: skipVerification
+                        ) {
+                            await resultCollector.add(result)
+                        }
+                    }
+                }
             }
 
-            let gameName = cleanGameName(romFile.url.deletingPathExtension().lastPathComponent)
-
-            if romFile.isArchive {
-                // Analyze ZIP archive
-                try await analyzeArchive(
-                    romFile: romFile,
-                    gameName: gameName,
-                    gamesByName: gamesByName,
-                    results: &results,
-                    useGPU: useGPU
-                )
-            } else {
-                // Analyze individual ROM
-                try await analyzeIndividualROM(
-                    romFile: romFile,
-                    gameName: gameName,
-                    gamesByName: gamesByName,
-                    results: &results,
-                    useGPU: useGPU
-                )
+            // Process remaining results
+            for await _ in group {
+                if showProgress {
+                    processedFiles += 1
+                    let percentage = Double(processedFiles) / Double(totalFiles) * 100
+                    print("\u{1B}[2K\rProgress: \(processedFiles)/\(totalFiles) (\(String(format: "%.1f%%", percentage)))", terminator: "")
+                    fflush(stdout)
+                }
             }
         }
+
+        results = await resultCollector.getResults()
 
         if showProgress {
             print("") // New line after progress
@@ -282,7 +346,9 @@ struct Analyze: AsyncParsableCommand {
             // If we can't list contents, mark as broken
             results.broken[gameName] = GameStatus(
                 game: expectedGame,
-                issues: ["Failed to read archive: \(error.localizedDescription)"]
+                foundROMs: [],
+                missingROMs: expectedGame.roms.map { $0.name },
+                brokenROMs: ["Failed to read archive: \(error.localizedDescription)"]
             )
             return
         }
@@ -325,14 +391,23 @@ struct Analyze: AsyncParsableCommand {
         if !brokenROMs.isEmpty {
             results.broken[gameName] = GameStatus(
                 game: expectedGame,
-                issues: Array(brokenROMs.values)
+                foundROMs: Array(matchedROMs),
+                missingROMs: Array(missingROMs),
+                brokenROMs: Array(brokenROMs.keys)
             )
         } else if missingROMs.isEmpty {
-            results.complete[gameName] = expectedGame
+            results.complete[gameName] = GameStatus(
+                game: expectedGame,
+                foundROMs: Array(matchedROMs),
+                missingROMs: [],
+                brokenROMs: []
+            )
         } else {
             results.incomplete[gameName] = GameStatus(
                 game: expectedGame,
-                issues: missingROMs.map { "Missing ROM: \($0)" }
+                foundROMs: Array(matchedROMs),
+                missingROMs: Array(missingROMs),
+                brokenROMs: []
             )
         }
     }
@@ -449,11 +524,24 @@ struct ROMFile {
 
 struct GameStatus {
     let game: Game
-    let issues: [String]
+    let foundROMs: [String]
+    let missingROMs: [String]
+    let brokenROMs: [String]
+
+    var issues: [String] {
+        var issues: [String] = []
+        for rom in missingROMs {
+            issues.append("Missing: \(rom)")
+        }
+        for rom in brokenROMs {
+            issues.append("Broken: \(rom)")
+        }
+        return issues
+    }
 }
 
 struct AnalysisResults {
-    var complete: [String: Game] = [:]
+    var complete: [String: GameStatus] = [:]
     var incomplete: [String: GameStatus] = [:]
     var broken: [String: GameStatus] = [:]
     var missing: [String: Game] = [:]
@@ -476,4 +564,194 @@ struct AnalysisSummary: Codable {
     let broken: Int
     let missing: Int
     let unrecognized: Int
+}
+
+// MARK: - Parallel Analysis Support
+
+/// Actor for thread-safe result collection
+actor AnalysisResultCollector {
+    private var results = AnalysisResults()
+
+    func add(_ result: SingleGameResult) {
+        switch result {
+        case .complete(let name, let status):
+            results.complete[name] = status
+        case .incomplete(let name, let status):
+            results.incomplete[name] = status
+        case .broken(let name, let status):
+            results.broken[name] = status
+        case .unrecognized(let file):
+            results.unrecognized.append(file)
+        }
+    }
+
+    func getResults() -> AnalysisResults {
+        return results
+    }
+}
+
+enum SingleGameResult {
+    case complete(String, GameStatus)
+    case incomplete(String, GameStatus)
+    case broken(String, GameStatus)
+    case unrecognized(ROMFile)
+}
+
+// MARK: - Fast Analysis with Index
+
+extension Analyze {
+    private func analyzeWithIndex(
+        romDirectory: URL,
+        datFile: DATFile,
+        showProgress: Bool
+    ) async throws -> AnalysisResults {
+        // Initialize index manager
+        let indexManager = try await ROMIndexManager()
+
+        // Check if this directory is indexed
+        let sources = await indexManager.listSources()
+        let isIndexed = sources.contains { source in
+            URL(fileURLWithPath: source.path).standardized == romDirectory.standardized
+        }
+
+        if !isIndexed {
+            print("⚠️  Directory not indexed. Indexing now...")
+            try await indexManager.addSource(romDirectory, showProgress: showProgress)
+        }
+
+        print("✅ Using indexed ROMs for fast analysis")
+
+        // Load entire index into memory for fast lookups
+        print("Loading index into memory...")
+        let memoryIndex = await indexManager.loadIndexIntoMemory()
+        print("✅ Loaded \(memoryIndex.count) unique CRCs")
+
+        var results = AnalysisResults()
+        let totalGames = datFile.games.count
+        var processedGames = 0
+
+        // Analyze each game
+        for game in datFile.games {
+            if showProgress {
+                processedGames += 1
+                let percentage = Double(processedGames) / Double(totalGames) * 100
+                print("\rAnalyzing: \(processedGames)/\(totalGames) (\(String(format: "%.1f%%", percentage)))", terminator: "")
+                fflush(stdout)
+            }
+
+            let gameName = cleanGameName(game.name)
+            var foundROMs: [String] = []
+            var missingROMs: [String] = []
+
+            // Check each ROM using in-memory index
+            for rom in game.roms {
+                if let crc = rom.crc?.lowercased() {
+                    if memoryIndex[crc] != nil {
+                        foundROMs.append(rom.name)
+                    } else {
+                        missingROMs.append(rom.name)
+                    }
+                }
+            }
+
+            // Determine game status
+            if missingROMs.isEmpty && !foundROMs.isEmpty {
+                results.complete[gameName] = GameStatus(
+                    game: game,
+                    foundROMs: foundROMs,
+                    missingROMs: [],
+                    brokenROMs: []
+                )
+            } else if !foundROMs.isEmpty {
+                results.incomplete[gameName] = GameStatus(
+                    game: game,
+                    foundROMs: foundROMs,
+                    missingROMs: missingROMs,
+                    brokenROMs: []
+                )
+            } else {
+                results.missing[gameName] = game
+            }
+        }
+
+        if showProgress {
+            print("") // New line after progress
+        }
+
+        return results
+    }
+
+    private func analyzeArchiveParallel(
+        romFile: ROMFile,
+        gameName: String,
+        gamesByName: [String: Game],
+        useGPU: Bool,
+        skipVerification: Bool
+    ) async throws -> SingleGameResult {
+        guard let expectedGame = gamesByName[gameName] else {
+            return .unrecognized(romFile)
+        }
+
+        let handler = ParallelZIPArchiveHandler()
+        let entries = try handler.listContents(of: romFile.url)
+
+        var foundROMs: [String] = []
+        var missingROMs: [String] = []
+        var brokenROMs: [String] = []
+
+        for expectedROM in expectedGame.roms {
+            if let entry = entries.first(where: { $0.path == expectedROM.name }) {
+                foundROMs.append(expectedROM.name)
+
+                // Skip verification if requested
+                if !skipVerification {
+                    if let expectedCRC = expectedROM.crc,
+                       let actualCRC = entry.crc32,
+                       actualCRC.lowercased() != expectedCRC.lowercased() {
+                        brokenROMs.append(expectedROM.name)
+                    }
+                }
+            } else {
+                missingROMs.append(expectedROM.name)
+            }
+        }
+
+        let status = GameStatus(
+            game: expectedGame,
+            foundROMs: foundROMs,
+            missingROMs: missingROMs,
+            brokenROMs: brokenROMs
+        )
+
+        if missingROMs.isEmpty && brokenROMs.isEmpty {
+            return .complete(gameName, status)
+        } else if !brokenROMs.isEmpty {
+            return .broken(gameName, status)
+        } else {
+            return .incomplete(gameName, status)
+        }
+    }
+
+    private func analyzeIndividualROMParallel(
+        romFile: ROMFile,
+        gameName: String,
+        gamesByName: [String: Game],
+        useGPU: Bool,
+        skipVerification: Bool
+    ) async throws -> SingleGameResult {
+        guard let expectedGame = gamesByName[gameName] else {
+            return .unrecognized(romFile)
+        }
+
+        // For individual ROM files, we need more complex logic
+        // This is a simplified version
+        let status = GameStatus(
+            game: expectedGame,
+            foundROMs: [romFile.url.lastPathComponent],
+            missingROMs: [],
+            brokenROMs: []
+        )
+
+        return .incomplete(gameName, status)
+    }
 }

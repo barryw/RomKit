@@ -87,7 +87,7 @@ extension SQLiteROMIndex {
     private func processArchivesInParallel(_ archives: [ConcurrentScanner.ScanResult],
                                           showProgress: Bool) async throws {
         // Create a task group for parallel processing
-        let maxConcurrency = 8  // Limit concurrent ZIP processing
+        let maxConcurrency = ProcessInfo.processInfo.processorCount  // Use all available cores
 
         // Collect all entries first
         var allEntries: [(archive: URL, entries: [ArchiveEntry])] = []

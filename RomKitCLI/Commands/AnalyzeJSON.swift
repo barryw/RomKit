@@ -93,10 +93,10 @@ extension Analyze {
         var brokenGames: [String: AnalysisJSON.GameAnalysis] = [:]
 
         // Convert complete games
-        for (name, game) in results.complete {
+        for (name, status) in results.complete {
             completeGames[name] = AnalysisJSON.GameAnalysis(
                 status: AnalysisJSON.GameStatus.complete,
-                foundROMs: game.roms.map { rom in
+                foundROMs: status.game.roms.map { rom in
                     AnalysisJSON.ROMAnalysis(
                         name: rom.name,
                         crc32: rom.crc ?? "",
@@ -162,7 +162,7 @@ extension Analyze {
                 sourceDirectory: romPath,
                 totalGames: results.complete.count + results.incomplete.count +
                           results.broken.count + results.missing.count,
-                romCount: results.complete.values.flatMap { $0.roms }.count
+                romCount: results.complete.values.flatMap { $0.game.roms }.count
             ),
             complete: completeGames,
             incomplete: incompleteGames,
