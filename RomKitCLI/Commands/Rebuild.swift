@@ -116,14 +116,34 @@ struct Rebuild: AsyncParsableCommand, Sendable {
             throw ValidationError("DAT file does not exist: \(datPath)")
         }
 
-        if sources.isEmpty {
-            throw ValidationError("At least one source directory must be specified with -s/--source")
-        }
+        var sourceURLs: [URL] = []
 
-        let sourceURLs = sources.map { URL(fileURLWithPath: $0) }
-        for sourceURL in sourceURLs {
-            guard FileManager.default.fileExists(atPath: sourceURL.path) else {
-                throw ValidationError("Source directory does not exist: \(sourceURL.path)")
+        if sources.isEmpty {
+            // No sources specified, try to use indexed directories
+            // Don't print here - it will be printed after the header
+
+            // Check if the default index database exists
+            // ROMIndexManager uses ~/Library/Caches/RomKit/romkit_index.db by default
+            if let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
+                let romkitDir = cacheDir.appendingPathComponent("RomKit", isDirectory: true)
+                let indexPath = romkitDir.appendingPathComponent("romkit_index.db")
+
+                if FileManager.default.fileExists(atPath: indexPath.path) {
+                    // We'll get the sources from the index manager later
+                    // For now, just use an empty array and handle it in setupIndexManager
+                    sourceURLs = []
+                } else {
+                    throw ValidationError("No source directories specified and no indexed sources found.\nUse -s/--source to specify directories or 'romkit index add' to index directories first.")
+                }
+            } else {
+                throw ValidationError("No source directories specified and no indexed sources found.\nUse -s/--source to specify directories or 'romkit index add' to index directories first.")
+            }
+        } else {
+            sourceURLs = sources.map { URL(fileURLWithPath: $0) }
+            for sourceURL in sourceURLs {
+                guard FileManager.default.fileExists(atPath: sourceURL.path) else {
+                    throw ValidationError("Source directory does not exist: \(sourceURL.path)")
+                }
             }
         }
 
@@ -141,7 +161,11 @@ struct Rebuild: AsyncParsableCommand, Sendable {
     private func printConfiguration(datURL: URL, outputURL: URL) {
         print("📄 DAT File: \(datURL.lastPathComponent)")
         print("📂 Output: \(outputURL.path)")
-        print("🗂️ Sources: \(sources.count) directories")
+        if sources.isEmpty {
+            print("🗂️ Sources: Using indexed directories")
+        } else {
+            print("🗂️ Sources: \(sources.count) directories")
+        }
         print("🎯 Style: \(style)")
         print("✅ Verify: \(verify)")
         print("⚡ GPU: \(gpu)")
@@ -152,11 +176,33 @@ struct Rebuild: AsyncParsableCommand, Sendable {
 
     private func setupIndexManager(sourceURLs: [URL]) async throws -> ROMIndexManager {
         RomKitCLI.printSection("Indexing Source Directories")
-        let cacheURL = cacheFile.map { URL(fileURLWithPath: $0) }
-        let indexManager = try await ROMIndexManager(databasePath: cacheURL)
 
-        for source in sourceURLs {
-            try await indexManager.addSource(source, showProgress: showProgress)
+        // Use cache file if specified, otherwise let ROMIndexManager use its default
+        let indexPath: URL?
+        if let cacheFile = cacheFile {
+            indexPath = URL(fileURLWithPath: cacheFile)
+        } else {
+            // Let ROMIndexManager use its default (~/Library/Caches/RomKit/romkit_index.db)
+            indexPath = nil
+        }
+
+        let indexManager = try await ROMIndexManager(databasePath: indexPath)
+
+        if sourceURLs.isEmpty {
+            // No sources specified, use existing indexed sources
+            let existingSources = await indexManager.listSources()
+            if existingSources.isEmpty {
+                throw ValidationError("No indexed sources found. Use 'romkit index add' to index directories first.")
+            }
+            print("📂 Using \(existingSources.count) indexed source(s):")
+            for source in existingSources {
+                print("   • \(source.path)")
+            }
+        } else {
+            // Add specified sources to the index
+            for source in sourceURLs {
+                try await indexManager.addSource(source, showProgress: showProgress)
+            }
         }
 
         let analysis = await indexManager.analyzeIndex()
