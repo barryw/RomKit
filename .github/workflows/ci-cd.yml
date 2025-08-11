@@ -314,6 +314,10 @@ jobs:
     - name: Build release artifacts
       if: steps.version.outputs.should_release == 'true' && steps.create_tag.outputs.tag_exists != 'true'
       run: |
+        # Inject version into source code
+        chmod +x .github/scripts/inject-version.sh
+        .github/scripts/inject-version.sh "${{ steps.version.outputs.full_version }}"
+        
         # Build for multiple platforms
         swift build --configuration release
         

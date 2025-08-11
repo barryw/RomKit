@@ -14,7 +14,7 @@ struct RomKitCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "romkit",
         abstract: "A high-performance ROM management tool for arcade emulation",
-        version: "1.0.0",
+        version: Version.current,
         subcommands: [
             Analyze.self,
             Scan.self,
