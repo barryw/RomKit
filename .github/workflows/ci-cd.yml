@@ -324,10 +324,10 @@ jobs:
         # Create source archive
         git archive --format=tar.gz --prefix=RomKit-${{ steps.version.outputs.full_version }}/ HEAD > RomKit-${{ steps.version.outputs.full_version }}-source.tar.gz
         
-        # Create binary archive with just the executable
+        # Create binary archive with just the executable and CLI docs
         mkdir -p romkit-release
         cp .build/release/romkit romkit-release/
-        cp README.md romkit-release/
+        cp Documentation/CLI.md romkit-release/README.md
         cp LICENSE romkit-release/
         tar -czf RomKit-${{ steps.version.outputs.full_version }}-macos.tar.gz -C romkit-release .
         
