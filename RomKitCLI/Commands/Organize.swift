@@ -40,7 +40,7 @@ struct Organize: AsyncParsableCommand {
     @Flag(name: .long, help: "Clean filenames (remove region codes, version numbers)")
     var cleanNames = false
 
-    @Flag(name: .shortAndLong, help: "Dry run - show what would be done without making changes")
+    @Flag(name: .long, help: "Dry run - show what would be done without making changes")
     var dryRun = false
 
     @Flag(name: .long, help: "Preserve original files when renaming")
