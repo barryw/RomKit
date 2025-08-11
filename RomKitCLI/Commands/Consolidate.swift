@@ -49,8 +49,8 @@ struct Consolidate: AsyncParsableCommand {
     @Option(name: .long, help: "Preferred source priority (comma-separated source paths)")
     var preferredSources: String?
     
-    @Option(name: .shortAndLong, help: "Number of parallel copy operations")
-    var parallel: Int = 10
+    @Option(name: .shortAndLong, help: "Number of parallel copy operations (0 = auto-detect)")
+    var parallel: Int = 0
     
     mutating func run() async throws {
         RomKitCLI.printHeader("🔄 ROM Collection Consolidation")
@@ -184,27 +184,22 @@ struct Consolidate: AsyncParsableCommand {
         let totalROMs = allROMs.count
         var processedROMs = 0
         
-        // Process ROMs with parallelism
+        // Determine optimal parallelism
+        let maxParallel = parallel > 0 ? parallel : ProcessInfo.processInfo.activeProcessorCount * 2
+        
+        print("⚡ Using \(maxParallel) parallel workers")
+        
+        // Convert dictionary to array for better parallel processing
+        let romPairs = Array(allROMs)
+        
+        // Use actor for thread-safe stats updates
+        let statsActor = StatsActor()
+        
+        // Process ROMs with maximum parallelism
         await withTaskGroup(of: ConsolidationResult.self) { group in
-            var activeJobs = 0
-            var romIterator = allROMs.makeIterator()
-            
-            while let (crc, romList) = romIterator.next() {
-                // Wait if we've hit the parallel limit
-                if activeJobs >= parallel {
-                    if let result = await group.next() {
-                        processConsolidationResult(result, stats: &stats)
-                        activeJobs -= 1
-                        processedROMs += 1
-                        
-                        if showProgress {
-                            printProgress(processedROMs, total: totalROMs)
-                        }
-                    }
-                }
-                
-                // Start new copy job
-                activeJobs += 1
+            // Launch initial batch of tasks
+            for index in 0..<min(maxParallel, romPairs.count) {
+                let (crc, romList) = romPairs[index]
                 let bestROM = selectBestROM(from: romList)
                 
                 group.addTask {
@@ -217,16 +212,42 @@ struct Consolidate: AsyncParsableCommand {
                 }
             }
             
-            // Process remaining results
+            var nextIndex = min(maxParallel, romPairs.count)
+            
+            // Process results and launch new tasks
             for await result in group {
-                processConsolidationResult(result, stats: &stats)
+                await statsActor.processResult(result)
                 processedROMs += 1
                 
                 if showProgress {
-                    printProgress(processedROMs, total: totalROMs)
+                    let currentStats = await statsActor.getStats()
+                    printProgressWithStats(processedROMs, total: totalROMs, stats: currentStats)
+                }
+                
+                // Launch next task if available
+                if nextIndex < romPairs.count {
+                    let (crc, romList) = romPairs[nextIndex]
+                    let bestROM = selectBestROM(from: romList)
+                    nextIndex += 1
+                    
+                    group.addTask {
+                        return await self.consolidateROM(
+                            rom: bestROM,
+                            crc: crc,
+                            outputURL: outputURL,
+                            verify: self.verify
+                        )
+                    }
                 }
             }
         }
+        
+        // Update stats from actor
+        let finalStats = await statsActor.getStats()
+        stats.copied = finalStats.copied
+        stats.skipped = finalStats.skipped
+        stats.failed = finalStats.failed
+        stats.errors = finalStats.errors
         
         if showProgress {
             print("") // New line after progress
@@ -250,8 +271,12 @@ struct Consolidate: AsyncParsableCommand {
     ) async -> ConsolidationResult {
         let outputFile = outputURL.appendingPathComponent(rom.name)
         
-        // Skip if file already exists
-        if FileManager.default.fileExists(atPath: outputFile.path) {
+        // Skip if file already exists - use async check for better performance
+        let fileExists = await Task.detached(priority: .userInitiated) {
+            FileManager.default.fileExists(atPath: outputFile.path)
+        }.value
+        
+        if fileExists {
             return ConsolidationResult(
                 crc: crc,
                 success: true,
@@ -261,12 +286,15 @@ struct Consolidate: AsyncParsableCommand {
         }
         
         do {
-            // Extract or copy the ROM
+            // Extract or copy the ROM using async I/O
             let data: Data
             
             switch rom.location {
             case .file(let sourceURL):
-                data = try Data(contentsOf: sourceURL)
+                // Use async file I/O for better performance
+                data = try await Task.detached(priority: .userInitiated) {
+                    try Data(contentsOf: sourceURL)
+                }.value
                 
             case .archive(let archiveURL, let entryPath):
                 // Use appropriate archive handler
@@ -287,7 +315,10 @@ struct Consolidate: AsyncParsableCommand {
                     crc32: crc
                 )
                 
-                data = try handler.extract(entry: entry, from: archiveURL)
+                // Extract in background thread
+                data = try await Task.detached(priority: .userInitiated) {
+                    try handler.extract(entry: entry, from: archiveURL)
+                }.value
                 
             case .remote:
                 // Skip remote ROMs for now
@@ -299,19 +330,27 @@ struct Consolidate: AsyncParsableCommand {
                 )
             }
             
-            // Verify if requested
+            // Verify if requested - use parallel hashing for large files
             if verify {
-                let actualCRC = HashUtilities.crc32(data: data)
+                let actualCRC: String
+                if data.count > 10_485_760 { // 10MB threshold
+                    actualCRC = await ParallelHashUtilities.crc32(data: data)
+                } else {
+                    actualCRC = HashUtilities.crc32(data: data)
+                }
+                
                 if actualCRC.lowercased() != crc.lowercased() {
                     throw ValidationError("CRC mismatch: expected \(crc), got \(actualCRC)")
                 }
             }
             
-            // Write to output
-            try data.write(to: outputFile)
+            // Write to output using async I/O
+            try await Task.detached(priority: .userInitiated) {
+                try data.write(to: outputFile, options: .atomic)
+            }.value
             
             if verbose {
-                print("✅ Copied: \(rom.name)")
+                print("\n✅ Copied: \(rom.name)")
             }
             
             return ConsolidationResult(
@@ -323,7 +362,7 @@ struct Consolidate: AsyncParsableCommand {
             
         } catch {
             if verbose {
-                print("❌ Failed: \(rom.name) - \(error.localizedDescription)")
+                print("\n❌ Failed: \(rom.name) - \(error.localizedDescription)")
             }
             
             return ConsolidationResult(
@@ -397,24 +436,16 @@ struct Consolidate: AsyncParsableCommand {
         print("   • Unique ROMs: \(analysis.uniqueROMs.formatted())")
     }
     
-    private func processConsolidationResult(_ result: ConsolidationResult, stats: inout ConsolidationStats) {
-        if result.success {
-            if result.skipped {
-                stats.skipped += 1
-            } else {
-                stats.copied += 1
-            }
-        } else {
-            stats.failed += 1
-            if let error = result.error {
-                stats.errors.append(error)
-            }
-        }
-    }
     
     private func printProgress(_ current: Int, total: Int) {
         let percentage = Double(current) / Double(total) * 100
         print("\rProgress: \(current)/\(total) (\(String(format: "%.1f%%", percentage)))", terminator: "")
+        fflush(stdout)
+    }
+    
+    private func printProgressWithStats(_ current: Int, total: Int, stats: ConsolidationStats) {
+        let percentage = Double(current) / Double(total) * 100
+        print("\r⚡ Progress: \(current)/\(total) (\(String(format: "%.1f%%", percentage))) | ✅ \(stats.copied) | ⏭️ \(stats.skipped) | ❌ \(stats.failed)", terminator: "")
         fflush(stdout)
     }
     
@@ -465,4 +496,28 @@ private struct ConsolidationResult {
     let success: Bool
     let skipped: Bool
     let error: String?
+}
+
+// Actor for thread-safe statistics updates
+private actor StatsActor {
+    private var stats = ConsolidationStats()
+    
+    func processResult(_ result: ConsolidationResult) {
+        if result.success {
+            if result.skipped {
+                stats.skipped += 1
+            } else {
+                stats.copied += 1
+            }
+        } else {
+            stats.failed += 1
+            if let error = result.error {
+                stats.errors.append(error)
+            }
+        }
+    }
+    
+    func getStats() -> ConsolidationStats {
+        return stats
+    }
 }
