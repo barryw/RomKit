@@ -324,8 +324,15 @@ jobs:
         # Create source archive
         git archive --format=tar.gz --prefix=RomKit-${{ steps.version.outputs.full_version }}/ HEAD > RomKit-${{ steps.version.outputs.full_version }}-source.tar.gz
         
-        # Create binary archives if needed
-        tar -czf RomKit-${{ steps.version.outputs.full_version }}-macos.tar.gz -C .build/release .
+        # Create binary archive with just the executable
+        mkdir -p romkit-release
+        cp .build/release/romkit romkit-release/
+        cp README.md romkit-release/
+        cp LICENSE romkit-release/
+        tar -czf RomKit-${{ steps.version.outputs.full_version }}-macos.tar.gz -C romkit-release .
+        
+        # Optionally create debug symbols archive
+        tar -czf RomKit-${{ steps.version.outputs.full_version }}-macos-symbols.tar.gz -C .build/release romkit.dSYM
 
     - name: Upload release assets
       if: steps.version.outputs.should_release == 'true' && steps.create_tag.outputs.tag_exists != 'true'
@@ -339,6 +346,13 @@ jobs:
         if [ -f "RomKit-${{ steps.version.outputs.full_version }}-macos.tar.gz" ]; then
           gh release upload "${{ steps.create_tag.outputs.tag_name }}" \
             "RomKit-${{ steps.version.outputs.full_version }}-macos.tar.gz" \
+            --clobber
+        fi
+        
+        # Upload debug symbols archive if it exists
+        if [ -f "RomKit-${{ steps.version.outputs.full_version }}-macos-symbols.tar.gz" ]; then
+          gh release upload "${{ steps.create_tag.outputs.tag_name }}" \
+            "RomKit-${{ steps.version.outputs.full_version }}-macos-symbols.tar.gz" \
             --clobber
         fi
       env:
