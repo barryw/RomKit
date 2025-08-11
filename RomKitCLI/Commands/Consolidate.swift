@@ -86,9 +86,9 @@ struct Consolidate: AsyncParsableCommand {
             print("   • \(source.path) (\(source.romCount.formatted()) ROMs)")
         }
         
-        // Load all ROMs into memory for analysis
+        // Load all ROMs into memory for analysis using composite key (CRC32+size)
         RomKitCLI.printSection("Analyzing ROM Collection")
-        let allROMs = await indexManager.loadIndexIntoMemory()
+        let allROMs = await indexManager.loadIndexIntoMemoryWithCompositeKey()
         
         // Track consolidation stats
         var stats = ConsolidationStats()
@@ -127,12 +127,12 @@ struct Consolidate: AsyncParsableCommand {
     ) {
         RomKitCLI.printSection("Dry Run Analysis")
         
-        var sampleROMs: [(crc: String, rom: IndexedROM)] = []
+        var sampleROMs: [(key: String, rom: IndexedROM)] = []
         
-        for (crc, romList) in allROMs.prefix(10) {
+        for (compositeKey, romList) in allROMs.prefix(10) {
             // Pick the best version (prefer archives over loose files)
             let bestROM = selectBestROM(from: romList)
-            sampleROMs.append((crc, bestROM))
+            sampleROMs.append((compositeKey, bestROM))
             stats.romsToConsolidate += 1
         }
         
@@ -141,8 +141,11 @@ struct Consolidate: AsyncParsableCommand {
         }
         
         print("\n📋 Sample ROMs to consolidate:")
-        for (index, (crc, rom)) in sampleROMs.enumerated() {
-            print("   \(index + 1). CRC: \(crc)")
+        for (index, (key, rom)) in sampleROMs.enumerated() {
+            let parts = key.split(separator: "_")
+            let crc = String(parts.first ?? "")
+            let size = parts.count > 1 ? String(parts[1]) : "0"
+            print("   \(index + 1). CRC: \(crc), Size: \(size) bytes")
             if verbose {
                 switch rom.location {
                 case .file(let url):
@@ -199,13 +202,13 @@ struct Consolidate: AsyncParsableCommand {
         await withTaskGroup(of: ConsolidationResult.self) { group in
             // Launch initial batch of tasks
             for index in 0..<min(maxParallel, romPairs.count) {
-                let (crc, romList) = romPairs[index]
+                let (compositeKey, romList) = romPairs[index]
                 let bestROM = selectBestROM(from: romList)
                 
                 group.addTask {
                     return await self.consolidateROM(
                         rom: bestROM,
-                        crc: crc,
+                        compositeKey: compositeKey,
                         outputURL: outputURL,
                         verify: self.verify
                     )
@@ -226,14 +229,14 @@ struct Consolidate: AsyncParsableCommand {
                 
                 // Launch next task if available
                 if nextIndex < romPairs.count {
-                    let (crc, romList) = romPairs[nextIndex]
+                    let (compositeKey, romList) = romPairs[nextIndex]
                     let bestROM = selectBestROM(from: romList)
                     nextIndex += 1
                     
                     group.addTask {
                         return await self.consolidateROM(
                             rom: bestROM,
-                            crc: crc,
+                            compositeKey: compositeKey,
                             outputURL: outputURL,
                             verify: self.verify
                         )
@@ -265,10 +268,12 @@ struct Consolidate: AsyncParsableCommand {
     
     private func consolidateROM(
         rom: IndexedROM,
-        crc: String,
+        compositeKey: String,
         outputURL: URL,
         verify: Bool
     ) async -> ConsolidationResult {
+        // Extract CRC from composite key (format: "crc32_size")
+        let crc = String(compositeKey.split(separator: "_").first ?? "")
         let outputFile = outputURL.appendingPathComponent(rom.name)
         
         // Skip if file already exists - use async check for better performance

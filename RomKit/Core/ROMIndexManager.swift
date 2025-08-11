@@ -200,6 +200,25 @@ public actor ROMIndexManager {
         return romsByCRC
     }
     
+    /// Load all ROMs into memory grouped by CRC32+size composite key for proper deduplication
+    public func loadIndexIntoMemoryWithCompositeKey() async -> [String: [IndexedROM]] {
+        // Get all ROMs from the index
+        let allROMs = await index.getAllROMs()
+        
+        // Group by CRC32+size composite key to handle CRC collisions
+        var romsByKey: [String: [IndexedROM]] = [:]
+        for rom in allROMs {
+            // Create composite key: CRC32_SIZE
+            let key = "\(rom.crc32.lowercased())_\(rom.size)"
+            if romsByKey[key] == nil {
+                romsByKey[key] = []
+            }
+            romsByKey[key]?.append(rom)
+        }
+        
+        return romsByKey
+    }
+    
     /// Find best sources for multiple ROMs using in-memory index
     public nonisolated func findBestSourcesBatch(for roms: [ROM], using memoryIndex: [String: [IndexedROM]]) -> [IndexedROM?] {
         var results: [IndexedROM?] = []
