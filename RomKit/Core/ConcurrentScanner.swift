@@ -11,12 +11,35 @@ public actor ConcurrentScanner {
 
     private let maxConcurrentScans: Int
     private let fileExtensions: Set<String>
+    private let useContentDetection: Bool
 
     public init(maxConcurrentScans: Int = ProcessInfo.processInfo.activeProcessorCount,
-                fileExtensions: Set<String> = ["zip", "7z", "rar", "chd"]) {
+                fileExtensions: Set<String>? = nil,
+                useContentDetection: Bool = true) {
         self.maxConcurrentScans = maxConcurrentScans
-        self.fileExtensions = fileExtensions
+        self.fileExtensions = fileExtensions ?? ConcurrentScanner.defaultExtensions
+        self.useContentDetection = useContentDetection
     }
+
+    /// Default file extensions to scan - includes both archives and common ROM formats
+    public static let defaultExtensions: Set<String> = [
+        // Archive formats
+        "zip", "7z", "rar", "chd",
+        // Common ROM extensions
+        "rom", "bin", "img", "iso",
+        // Nintendo
+        "nes", "sfc", "smc", "gb", "gbc", "gba", "nds", "3ds", "n64", "z64", "v64",
+        // Sega
+        "smd", "md", "gen", "gg", "sms", "32x", "scd",
+        // Sony
+        "pbp", "cso",
+        // Atari
+        "a26", "a52", "a78", "lnx", "jag",
+        // Other systems
+        "pce", "vb", "ws", "wsc", "ngp", "ngc",
+        // MAME
+        "chd"
+    ]
 
     public struct ScanResult: Sendable {
         public let url: URL
@@ -85,7 +108,17 @@ public actor ConcurrentScanner {
 
                     if resourceValues.isRegularFile == true {
                         let ext = fileURL.pathExtension.lowercased()
-                        if fileExtensions.isEmpty || fileExtensions.contains(ext) {
+
+                        // Fast path: known extensions
+                        if fileExtensions.contains(ext) {
+                            discoveredFiles.append(fileURL)
+                        }
+                        // Content-based detection for unknown extensions
+                        else if useContentDetection && ROMDetector.shouldIndexFile(at: fileURL) {
+                            discoveredFiles.append(fileURL)
+                        }
+                        // Legacy behavior: if no extensions specified, index everything
+                        else if fileExtensions.isEmpty {
                             discoveredFiles.append(fileURL)
                         }
                     }

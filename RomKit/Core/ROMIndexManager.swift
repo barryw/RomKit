@@ -181,12 +181,12 @@ public actor ROMIndexManager {
 
         return sorted.first
     }
-    
+
     /// Load all indexed ROMs into memory for fast batch lookups
     public func loadIndexIntoMemory() async -> [String: [IndexedROM]] {
         // Get all ROMs from the index
         let allROMs = await index.getAllROMs()
-        
+
         // Group by CRC32 for fast lookups
         var romsByCRC: [String: [IndexedROM]] = [:]
         for rom in allROMs {
@@ -196,15 +196,15 @@ public actor ROMIndexManager {
             }
             romsByCRC[crc]?.append(rom)
         }
-        
+
         return romsByCRC
     }
-    
+
     /// Load all ROMs into memory grouped by CRC32+size composite key for proper deduplication
     public func loadIndexIntoMemoryWithCompositeKey() async -> [String: [IndexedROM]] {
         // Get all ROMs from the index
         let allROMs = await index.getAllROMs()
-        
+
         // Group by CRC32+size composite key to handle CRC collisions
         var romsByKey: [String: [IndexedROM]] = [:]
         for rom in allROMs {
@@ -215,14 +215,14 @@ public actor ROMIndexManager {
             }
             romsByKey[key]?.append(rom)
         }
-        
+
         return romsByKey
     }
-    
+
     /// Find best sources for multiple ROMs using in-memory index
     public nonisolated func findBestSourcesBatch(for roms: [ROM], using memoryIndex: [String: [IndexedROM]]) -> [IndexedROM?] {
         var results: [IndexedROM?] = []
-        
+
         for rom in roms {
             if let crc = rom.crc?.lowercased(),
                let locations = memoryIndex[crc] {
@@ -243,7 +243,7 @@ public actor ROMIndexManager {
                 results.append(nil)
             }
         }
-        
+
         return results
     }
 

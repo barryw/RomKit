@@ -61,6 +61,20 @@ public enum ROMLocation: Codable, Hashable, Sendable {
             return false
         }
     }
+
+    public var isFile: Bool {
+        if case .file = self {
+            return true
+        }
+        return false
+    }
+
+    public var isArchive: Bool {
+        if case .archive = self {
+            return true
+        }
+        return false
+    }
 }
 
 /// Main ROM indexing system that catalogs ROMs from multiple sources

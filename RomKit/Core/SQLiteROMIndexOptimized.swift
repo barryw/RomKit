@@ -62,11 +62,21 @@ extension SQLiteROMIndex {
             var parameters: [Any] = []
 
             for file in batch {
-                // Skip CRC calculation for speed (can be done later if needed)
-                insertValues.append("(?, ?, NULL, NULL, NULL, 'file', ?, NULL, ?)")
+                // Use hash from scanner if available, otherwise compute for small files
+                let crc32: Any
+                if let hash = file.hash, !hash.isEmpty {
+                    crc32 = hash
+                } else if file.size < 10_000_000, let data = try? Data(contentsOf: file.url) {
+                    crc32 = HashUtilities.crc32(data: data)
+                } else {
+                    crc32 = NSNull()
+                }
+
+                insertValues.append("(?, ?, ?, NULL, NULL, 'file', ?, NULL, ?)")
                 parameters.append(contentsOf: [
                     file.url.lastPathComponent,
                     Int(file.size),
+                    crc32,
                     file.url.path,
                     Int(file.modificationDate.timeIntervalSince1970)
                 ])

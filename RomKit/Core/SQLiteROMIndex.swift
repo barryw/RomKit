@@ -33,7 +33,7 @@ public actor SQLiteROMIndex {
 
     internal nonisolated(unsafe) var db: OpaquePointer?
     internal let dbPath: URL
-    // Remove DispatchQueue to prevent mixing with Swift Concurrency  
+    // Remove DispatchQueue to prevent mixing with Swift Concurrency
     // All database operations will be properly serialized through the actor
 
     /// Statistics
@@ -150,6 +150,7 @@ public actor SQLiteROMIndex {
         }
 
         // Original implementation (kept for compatibility)
+        // Scanner will use default extensions (archives + common ROM formats)
         let scanner = ConcurrentScanner()
         let results = try await scanner.scanDirectory(
             at: directory,
@@ -202,13 +203,23 @@ public actor SQLiteROMIndex {
     }
 
     private func computeCRC32(for scanResult: ConcurrentScanner.ScanResult) async -> String {
-        if let hash = scanResult.hash {
+        // First try to use pre-computed hash from scanner
+        if let hash = scanResult.hash, !hash.isEmpty {
             return hash
-        } else if scanResult.size < 10_000_000 { // Compute for small files
+        }
+
+        // Fall back to computing it ourselves for files under 10MB
+        if scanResult.size < 10_000_000 {
             if let data = try? Data(contentsOf: scanResult.url) {
-                return HashUtilities.crc32(data: data)
+                let computed = HashUtilities.crc32(data: data)
+                if !computed.isEmpty {
+                    return computed
+                }
             }
         }
+
+        // For large files or if computation failed, return empty
+        // (CRC will be computed on-demand later if needed)
         return ""
     }
 
@@ -259,7 +270,7 @@ public actor SQLiteROMIndex {
     public func findByCRC(_ crc32: String) async -> [IndexedROM] {
         return await executeQuery(Queries.findByCRC, parameters: [crc32.lowercased()])
     }
-    
+
     /// Get all ROMs from the index (for batch operations)
     public func getAllROMs() async -> [IndexedROM] {
         let query = "SELECT name, size, crc32, sha1, md5, location_type, location_path, location_entry, last_modified FROM roms"
