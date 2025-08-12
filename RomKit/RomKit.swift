@@ -423,7 +423,7 @@ public class RomKit {
             indexManager = try await ROMIndexManager()
         }
         guard let manager = indexManager else {
-            throw RomKitError.internalError("Failed to initialize index manager")
+            throw RomKitError.scanFailed("Failed to initialize index manager")
         }
         return manager
     }
