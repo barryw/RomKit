@@ -161,6 +161,10 @@ public class RomKitGeneric {
         return formatHandler?.formatName
     }
 
+    public var currentFormatIdentifier: String? {
+        return formatHandler?.formatIdentifier
+    }
+
     public var currentDATFile: (any DATFormat)? {
         return datFile
     }

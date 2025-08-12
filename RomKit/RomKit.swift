@@ -133,6 +133,56 @@ import Foundation
 public class RomKit {
     private let genericKit = RomKitGeneric()
 
+    // MARK: - Public API Properties
+
+    /// Header information from the loaded DAT file
+    public var datHeader: DATHeader? {
+        guard let datFile = genericKit.datFile else { return nil }
+        let metadata = datFile.metadata
+        return DATHeader(
+            name: metadata.name,
+            description: metadata.description,
+            version: metadata.version ?? "Unknown",
+            author: metadata.author,
+            homepage: nil,  // Will need to check if available in metadata extensions
+            url: metadata.url,
+            date: metadata.date,
+            comment: metadata.comment
+        )
+    }
+
+    /// All games/machines from the loaded DAT file
+    public var games: [GameInfo] {
+        guard let datFile = genericKit.datFile else { return [] }
+        return datFile.games.map { gameEntry in
+            convertGameEntryToGameInfo(gameEntry)
+        }
+    }
+
+    /// Number of games in the loaded DAT file
+    public var gameCount: Int {
+        genericKit.datFile?.games.count ?? 0
+    }
+
+    /// Total number of ROMs across all games
+    public var totalROMCount: Int {
+        guard let datFile = genericKit.datFile else { return 0 }
+        return datFile.games.reduce(0) { total, game in
+            total + game.items.count
+        }
+    }
+
+    /// The format of the loaded DAT file
+    public var datFormat: DATFormatType {
+        guard let format = genericKit.currentFormatIdentifier else { return .unknown }
+        return DATFormatType(rawValue: format) ?? .unknown
+    }
+
+    /// Returns true if a DAT file is currently loaded
+    public var isDATLoaded: Bool {
+        return genericKit.isLoaded
+    }
+
     /// Initialize a new RomKit instance
     /// - Parameter concurrencyLevel: Maximum number of concurrent operations (defaults to processor count)
     public init(concurrencyLevel: Int = ProcessInfo.processInfo.processorCount) {
@@ -307,7 +357,128 @@ public class RomKit {
         )
     }
 
+    // MARK: - Search/Query Methods
+
+    /// Find a game by its exact name
+    /// - Parameter name: The exact name of the game to find
+    /// - Returns: The game information if found, nil otherwise
+    public func findGame(name: String) -> GameInfo? {
+        return games.first { $0.name == name }
+    }
+
+    /// Find games that contain ROMs with the specified CRC
+    /// - Parameter crc: The CRC32 checksum to search for
+    /// - Returns: Array of games containing ROMs with the specified CRC
+    public func findGamesByCRC(_ crc: String) -> [GameInfo] {
+        let normalizedCRC = crc.lowercased()
+        return games.filter { game in
+            game.roms.contains { rom in
+                rom.crc.lowercased() == normalizedCRC
+            }
+        }
+    }
+
+    /// Get all game names from the loaded DAT
+    /// - Returns: Array of all game names
+    public func getAllGameNames() -> [String] {
+        return games.map { $0.name }
+    }
+
+    /// Search for games by description (case-insensitive partial match)
+    /// - Parameter searchText: Text to search for in game descriptions
+    /// - Returns: Array of games with matching descriptions
+    public func searchGamesByDescription(_ searchText: String) -> [GameInfo] {
+        let lowercaseSearch = searchText.lowercased()
+        return games.filter { game in
+            game.description?.lowercased().contains(lowercaseSearch) ?? false
+        }
+    }
+
+    /// Get all parent games (non-clones)
+    /// - Returns: Array of parent games
+    public func getParentGames() -> [GameInfo] {
+        return games.filter { $0.isParent }
+    }
+
+    /// Get all clone games
+    /// - Returns: Array of clone games
+    public func getCloneGames() -> [GameInfo] {
+        return games.filter { $0.isClone }
+    }
+
+    /// Get clones of a specific parent game
+    /// - Parameter parentName: Name of the parent game
+    /// - Returns: Array of clone games
+    public func getClones(of parentName: String) -> [GameInfo] {
+        return games.filter { $0.cloneOf == parentName }
+    }
+
     // MARK: - Conversion Helpers
+
+    private func convertGameEntryToGameInfo(_ gameEntry: any GameEntry) -> GameInfo {
+        // Extract metadata
+        var year: String?
+        var manufacturer: String?
+        var cloneOf: String?
+        var romOf: String?
+        var isBios = false
+        var isDevice = false
+
+        if let mameMetadata = gameEntry.metadata as? MAMEGameMetadata {
+            year = mameMetadata.year
+            manufacturer = mameMetadata.manufacturer
+            cloneOf = mameMetadata.cloneOf
+            romOf = mameMetadata.romOf
+            isBios = mameMetadata.isBios
+            isDevice = mameMetadata.isDevice
+        } else {
+            // Generic metadata
+            year = gameEntry.metadata.year
+            manufacturer = gameEntry.metadata.manufacturer
+            cloneOf = gameEntry.metadata.cloneOf
+            romOf = gameEntry.metadata.romOf
+        }
+
+        // Convert ROMs
+        let roms = gameEntry.items.map { item in
+            ROMEntry(
+                name: item.name,
+                size: Int(item.size),
+                crc: item.checksums.crc32 ?? "",
+                md5: item.checksums.md5,
+                sha1: item.checksums.sha1,
+                status: item.status.rawValue,
+                merge: item.attributes.merge
+            )
+        }
+
+        // Extract disks if this is a MAME game
+        var disks: [DiskInfo] = []
+        if let mameGame = gameEntry as? MAMEGame {
+            disks = mameGame.disks.map { disk in
+                DiskInfo(
+                    name: disk.name,
+                    sha1: disk.checksums.sha1 ?? "",
+                    md5: disk.checksums.md5,
+                    status: disk.status.rawValue,
+                    merge: disk.attributes.merge
+                )
+            }
+        }
+
+        return GameInfo(
+            name: gameEntry.name,
+            description: gameEntry.description,
+            year: year,
+            manufacturer: manufacturer,
+            cloneOf: cloneOf,
+            romOf: romOf,
+            isBios: isBios,
+            isDevice: isDevice,
+            roms: roms,
+            disks: disks
+        )
+    }
 
     private func convertToLegacyScanResult(_ results: any ScanResults) -> ScanResult {
         let foundGames = results.foundGames.compactMap { game in
