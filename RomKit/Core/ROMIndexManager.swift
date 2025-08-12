@@ -292,7 +292,7 @@ public actor ROMIndexManager {
         )
     }
 
-    private func generateRecommendations(stats: IndexStatistics, duplicates: [DuplicateEntry]) -> [String] {
+    private func generateRecommendations(stats: InternalIndexStatistics, duplicates: [DuplicateEntry]) -> [String] {
         var recommendations: [String] = []
 
         // Check for excessive duplication
@@ -361,33 +361,86 @@ public actor ROMIndexManager {
 // MARK: - Data Types
 
 /// Information about a ROM and all its locations
+///
+/// This type represents a ROM file with all the locations where it has been found.
+/// It includes checksum information and file size for validation purposes.
 public struct ROMInfo: Sendable {
+    /// The CRC32 checksum of the ROM (hexadecimal string)
     public let crc32: String
+
+    /// The name of the ROM file
     public let name: String
+
+    /// The size of the ROM in bytes
     public let size: UInt64
+
+    /// All locations where this ROM has been found
     public let locations: [ROMLocationInfo]
 
+    /// Number of copies of this ROM across all locations
     public var copyCount: Int { locations.count }
+
+    /// Whether this ROM exists in multiple locations
     public var hasDuplicates: Bool { locations.count > 1 }
+
+    public init(crc32: String, name: String, size: UInt64, locations: [ROMLocationInfo]) {
+        self.crc32 = crc32
+        self.name = name
+        self.size = size
+        self.locations = locations
+    }
 }
 
 /// Search result for ROM queries
 public struct ROMSearchResult: Sendable {
+    /// The name of the ROM file
     public let name: String
+
+    /// The CRC32 checksum (optional, as some searches may not have it)
     public let crc32: String?
+
+    /// The size of the ROM in bytes
     public let size: UInt64
+
+    /// The path where this ROM was found
     public let location: String
+
+    public init(name: String, crc32: String?, size: UInt64, location: String) {
+        self.name = name
+        self.crc32 = crc32
+        self.size = size
+        self.location = location
+    }
 }
 
-/// Information about a ROM location
+/// Information about where a ROM is located
+///
+/// This type provides details about a specific location where a ROM file exists,
+/// including whether it's a local file or in a remote location, and when it was last verified.
 public struct ROMLocationInfo: Sendable {
+    /// The file system path or URL to the ROM
+    /// For local files, this will be a file path
+    /// For archives, this will include the archive path and entry name
     public let path: String
+
+    /// The type of location (local file system or remote)
     public let type: LocationType
+
+    /// When this location was last verified to exist
     public let lastVerified: Date
 
+    /// Type of ROM location
     public enum LocationType: Sendable {
+        /// ROM is on the local file system
         case local
+        /// ROM is in a remote location
         case remote
+    }
+
+    public init(path: String, type: LocationType, lastVerified: Date) {
+        self.path = path
+        self.type = type
+        self.lastVerified = lastVerified
     }
 }
 
@@ -552,13 +605,13 @@ extension SQLiteROMIndex {
     }
 
     /// Get statistics with additional details
-    public func getStatistics() async -> IndexStatistics {
+    internal func getStatistics() async -> InternalIndexStatistics {
         await updateStatistics()
 
         let sources = await getSources()
         let newROMs = 0 // Would need to track this during indexing
 
-        return IndexStatistics(
+        return InternalIndexStatistics(
             totalROMs: totalROMs,
             totalSize: totalSize,
             uniqueCRCs: await getUniqueCRCCount(),
@@ -588,8 +641,8 @@ extension SQLiteROMIndex {
     }
 }
 
-// IndexStatistics structure for tracking index metrics
-public struct IndexStatistics: Sendable {
+// InternalIndexStatistics structure for tracking index metrics
+internal struct InternalIndexStatistics: Sendable {
     public let totalROMs: Int
     public let totalSize: UInt64
     public let uniqueCRCs: Int

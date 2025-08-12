@@ -393,8 +393,8 @@ public actor ROMIndex {
         print("  Sources: \(sourcePaths.count)")
     }
 
-    public func getStatistics() -> IndexStatistics {
-        return IndexStatistics(
+    internal func getStatistics() -> InternalIndexStatistics {
+        return InternalIndexStatistics(
             totalROMs: totalROMs,
             totalSize: totalSize,
             uniqueCRCs: romsByCRC.count,

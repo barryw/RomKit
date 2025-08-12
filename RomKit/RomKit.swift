@@ -19,6 +19,7 @@ import Foundation
 /// - Rebuild ROM sets in various formats (split, merged, non-merged)
 /// - Handle archive formats (ZIP, 7z) transparently
 /// - Detect and manage duplicate ROMs across multiple sources
+/// - Index and manage ROM locations for fast lookups and deduplication
 ///
 /// ## Quick Start
 ///
@@ -132,6 +133,7 @@ import Foundation
 /// - ``RomKitError``
 public class RomKit {
     private let genericKit = RomKitGeneric()
+    private var indexManager: ROMIndexManager?
 
     // MARK: - Public API Properties
 
@@ -411,6 +413,118 @@ public class RomKit {
     /// - Returns: Array of clone games
     public func getClones(of parentName: String) -> [GameInfo] {
         return games.filter { $0.cloneOf == parentName }
+    }
+
+    // MARK: - Index Management APIs
+
+    /// Initialize or get the index manager
+    private func ensureIndexManager() async throws -> ROMIndexManager {
+        if indexManager == nil {
+            indexManager = try await ROMIndexManager()
+        }
+        guard let manager = indexManager else {
+            throw RomKitError.internalError("Failed to initialize index manager")
+        }
+        return manager
+    }
+
+    /// Get all directories that have been indexed
+    /// - Returns: Array of indexed source URLs
+    public func getSources() async throws -> [URL] {
+        let manager = try await ensureIndexManager()
+        let sources = await manager.listSources()
+        return sources.map { URL(fileURLWithPath: $0.path) }
+    }
+
+    /// Get all indexed directories with details
+    /// - Returns: Array of IndexedSource with path and statistics
+    public func getIndexedDirectories() async throws -> [IndexedSource] {
+        let manager = try await ensureIndexManager()
+        let sources = await manager.listSources()
+        return sources.map { source in
+            IndexedSource(
+                path: URL(fileURLWithPath: source.path),
+                totalROMs: source.romCount,
+                totalSize: Int64(source.totalSize),
+                lastIndexed: source.lastScan
+            )
+        }
+    }
+
+    /// Get detailed statistics for an indexed directory
+    /// - Parameter source: The directory URL to get statistics for
+    /// - Returns: Statistics for the specified directory, or nil if not indexed
+    public func getStatistics(for source: URL) async throws -> IndexStatistics? {
+        let manager = try await ensureIndexManager()
+        let sources = await manager.listSources()
+
+        // Find the source matching the requested path
+        guard let sourceInfo = sources.first(where: {
+            URL(fileURLWithPath: $0.path).standardized.path == source.standardized.path
+        }) else {
+            return nil
+        }
+
+        // Get duplicate info for this source
+        let duplicates = await manager.findDuplicates(minCopies: 2)
+        let sourceDuplicates = duplicates.filter { dup in
+            dup.locations.contains { loc in
+                loc.hasPrefix(source.path)
+            }
+        }
+
+        // Count unique games (simplified - in real implementation would need DAT info)
+        let uniqueGames = sourceInfo.romCount
+
+        // Count archives and CHDs
+        let fileManager = FileManager.default
+        var archives = 0
+        var chds = 0
+
+        if let enumerator = fileManager.enumerator(at: source, includingPropertiesForKeys: [.isRegularFileKey]) {
+            while let element = enumerator.nextObject() {
+                if let fileURL = element as? URL {
+                    let pathExtension = fileURL.pathExtension.lowercased()
+                    if pathExtension == "zip" || pathExtension == "7z" {
+                        archives += 1
+                    } else if pathExtension == "chd" {
+                        chds += 1
+                    }
+                }
+            }
+        }
+
+        return IndexStatistics(
+            path: source,
+            totalROMs: sourceInfo.romCount,
+            uniqueGames: uniqueGames,
+            duplicates: sourceDuplicates.count,
+            archives: archives,
+            chds: chds,
+            totalSize: Int64(sourceInfo.totalSize),
+            lastIndexed: sourceInfo.lastScan
+        )
+    }
+
+    /// Remove a directory from the index
+    /// - Parameter url: The directory URL to remove
+    public func removeSource(_ url: URL) async throws {
+        let manager = try await ensureIndexManager()
+        try await manager.removeSource(url, showProgress: false)
+    }
+
+    /// Re-scan a directory and update the index
+    /// - Parameter url: The directory URL to refresh
+    public func refreshSource(_ url: URL) async throws {
+        let manager = try await ensureIndexManager()
+        try await manager.refreshSources([url], showProgress: false)
+    }
+
+    /// Add a new directory to the index
+    /// - Parameter url: The directory URL to add
+    public func addSource(_ url: URL) async throws {
+        let manager = try await ensureIndexManager()
+        try await manager.addSource(url, showProgress: false)
     }
 
     // MARK: - Conversion Helpers
