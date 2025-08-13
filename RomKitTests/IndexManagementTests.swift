@@ -12,12 +12,18 @@ final class IndexManagementTests: XCTestCase {
     
     var romkit: RomKit!
     var testDirectory: URL!
+    var testDatabasePath: URL!
     
     override func setUp() async throws {
-        romkit = RomKit()
+        // Create a unique database path for this test to avoid conflicts in parallel testing
+        let tempDir = FileManager.default.temporaryDirectory
+        let testID = UUID().uuidString
+        testDatabasePath = tempDir.appendingPathComponent("test_db_\(testID).sqlite")
+        
+        // Initialize RomKit with custom database path
+        romkit = RomKit(indexDatabasePath: testDatabasePath)
         
         // Create a temporary directory for testing
-        let tempDir = FileManager.default.temporaryDirectory
         testDirectory = tempDir.appendingPathComponent("RomKitIndexTests_\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: testDirectory, withIntermediateDirectories: true)
         
@@ -45,6 +51,13 @@ final class IndexManagementTests: XCTestCase {
         // Clean up test directory
         if let testDirectory = testDirectory {
             try? FileManager.default.removeItem(at: testDirectory)
+        }
+        // Clean up test database
+        if let testDatabasePath = testDatabasePath {
+            try? FileManager.default.removeItem(at: testDatabasePath)
+            // Also try to remove any associated files (WAL, SHM)
+            try? FileManager.default.removeItem(at: testDatabasePath.appendingPathExtension("wal"))
+            try? FileManager.default.removeItem(at: testDatabasePath.appendingPathExtension("shm"))
         }
         romkit = nil
     }

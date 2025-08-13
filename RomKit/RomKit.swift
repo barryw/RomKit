@@ -134,6 +134,7 @@ import Foundation
 public class RomKit {
     private let genericKit = RomKitGeneric()
     private var indexManager: ROMIndexManager?
+    private var customIndexDatabasePath: URL?
 
     // MARK: - Public API Properties
 
@@ -186,9 +187,12 @@ public class RomKit {
     }
 
     /// Initialize a new RomKit instance
-    /// - Parameter concurrencyLevel: Maximum number of concurrent operations (defaults to processor count)
-    public init(concurrencyLevel: Int = ProcessInfo.processInfo.processorCount) {
+    /// - Parameters:
+    ///   - concurrencyLevel: Maximum number of concurrent operations (defaults to processor count)
+    ///   - indexDatabasePath: Custom path for index database (for testing purposes)
+    public init(concurrencyLevel: Int = ProcessInfo.processInfo.processorCount, indexDatabasePath: URL? = nil) {
         // Concurrency level is now handled internally by each scanner
+        self.customIndexDatabasePath = indexDatabasePath
     }
 
     /// Load a DAT file from the specified path
@@ -420,7 +424,7 @@ public class RomKit {
     /// Initialize or get the index manager
     private func ensureIndexManager() async throws -> ROMIndexManager {
         if indexManager == nil {
-            indexManager = try await ROMIndexManager()
+            indexManager = try await ROMIndexManager(databasePath: customIndexDatabasePath)
         }
         guard let manager = indexManager else {
             throw RomKitError.scanFailed("Failed to initialize index manager")
