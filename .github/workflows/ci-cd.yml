@@ -71,7 +71,7 @@ jobs:
     - name: Run Tests with Coverage
       run: |
         # Run tests with code coverage (using release mode for consistency with local development)
-        swift test --configuration release --enable-code-coverage --parallel
+        swift test --configuration release --enable-code-coverage
         
         # Detect architecture
         ARCH=$(uname -m)
