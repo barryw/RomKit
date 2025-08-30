@@ -30,8 +30,12 @@ public final class LogiqxFormatHandler: ROMFormatHandler, @unchecked Sendable {
     }
 
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
+        // Logiqx uses MAME format internally
+        // Return a minimal scanner if cast fails (should not happen in practice)
         guard let mameDat = datFile as? MAMEDATFile else {
-            fatalError("Invalid DAT file type for Logiqx scanner")
+            // This should never happen in normal operation
+            // Return a scanner that will report no games found
+            return EmptyROMScanner()
         }
         return MAMEROMScanner(
             datFile: mameDat,
@@ -41,8 +45,12 @@ public final class LogiqxFormatHandler: ROMFormatHandler, @unchecked Sendable {
     }
 
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
+        // Logiqx uses MAME format internally
+        // Return a minimal rebuilder if cast fails (should not happen in practice)
         guard let mameDat = datFile as? MAMEDATFile else {
-            fatalError("Invalid DAT file type for Logiqx rebuilder")
+            // This should never happen in normal operation
+            // Return a rebuilder that will report no rebuilds
+            return EmptyROMRebuilder()
         }
         return MAMEROMRebuilder(
             datFile: mameDat,

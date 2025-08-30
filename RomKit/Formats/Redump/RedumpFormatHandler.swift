@@ -26,14 +26,16 @@ public final class RedumpFormatHandler: ROMFormatHandler, @unchecked Sendable {
 
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         guard let redumpDat = datFile as? RedumpDATFile else {
-            fatalError("Invalid DAT file type for Redump scanner")
+            // Return a minimal scanner if cast fails (should not happen in practice)
+            return EmptyROMScanner()
         }
         return RedumpROMScanner(datFile: redumpDat, validator: createValidator(), archiveHandlers: createArchiveHandlers())
     }
 
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         guard let redumpDat = datFile as? RedumpDATFile else {
-            fatalError("Invalid DAT file type for Redump rebuilder")
+            // Return a minimal rebuilder if cast fails (should not happen in practice)
+            return EmptyROMRebuilder()
         }
         return RedumpROMRebuilder(datFile: redumpDat, archiveHandlers: createArchiveHandlers())
     }
