@@ -36,10 +36,13 @@ typedef struct {
     size_t tempSize;
 } SevenZipArchiveImpl;
 
-// Initialize lib7z
+// Initialize lib7z with thread safety
 int lib7z_init(void) {
-    if (!g_CrcTableInitialized) {
+    static int initialized = 0;
+    if (!initialized) {
+        // Initialize CRC tables once
         CrcGenerateTable();
+        initialized = 1;
         g_CrcTableInitialized = 1;
     }
     return 1;

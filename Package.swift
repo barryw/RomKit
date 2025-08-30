@@ -50,7 +50,13 @@ let package = Package(
                 .headerSearchPath("."),
                 .define("_FILE_OFFSET_BITS", to: "64"),
                 .define("_LARGEFILE_SOURCE"),
-                .define("_7ZIP_ST")  // Single-threaded mode for simplicity
+                .define("_7ZIP_ST"),  // Single-threaded mode for simplicity
+                // Add compatibility flags for CI
+                .unsafeFlags([
+                    "-fno-strict-aliasing",
+                    "-fno-common",
+                    "-O0"  // Disable optimizations to avoid potential issues
+                ])
             ]
         ),
         .target(
