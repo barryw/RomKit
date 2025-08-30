@@ -11,8 +11,23 @@ import Foundation
 /// This is used as a fallback when lib7z has issues (e.g., in CI)
 public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     public let supportedExtensions = ["7z"]
+    private let sevenZipPath: String
     
-    public init() {}
+    public init() {
+        // Try to find 7z in common locations
+        let possiblePaths = [
+            "/opt/homebrew/bin/7z",     // Apple Silicon homebrew
+            "/usr/local/bin/7z",         // Intel homebrew
+            "/usr/bin/7z",               // System location
+            "/opt/local/bin/7z",         // MacPorts
+            "/usr/local/bin/7za",        // Alternative name
+            "/opt/homebrew/bin/7za"      // Alternative name on Apple Silicon
+        ]
+        
+        self.sevenZipPath = possiblePaths.first { path in
+            FileManager.default.fileExists(atPath: path)
+        } ?? "/usr/local/bin/7z"  // Default fallback
+    }
     
     public func canHandle(url: URL) -> Bool {
         guard supportedExtensions.contains(url.pathExtension.lowercased()) else {
@@ -26,7 +41,7 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     public func listContents(of url: URL) throws -> [ArchiveEntry] {
         // Use 7z l command to list contents
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/local/bin/7z")
+        process.executableURL = URL(fileURLWithPath: sevenZipPath)
         process.arguments = ["l", "-slt", url.path]
         
         let pipe = Pipe()
@@ -84,7 +99,7 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
         
         // Extract specific file
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/local/bin/7z")
+        process.executableURL = URL(fileURLWithPath: sevenZipPath)
         process.arguments = ["e", "-o\(tempDir.path)", url.path, entry.path, "-y"]
         process.standardOutput = Pipe()
         process.standardError = Pipe()
@@ -108,7 +123,7 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     public func extractAll(from url: URL, to destinationURL: URL) throws {
         // Extract all files
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/local/bin/7z")
+        process.executableURL = URL(fileURLWithPath: sevenZipPath)
         process.arguments = ["x", "-o\(destinationURL.path)", url.path, "-y"]
         process.standardOutput = Pipe()
         process.standardError = Pipe()
@@ -140,7 +155,7 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
         
         // Create 7z archive
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/local/bin/7z")
+        process.executableURL = URL(fileURLWithPath: sevenZipPath)
         process.arguments = ["a", "-t7z", url.path, "\(tempDir.path)/*", "-mx=5"]
         process.standardOutput = Pipe()
         process.standardError = Pipe()
