@@ -70,8 +70,9 @@ jobs:
 
     - name: Run Tests with Coverage
       run: |
-        # Run tests with code coverage in debug mode for CI stability
-        swift test --configuration debug --enable-code-coverage
+        # Run tests WITHOUT coverage to avoid crashes in CI
+        # TODO: Re-enable coverage once stability issues are resolved
+        swift test --configuration debug
         
         # Detect architecture
         ARCH=$(uname -m)
@@ -87,7 +88,7 @@ jobs:
         # Find the test executable (debug mode)
         XCTEST_BUNDLE=$(find ".build/$SWIFT_ARCH/debug" -name "*.xctest" -type d | head -n 1)
         
-        # Export coverage for all source files
+        # Export coverage for all source files (skipped when coverage is disabled)
         if [ -f "$PROFDATA_PATH" ] && [ -n "$XCTEST_BUNDLE" ]; then
           echo "Found profdata at: $PROFDATA_PATH"
           echo "Found test bundle at: $XCTEST_BUNDLE"
