@@ -14,12 +14,15 @@ public class RomKitCache {
     private let queue = DispatchQueue(label: "com.romkit.cache", attributes: .concurrent)
 
     public init() {
-        // Use app support directory for cache
-        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory,
-                                                        in: .userDomainMask).first else {
-            fatalError("Unable to locate application support directory")
+        // Use app support directory for cache, or temp directory as fallback
+        if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory,
+                                                     in: .userDomainMask).first {
+            self.cacheDirectory = appSupport.appendingPathComponent("RomKit/Cache")
+        } else {
+            // Fallback to temp directory (for CI or restricted environments)
+            self.cacheDirectory = FileManager.default.temporaryDirectory
+                .appendingPathComponent("RomKit/Cache")
         }
-        self.cacheDirectory = appSupport.appendingPathComponent("RomKit/Cache")
 
         // Create cache directory if needed
         try? FileManager.default.createDirectory(at: cacheDirectory,
