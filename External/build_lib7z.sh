@@ -66,7 +66,9 @@ SOURCES=(
 CFLAGS="-O2 -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DNDEBUG"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    CFLAGS="$CFLAGS -arch arm64 -arch x86_64"
+    # Set deployment target for macOS 14 compatibility
+    export MACOSX_DEPLOYMENT_TARGET=14.0
+    CFLAGS="$CFLAGS -arch arm64 -arch x86_64 -mmacosx-version-min=14.0"
 fi
 
 # Compile each source file

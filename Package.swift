@@ -31,7 +31,7 @@ let package = Package(
             ],
             linkerSettings: [
                 // Link the lib7z.a file directly
-                .unsafeFlags(["RomKit/Lib7Zip/lib7z.a"])
+                .unsafeFlags(["/Users/barry/XCode Projects/RomKit/RomKit/Lib7Zip/lib7z.a"])
             ]
         ),
         .target(
