@@ -11,7 +11,7 @@ import Foundation
 /// This is used as a fallback when lib7z has issues (e.g., in CI)
 public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     public let supportedExtensions = ["7z"]
-    private let sevenZipPath: String
+    private let sevenZipPath: String?
     
     public init() {
         // Try to find 7z in common locations
@@ -26,10 +26,15 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
         
         self.sevenZipPath = possiblePaths.first { path in
             FileManager.default.fileExists(atPath: path)
-        } ?? "/usr/local/bin/7z"  // Default fallback
+        }
     }
     
     public func canHandle(url: URL) -> Bool {
+        // First check if 7z command is available
+        guard sevenZipPath != nil else {
+            return false
+        }
+        
         guard supportedExtensions.contains(url.pathExtension.lowercased()) else {
             return false
         }
@@ -39,6 +44,10 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func listContents(of url: URL) throws -> [ArchiveEntry] {
+        guard let sevenZipPath = sevenZipPath else {
+            throw ArchiveError.unsupportedFormat("7z command not found")
+        }
+        
         // Use 7z l command to list contents
         let process = Process()
         process.executableURL = URL(fileURLWithPath: sevenZipPath)
@@ -91,6 +100,10 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func extract(entry: ArchiveEntry, from url: URL) throws -> Data {
+        guard let sevenZipPath = sevenZipPath else {
+            throw ArchiveError.unsupportedFormat("7z command not found")
+        }
+        
         // Create temp directory for extraction
         let tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("7z_extract_\(UUID().uuidString)")
@@ -121,6 +134,10 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func extractAll(from url: URL, to destinationURL: URL) throws {
+        guard let sevenZipPath = sevenZipPath else {
+            throw ArchiveError.unsupportedFormat("7z command not found")
+        }
+        
         // Extract all files
         let process = Process()
         process.executableURL = URL(fileURLWithPath: sevenZipPath)
@@ -137,6 +154,9 @@ public final class CommandLine7zHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func create(at url: URL, with files: [(name: String, data: Data)]) throws {
+        guard let sevenZipPath = sevenZipPath else {
+            throw ArchiveError.unsupportedFormat("7z command not found")
+        }
         // Create temp directory
         let tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("7z_create_\(UUID().uuidString)")
