@@ -9,6 +9,7 @@ import Testing
 import Foundation
 @testable import RomKit
 
+@Suite(.disabled(if: ProcessInfo.processInfo.environment["CI"] != nil, "Skipping Metal tests in CI"))
 struct MetalCompressionHandlerTests {
 
     @Test func testHandlerCreation() {

@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import RomKit
 
-@Suite("CPU vs GPU Performance Comparison")
+@Suite("CPU vs GPU Performance Comparison", .disabled(if: ProcessInfo.processInfo.environment["CI"] != nil, "Skipping GPU tests in CI"))
 struct PerformanceComparisonTests {
 
     // Test data sizes for different scenarios - reduced for stability
