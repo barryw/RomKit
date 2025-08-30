@@ -70,9 +70,9 @@ jobs:
 
     - name: Run Tests with Coverage
       run: |
-        # Run tests WITHOUT coverage to avoid crashes in CI
+        # Run tests WITHOUT coverage and without parallelization to avoid crashes in CI
         # TODO: Re-enable coverage once stability issues are resolved
-        swift test --configuration debug
+        swift test --configuration debug --no-parallel -j 1
         
         # Detect architecture
         ARCH=$(uname -m)
