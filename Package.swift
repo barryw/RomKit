@@ -1,6 +1,10 @@
 // swift-tools-version: 6.0
 
 import PackageDescription
+import Foundation
+
+// Get the package directory path
+let packageDir = Context.packageDirectory
 
 let package = Package(
     name: "RomKit",
@@ -31,7 +35,7 @@ let package = Package(
             ],
             linkerSettings: [
                 // Link the lib7z.a file directly
-                .unsafeFlags(["/Users/barry/XCode Projects/RomKit/RomKit/Lib7Zip/lib7z.a"])
+                .unsafeFlags(["\(packageDir)/RomKit/Lib7Zip/lib7z.a"])
             ]
         ),
         .target(
