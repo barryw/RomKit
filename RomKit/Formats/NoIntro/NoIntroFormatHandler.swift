@@ -26,14 +26,16 @@ public final class NoIntroFormatHandler: ROMFormatHandler, @unchecked Sendable {
 
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         guard let noIntroDat = datFile as? NoIntroDATFile else {
-            fatalError("Invalid DAT file type for No-Intro scanner")
+            print("Warning: Invalid DAT file type for No-Intro scanner, expected MAMEDATFile")
+            return NoOpROMScanner()
         }
         return NoIntroROMScanner(datFile: noIntroDat, validator: createValidator(), archiveHandlers: createArchiveHandlers())
     }
 
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         guard let noIntroDat = datFile as? NoIntroDATFile else {
-            fatalError("Invalid DAT file type for No-Intro rebuilder")
+            print("Warning: Invalid DAT file type for No-Intro rebuilder, expected MAMEDATFile")
+            return NoOpROMRebuilder()
         }
         return NoIntroROMRebuilder(datFile: noIntroDat, archiveHandlers: createArchiveHandlers())
     }
