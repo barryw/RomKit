@@ -71,7 +71,7 @@ jobs:
     - name: Run Tests with Coverage
       run: |
         # Run all tests in debug mode sequentially to avoid race conditions
-        swift test --configuration debug --disable-parallel-testing
+        swift test --configuration debug --no-parallel
         
         # Detect architecture
         ARCH=$(uname -m)
