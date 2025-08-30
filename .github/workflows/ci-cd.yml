@@ -70,8 +70,8 @@ jobs:
 
     - name: Run Tests with Coverage
       run: |
-        # Run all tests in debug mode with verbose output to identify which test crashes
-        swift test --configuration debug --verbose
+        # Run all tests in debug mode sequentially to avoid race conditions
+        swift test --configuration debug --parallel-testing-enabled false
         
         # Detect architecture
         ARCH=$(uname -m)
