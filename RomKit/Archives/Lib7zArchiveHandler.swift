@@ -62,7 +62,9 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
                 }
                 
                 let path = withUnsafeBytes(of: entry.path) { bytes in
-                    let ptr = bytes.bindMemory(to: CChar.self).baseAddress!
+                    guard let ptr = bytes.bindMemory(to: CChar.self).baseAddress else {
+                        return ""
+                    }
                     return String(cString: ptr)
                 }
                 
@@ -101,7 +103,9 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
                 }
                 
                 let entryPath = withUnsafeBytes(of: entryInfo.path) { bytes in
-                    let ptr = bytes.bindMemory(to: CChar.self).baseAddress!
+                    guard let ptr = bytes.bindMemory(to: CChar.self).baseAddress else {
+                        return ""
+                    }
                     return String(cString: ptr)
                 }
                 if entryPath == entry.path {
