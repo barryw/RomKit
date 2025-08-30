@@ -182,7 +182,7 @@ struct SevenZipIntegrationTests {
         
         // 1. Non-existent file
         let nonExistent = URL(fileURLWithPath: "/tmp/does_not_exist.7z")
-        #expect(throws: Error.self) {
+        #expect(throws: (any Error).self) {
             _ = try handler.listContents(of: nonExistent)
         }
         
