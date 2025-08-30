@@ -21,6 +21,7 @@ public enum ArchiveError: Error, LocalizedError {
     case unsupportedFormat(String)
     case extractionFailed(String)
     case invalidFileName(String)
+    case creationFailed(String)
 
     public var errorDescription: String? {
         switch self {
@@ -36,6 +37,8 @@ public enum ArchiveError: Error, LocalizedError {
             return "Extraction failed: \(message)"
         case .invalidFileName(let name):
             return "Invalid file name: \(name)"
+        case .creationFailed(let message):
+            return "Archive creation failed: \(message)"
         }
     }
 }
