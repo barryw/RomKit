@@ -13,12 +13,30 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
     
     static let shared = SevenZipArchiveHandler()
     
+    private let useCommandLine: Bool
+    private let commandLineHandler: CommandLine7zHandler?
+    
     public init() {
-        // Initialize lib7z once
-        _ = Lib7zInitializer.shared
+        // Check if we're in CI environment
+        let isCI = ProcessInfo.processInfo.environment["CI"] != nil
+        self.useCommandLine = isCI
+        
+        if isCI {
+            // Use command-line handler in CI
+            self.commandLineHandler = CommandLine7zHandler()
+        } else {
+            // Initialize lib7z for local usage
+            _ = Lib7zInitializer.shared
+            self.commandLineHandler = nil
+        }
     }
     
     public func canHandle(url: URL) -> Bool {
+        // Delegate to command-line handler if in CI
+        if let cmdHandler = commandLineHandler {
+            return cmdHandler.canHandle(url: url)
+        }
+        
         guard supportedExtensions.contains(url.pathExtension.lowercased()) else {
             return false
         }
@@ -36,6 +54,11 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func listContents(of url: URL) throws -> [ArchiveEntry] {
+        // Delegate to command-line handler if in CI
+        if let cmdHandler = commandLineHandler {
+            return try cmdHandler.listContents(of: url)
+        }
+        
         return try url.withUnsafeFileSystemRepresentation { path in
             guard let path = path else {
                 throw ArchiveError.cannotOpenArchive(url.path)
@@ -82,6 +105,11 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func extract(entry: ArchiveEntry, from url: URL) throws -> Data {
+        // Delegate to command-line handler if in CI
+        if let cmdHandler = commandLineHandler {
+            return try cmdHandler.extract(entry: entry, from: url)
+        }
+        
         return try url.withUnsafeFileSystemRepresentation { archivePath in
             guard let archivePath = archivePath else {
                 throw ArchiveError.cannotOpenArchive(url.path)
@@ -131,6 +159,11 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func extractAll(from url: URL, to destination: URL) throws {
+        // Delegate to command-line handler if in CI
+        if let cmdHandler = commandLineHandler {
+            return try cmdHandler.extractAll(from: url, to: destination)
+        }
+        
         let entries = try listContents(of: url)
         
         // Create destination directory if needed
@@ -155,6 +188,11 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
     }
     
     public func create(at url: URL, with entries: [(name: String, data: Data)]) throws {
+        // Delegate to command-line handler if in CI
+        if let cmdHandler = commandLineHandler {
+            return try cmdHandler.create(at: url, with: entries)
+        }
+        
         // 7z creation is complex and not needed for ROM management
         throw ArchiveError.unsupportedFormat("7z creation not implemented - use ZIP for creating archives")
     }
