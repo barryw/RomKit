@@ -31,8 +31,7 @@ public final class LogiqxFormatHandler: ROMFormatHandler, @unchecked Sendable {
 
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         guard let mameDat = datFile as? MAMEDATFile else {
-            print("Warning: Invalid DAT file type for Logiqx scanner, expected MAMEDATFile")
-            return NoOpROMScanner()
+            fatalError("Invalid DAT file type for Logiqx scanner")
         }
         return MAMEROMScanner(
             datFile: mameDat,
@@ -43,8 +42,7 @@ public final class LogiqxFormatHandler: ROMFormatHandler, @unchecked Sendable {
 
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         guard let mameDat = datFile as? MAMEDATFile else {
-            print("Warning: Invalid DAT file type for Logiqx rebuilder, expected MAMEDATFile")
-            return NoOpROMRebuilder()
+            fatalError("Invalid DAT file type for Logiqx rebuilder")
         }
         return MAMEROMRebuilder(
             datFile: mameDat,

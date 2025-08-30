@@ -25,18 +25,14 @@ public final class MAMEFormatHandler: ROMFormatHandler, @unchecked Sendable {
 
     public func createScanner(for datFile: any DATFormat) -> any ROMScanner {
         guard let mameDat = datFile as? MAMEDATFile else {
-            // Return a no-op scanner if wrong type
-            print("Warning: Invalid DAT file type for MAME scanner, expected MAMEDATFile")
-            return NoOpROMScanner()
+            fatalError("Invalid DAT file type for MAME scanner")
         }
         return MAMEROMScanner(datFile: mameDat, validator: createValidator(), archiveHandlers: createArchiveHandlers())
     }
 
     public func createRebuilder(for datFile: any DATFormat) -> any ROMRebuilder {
         guard let mameDat = datFile as? MAMEDATFile else {
-            // Return a no-op rebuilder if wrong type
-            print("Warning: Invalid DAT file type for MAME rebuilder, expected MAMEDATFile")
-            return NoOpROMRebuilder()
+            fatalError("Invalid DAT file type for MAME rebuilder")
         }
         return MAMEROMRebuilder(datFile: mameDat, archiveHandlers: createArchiveHandlers())
     }
