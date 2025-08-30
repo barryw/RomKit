@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import RomKit
 
-@Suite("Simple Performance Comparison", .disabled(if: ProcessInfo.processInfo.environment["CI"] != nil, "Skipping performance tests in CI"))
+
 struct SimplePerfComparisonTests {
 
     @Test("Compare CPU vs GPU hash performance")

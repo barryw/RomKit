@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import RomKit
 
-@Suite("GPU and Performance Optimization Tests", .disabled(if: ProcessInfo.processInfo.environment["CI"] != nil, "Skipping GPU tests in CI"))
+
 struct GPUPerformanceTests {
 
     // MARK: - GPU Hash Computation Tests

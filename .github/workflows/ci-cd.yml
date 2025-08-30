@@ -70,9 +70,8 @@ jobs:
 
     - name: Run Tests with Coverage
       run: |
-        # Run only a subset of stable tests in CI due to signal 5 crashes
-        # TODO: Fix underlying issues and re-enable all tests
-        swift test --configuration debug --no-parallel -j 1 --filter "NoIntro|Redump|MAME|TorrentZip|AsyncFileIO|RomKitErrors"
+        # Run all tests in debug mode
+        swift test --configuration debug
         
         # Detect architecture
         ARCH=$(uname -m)

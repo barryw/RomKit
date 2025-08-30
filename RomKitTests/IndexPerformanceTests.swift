@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import RomKit
 
-@Suite("Index Performance Tests", .disabled(if: ProcessInfo.processInfo.environment["CI"] != nil, "Skipping performance tests in CI"))
+@Suite("Index Performance Tests")
 struct IndexPerformanceTests {
 
     @Test(.timeLimit(.minutes(2))) func testIndexPerformanceComparison() async throws {

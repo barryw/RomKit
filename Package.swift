@@ -1,10 +1,6 @@
 // swift-tools-version: 6.0
 
 import PackageDescription
-import Foundation
-
-// Get the package directory path
-let packageDir = Context.packageDirectory
 
 let package = Package(
     name: "RomKit",
@@ -26,16 +22,35 @@ let package = Package(
         .target(
             name: "Lib7z",
             path: "RomKit/Lib7Zip",
-            sources: ["lib7z_wrapper.c", "7zAlloc.c"],
+            sources: [
+                "lib7z_wrapper.c",
+                "7zAlloc.c",
+                "7zArcIn.c",
+                "7zBuf.c",
+                "7zBuf2.c",
+                "7zCrc.c",
+                "7zCrcOpt.c",
+                "7zDec.c",
+                "7zFile.c",
+                "7zStream.c",
+                "Alloc.c",
+                "CpuArch.c",
+                "Delta.c",
+                "LzmaDec.c",
+                "Lzma2Dec.c",
+                "Bcj2.c",
+                "Bra.c",
+                "Bra86.c",
+                "BraIA64.c",
+                "Ppmd7.c",
+                "Ppmd7Dec.c"
+            ],
             publicHeadersPath: ".",
             cSettings: [
-                .headerSearchPath("../../External/lib7z/include"),
+                .headerSearchPath("."),
                 .define("_FILE_OFFSET_BITS", to: "64"),
-                .define("_LARGEFILE_SOURCE")
-            ],
-            linkerSettings: [
-                // Link the lib7z.a file directly
-                .unsafeFlags(["\(packageDir)/RomKit/Lib7Zip/lib7z.a"])
+                .define("_LARGEFILE_SOURCE"),
+                .define("_7ZIP_ST")  // Single-threaded mode for simplicity
             ]
         ),
         .target(

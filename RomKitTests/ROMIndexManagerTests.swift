@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import RomKit
 
-@Suite(.disabled(if: ProcessInfo.processInfo.environment["CI"] != nil, "Skipping index manager tests in CI"))
+
 struct ROMIndexManagerTests {
 
     @Test func testROMIndexManagerInit() async throws {
