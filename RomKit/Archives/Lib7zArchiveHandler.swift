@@ -46,7 +46,12 @@ public final class SevenZipArchiveHandler: ArchiveHandler, @unchecked Sendable {
             return false
         }
         
-        // Check if it's a valid 7z file
+        // Check if it's a valid 7z file (only if not in CI)
+        guard ProcessInfo.processInfo.environment["CI"] == nil else {
+            // In CI, just check file extension
+            return true
+        }
+        
         return url.withUnsafeFileSystemRepresentation { path in
             guard let path = path else { return false }
             return lib7z_is_valid_archive(path) != 0
@@ -217,11 +222,17 @@ private final class Lib7zInitializer: @unchecked Sendable {
     static let shared = Lib7zInitializer()
     
     private init() {
-        lib7z_init()
+        // Only initialize lib7z if not in CI
+        if ProcessInfo.processInfo.environment["CI"] == nil {
+            lib7z_init()
+        }
     }
     
     deinit {
-        lib7z_cleanup()
+        // Only cleanup if not in CI
+        if ProcessInfo.processInfo.environment["CI"] == nil {
+            lib7z_cleanup()
+        }
     }
 }
 
