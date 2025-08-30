@@ -30,7 +30,9 @@ let package = Package(
                 .define("_LARGEFILE_SOURCE")
             ],
             linkerSettings: [
-                .unsafeFlags(["-L/Users/barry/XCode Projects/RomKit/External/lib7z/lib", "-l7z"])
+                // Link against the pre-built lib7z
+                // Users must run Scripts/build_lib7z_if_needed.sh first
+                .unsafeFlags(["-L../../External/lib7z/lib", "-l7z"])
             ]
         ),
         .target(
