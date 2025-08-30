@@ -51,10 +51,6 @@ public final class LogiqxFormatHandler: ROMFormatHandler, @unchecked Sendable {
     }
 
     public func createArchiveHandlers() -> [any ArchiveHandler] {
-        return [
-            ZIPArchiveHandler(),
-            SevenZipArchiveHandler(),
-            CHDArchiveHandler()
-        ]
+        return [ZIPArchiveHandler(), SevenZipArchiveHandler()]
     }
 }

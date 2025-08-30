@@ -116,7 +116,7 @@ struct TOSECFormatHandler: ROMFormatHandler {
     }
 
     func createArchiveHandlers() -> [any ArchiveHandler] {
-        return [ZIPArchiveHandler(), SevenZipArchiveHandler()]
+        return [ZIPArchiveHandler()]
     }
 }
 

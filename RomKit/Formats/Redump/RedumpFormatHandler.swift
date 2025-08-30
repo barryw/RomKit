@@ -40,7 +40,7 @@ public final class RedumpFormatHandler: ROMFormatHandler, @unchecked Sendable {
 
     public func createArchiveHandlers() -> [any ArchiveHandler] {
         // Redump primarily deals with disc images
-        return [ZIPArchiveHandler(), CHDArchiveHandler(), CUEBINArchiveHandler()]
+        return [ZIPArchiveHandler(), CUEBINArchiveHandler()]
     }
 }
 

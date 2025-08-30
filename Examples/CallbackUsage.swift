@@ -24,7 +24,7 @@ class RomKitController: RomKitDelegate {
         let scanner = MAMEROMScanner(
             datFile: datFile,
             validator: MAMEROMValidator(),
-            archiveHandlers: [ZIPArchiveHandler(), SevenZipArchiveHandler()],
+            archiveHandlers: [ZIPArchiveHandler()],
             delegate: self
         )
 

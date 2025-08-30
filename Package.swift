@@ -20,11 +20,27 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "Lib7z",
+            path: "RomKit/Lib7Zip",
+            sources: ["lib7z_wrapper.c", "7zAlloc.c"],
+            publicHeadersPath: ".",
+            cSettings: [
+                .headerSearchPath("../../External/lib7z/include"),
+                .define("_FILE_OFFSET_BITS", to: "64"),
+                .define("_LARGEFILE_SOURCE")
+            ],
+            linkerSettings: [
+                .unsafeFlags(["-L/Users/barry/XCode Projects/RomKit/External/lib7z/lib", "-l7z"])
+            ]
+        ),
+        .target(
             name: "RomKit",
-            dependencies: [],
+            dependencies: ["Lib7z"],
             path: "RomKit",
+            exclude: ["Lib7Zip"],
             resources: [
-                .process("Utilities/HashCompute.metal")
+                .process("Shaders/HashCompute.metal"),
+                .process("Shaders/Compression.metal")
             ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency"),

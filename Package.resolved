@@ -1,4 +1,5 @@
 {
+  "originHash" : "e1fe120c799203d42f5f5ee079fd297e7c745ce7e2a79c5242f41696e71cba46",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -10,5 +11,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

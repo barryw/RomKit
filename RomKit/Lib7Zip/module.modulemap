@@ -1,0 +1,4 @@
+module Lib7z {
+    header "lib7z_wrapper.h"
+    export *
+}

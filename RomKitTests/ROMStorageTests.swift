@@ -248,7 +248,7 @@ struct ROMStorageTests {
 
             let rebuilder = MAMEROMRebuilder(
                 datFile: datFile,
-                archiveHandlers: [ZIPArchiveHandler(), SevenZipArchiveHandler()]
+                archiveHandlers: [ZIPArchiveHandler()]
             )
 
             let results = try await rebuilder.rebuild(

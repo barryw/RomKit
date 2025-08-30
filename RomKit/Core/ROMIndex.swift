@@ -441,4 +441,3 @@ struct IndexCache: Codable {
 // Make IndexedROM Codable for caching
 extension IndexedROM: Codable {}
 
-// SevenZipArchiveHandler is already defined in ArchiveHandlers.swift

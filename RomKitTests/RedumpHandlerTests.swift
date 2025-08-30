@@ -76,9 +76,8 @@ struct RedumpHandlerTests {
         let handler = RedumpFormatHandler()
         let archiveHandlers = handler.createArchiveHandlers()
 
-        #expect(archiveHandlers.count == 3)
+        #expect(archiveHandlers.count == 2)
         #expect(archiveHandlers.contains { $0 is ZIPArchiveHandler })
-        #expect(archiveHandlers.contains { $0 is CHDArchiveHandler })
         #expect(archiveHandlers.contains { $0 is CUEBINArchiveHandler })
     }
 
